@@ -1,13 +1,16 @@
-name: Test, Build, and Deploy 
+name: Book and Demo
 
 on: [push]
 
 jobs:
-  bundle:
+  build:
     runs-on: ubuntu-latest
     steps:
     - name: checkout repo
       uses: actions/checkout@v1
+
+    - name: create dist directory 
+      run: mkdir dist
 
     - name: Get npm cache directory
       id: npm-cache
@@ -36,7 +39,7 @@ jobs:
     - name: Cache cargo build
       uses: actions/cache@v1
       with:
-        path: target
+        path: example/target
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
     - name: download binaryen release
@@ -56,7 +59,7 @@ jobs:
       uses: actions/setup-node@v1
 
     - name: install npm deps
-      run: npm ci
+      run: cd example && npm ci
 
     - name: install rust nightly
       run: rustup toolchain install nightly
@@ -73,33 +76,14 @@ jobs:
     - name: install cargo make 
       run: cargo install cargo-make 
 
-    # - name: test everything
-    #  run: cargo make test 
-
     - name: build for release 
-      run: cargo make build --profile production 
+      run: cd example && cargo make build --profile production 
 
-    - name: upload artifacts
-      uses: actions/upload-artifact@master
-      with:
-        name: _static
-        path: _static
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: bundle
-    steps:
-    - name: checkout repo
-      uses: actions/checkout@v1
-
-    - name: download artifacts
-      uses: actions/download-artifact@master
-      with:
-        name: _static 
-        path: _static
+    - name: copy example to dist
+      run: cp -R ./example/_static ./dist
 
     - name: deploy to gh_pages
       uses: maxheld83/ghpages@master
       env:
-        BUILD_DIR: "_static/"
+        BUILD_DIR: "dist/"
         GH_PAT: ${{ secrets.GH_PAT }}
