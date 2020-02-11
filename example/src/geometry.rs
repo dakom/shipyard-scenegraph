@@ -1,26 +1,36 @@
-use rand::prelude::*;
-
 #[derive(Debug, Clone)]
 pub struct Point {
     pub x: f64,
-    pub y: f64
+    pub y: f64,
+    pub z: f64
 }
 
-impl Point {
-
-    pub fn new_random() -> Self {
-        let mut rng = thread_rng();
-        let x: f64 = rng.gen(); // random number in range [0, 1)
-        let y: f64 = rng.gen(); // random number in range [0, 1)
-
-        Self { x, y }
-    }
-}
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Area {
     pub width: u32,
     pub height: u32 
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct Bounds {
+    pub left: f64,
+    pub right: f64,
+    pub top: f64,
+    pub bottom: f64
+}
+
+impl Bounds {
+    pub fn contains(&self, point:&Point) -> bool {
+        if self.left <= point.x
+            && self.right >= point.x
+            && self.bottom <= point.y
+            && self.top >= point.y
+            {
+                true
+            } else {
+                false
+            }
+    }
 }
 
 pub const QUAD_GEOM_UNIT: [f32; 8] = [

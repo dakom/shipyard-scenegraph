@@ -7,9 +7,27 @@ use crate::config::*;
 pub const TICK:&'static str = "TICK";
 
 pub fn register_workloads(world:&World) {
-    world.add_workload::<(Start, HandleController, Update, Commit, Render, End), _>(TICK); 
+    //world.add_workload::<(Start, HandleController, Update, Commit, Render, End), _>(TICK); 
+    world.add_workload::<(Render), _>(TICK); 
 }
 
+#[system(Render)]
+pub fn run (
+    mut renderer: Unique<NonSendSync<&mut SceneRenderer>>,
+    positions: &Position, 
+    stage_area:Unique<&StageArea>, 
+    img_areas:&ImageArea,
+    colors:&Color,
+) {
+    renderer.pre_render(&stage_area.0).unwrap();
+
+    (&positions, &img_areas, &colors)
+        .iter()
+        .for_each(|(pos, area, color)| {
+            renderer.draw_square(&area.0, &pos.0, color).unwrap();
+    });
+}
+/*
 #[system(Start)]
 pub fn run (mut fps_counter: Unique<&mut FpsCounter>) {
     fps_counter.begin();
@@ -20,11 +38,7 @@ pub fn run (
     mut entities:EntitiesMut, 
     controller: Unique<&Controller>, 
     mut positions: &mut Position, 
-    mut speeds:&mut Speed, 
-    mut gravities:&mut Gravity, 
     stage_area:Unique<&StageArea>, 
-    img_area:Unique<&ImageArea>,
-    mut instance_positions:Unique<&mut InstancePositions>
 ) {
     if *controller == Controller::Adding {
         let count = positions.len();
@@ -147,3 +161,4 @@ pub fn run (mut fps_counter: Unique<&mut FpsCounter>, hud: Unique<NonSendSync<&m
     let len = positions.len();
     hud.update(len, fps);
 }
+*/

@@ -1,7 +1,6 @@
 use crate::renderer::SceneRenderer;
 use crate::world::init_world;
 use crate::config::get_media_href;
-use crate::hud::Hud;
 use crate::geometry::*;
 use crate::components::*;
 use crate::systems::{self, TICK};
@@ -38,19 +37,13 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
 
 
     let future = async move {
-        let img = fetch::image(&get_media_href("bunny.png")).await?;
         let vertex = fetch::text(&get_media_href("vertex.glsl")).await?;
         let fragment = fetch::text(&get_media_href("fragment.glsl")).await?;
 
-
         let (stage_width, stage_height) = get_window_size(&window).unwrap();
-        let (img_width, img_height, _) = get_texture_size(&WebGlTextureSource::ImageElement(&img));
 
         body.remove_child(&loading)?;
-        let canvas: HtmlCanvasElement = document.create_element("canvas")?.dyn_into()?;
-        body.append_child(&canvas)?;
-
-        let hud = Hud::new(&document, &body)?;
+        let canvas: HtmlCanvasElement = document.get_element_by_id("canvas").unwrap().dyn_into()?;
 
         //not using any webgl2 features so might as well stick with v1
         let gl = get_webgl_context_1(&canvas, Some(&WebGlContextOptions {
@@ -60,14 +53,14 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
 
         let renderer = WebGl1Renderer::new(gl)?;
 
-        let scene_renderer = SceneRenderer::new(renderer, &vertex, &fragment, &img)?;
+        let scene_renderer = SceneRenderer::new(renderer, &vertex, &fragment)?;
 
         let world = Rc::new(init_world(
-            Area{width: img_width, height: img_height}, 
             Area{width: stage_width, height: stage_height},
-            hud, 
             scene_renderer
         ));
+
+        create_squares(&world, stage_width as f64, stage_height as f64);
 
         systems::register_workloads(&world);
         let on_resize = {
@@ -92,7 +85,6 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
             let world = Rc::clone(&world);
 
             move |timestamp| {
-                world.borrow::<Unique<&mut Timestamp>>().0 = timestamp;
                 world.run_workload(TICK);
             }
         });
@@ -106,6 +98,40 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
     Ok(future_to_promise(future))
 }
 
+fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
+
+    let (mut entities, mut positions, mut areas, mut colors) = world.borrow::<(EntitiesMut, &mut Position, &mut ImageArea, &mut Color)>();
+
+    let mut depth = 0.0;
+    let mut create_square = |width: u32, height: u32, r: f64, g: f64, b: f64| {
+        entities.add_entity(
+            (&mut positions, &mut areas, &mut colors), 
+            (
+                Position (Point{ 
+                    x: 0.5 * (stage_width - (width as f64)), 
+                    y: 0.5 * (stage_height - (height as f64)),
+                    z: depth
+                }),
+                ImageArea (Area { width, height}),
+                Color (r,g,b, 1.0)
+            )
+        );
+
+        depth += 1.0;
+    };
+
+    create_square(400, 400, 1.0, 0.0, 0.0);
+    create_square(200, 200, 0.0, 1.0, 0.0);
+    create_square(100, 100, 0.0, 0.0, 1.0);
+
+    (&mut positions, &mut areas, &mut colors)
+        .sort()
+        .unstable(|a, b| {
+            let az:f64 = (a.0).0.z;
+            let bz:f64 = (b.0).0.z;
+            az.partial_cmp(&bz).unwrap()
+        });
+}
 
 /// Until Raf is availble in gloo...
 struct Raf {
