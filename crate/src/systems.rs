@@ -12,7 +12,7 @@ pub fn run (
     (&translations, &rotations, &scales, &mut local_transforms)
         .iter()
         .for_each(|(translation, rotation, scale, local_transform)| {
-            local_transform.0.set_from_trs(&translation.0, &rotation.0, &scale.0);
+            local_transform.0.reset_from_trs(&translation.0, &rotation.0, &scale.0);
     });
 }
 

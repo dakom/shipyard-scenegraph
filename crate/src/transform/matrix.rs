@@ -1,63 +1,11 @@
-/*
-    The math was taken and adapted from various places on the internet
-    Specifically, from gl-matrix and the gltf-rs crate (which in turn took from cg_math)
-*/
-pub struct Translation(pub Vec3);
-pub struct Rotation(pub Quat);
-pub struct Scale(pub Vec3);
-pub struct LocalTransform(pub Matrix4);
-pub struct WorldTransform(pub Matrix4);
+use super::values::*;
+use super::vec3::Vec3;
+use super::quat::Quat;
 
 #[derive(thiserror::Error, Debug)]
-pub enum TransformError {
+pub enum MatrixError {
     #[error("cannot invert the matrix")]
-    InvertMatrix
-}
-
-#[repr(C)]
-#[derive(Clone, PartialEq)]
-pub struct Vec3 {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
-}
-impl Vec3 {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
-        Self{x, y, z}
-    }
-}
-
-impl Default for Vec3 {
-    fn default() -> Self {
-        Self::new(0.0, 0.0, 0.0)
-    }
-}
-impl TransformValues for Vec3 {
-    fn len(&self) -> usize { 3 }
-}
-
-#[repr(C)]
-#[derive(Clone, PartialEq)]
-pub struct Quat {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
-    pub w: f64,
-}
-impl Quat {
-    pub fn new(x: f64, y: f64, z: f64, w: f64) -> Self {
-        Self{x, y, z, w}
-    }
-
-
-}
-impl Default for Quat {
-    fn default() -> Self {
-        Self::new(0.0, 0.0, 0.0, 1.0)
-    }
-}
-impl TransformValues for Quat {
-    fn len(&self) -> usize { 4 }
+    Invert
 }
 
 #[repr(C)]
@@ -81,20 +29,71 @@ pub struct Matrix4 (
     pub f64,
 );
 
+const MATRIX_IDENTITY:[f64;16] = [
+    1.0,0.0,0.0,0.0,
+    0.0,1.0,0.0,0.0,
+    0.0,0.0,1.0,0.0,
+    0.0,0.0,0.0,1.0,
+];
+
+impl TransformValues for Matrix4 {
+    fn len(&self) -> usize { 16 }
+    fn static_default() -> &'static [f64] {
+        &MATRIX_IDENTITY
+    }
+    fn write_to_vf32(self: &Self, target:&mut [f32]) {
+        //can't memcpy since it needs a cast
+        target[0] = self.0 as f32;
+        target[1] = self.1 as f32;
+        target[2] = self.2 as f32;
+        target[3] = self.3 as f32;
+        target[4] = self.4 as f32;
+        target[5] = self.5 as f32;
+        target[6] = self.6 as f32;
+        target[7] = self.7 as f32;
+        target[8] = self.8 as f32;
+        target[9] = self.9 as f32;
+        target[10] = self.10 as f32;
+        target[11] = self.11 as f32;
+        target[12] = self.12 as f32;
+        target[13] = self.13 as f32;
+        target[14] = self.14 as f32;
+        target[15] = self.15 as f32;
+    }
+}
+
 impl Default for Matrix4 {
     fn default() -> Self {
         Self(
-            1.0,0.0,0.0,0.0,
-            0.0,1.0,0.0,0.0,
-            0.0,0.0,1.0,0.0,
-            0.0,0.0,0.0,1.0,
+            MATRIX_IDENTITY[0],
+            MATRIX_IDENTITY[1],
+            MATRIX_IDENTITY[2],
+            MATRIX_IDENTITY[3],
+            MATRIX_IDENTITY[4],
+            MATRIX_IDENTITY[5],
+            MATRIX_IDENTITY[6],
+            MATRIX_IDENTITY[7],
+            MATRIX_IDENTITY[8],
+            MATRIX_IDENTITY[9],
+            MATRIX_IDENTITY[10],
+            MATRIX_IDENTITY[11],
+            MATRIX_IDENTITY[12],
+            MATRIX_IDENTITY[13],
+            MATRIX_IDENTITY[14],
+            MATRIX_IDENTITY[15],
         )
     }
 }
 
+/*
+pub impl TransformCache for Matrix4 {
+    fn static_default() -> &'static [f64];
+}
+*/
+
 impl Matrix4 {
 
-    pub fn set_from_translation(&mut self, translation:&Vec3) {
+    pub fn reset_from_translation(&mut self, translation:&Vec3) {
         self.reset();
         self.12 = translation.x;
         self.13 = translation.y;
@@ -108,13 +107,8 @@ impl Matrix4 {
             translation.x, translation.y, translation.z, 1.0,
         )
     }
-    pub fn new_from_rotation(rotation: &Quat) -> Self {
-        let mut m = Self::default();
-        m.set_from_rotation(rotation);
-        m
-    }
 
-    pub fn set_from_rotation(&mut self, rotation:&Quat) {
+    pub fn reset_from_rotation(&mut self, rotation:&Quat) {
         let x = rotation.x;
         let y = rotation.y;
         let z = rotation.z;
@@ -148,8 +142,13 @@ impl Matrix4 {
         self.14 = 0.0;
         self.15 = 1.0;
     }
+    pub fn new_from_rotation(rotation: &Quat) -> Self {
+        let mut m = Self::default();
+        m.reset_from_rotation(rotation);
+        m
+    }
 
-    pub fn set_from_scale(&mut self, scale:&Vec3) {
+    pub fn reset_from_scale(&mut self, scale:&Vec3) {
         self.reset();
         self.0 = scale.x;
         self.5 = scale.y;
@@ -163,7 +162,8 @@ impl Matrix4 {
             0.0, 0.0, 0.0, 1.0,
         )
     }
-    pub fn set_from_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
+
+    pub fn reset_from_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
         let x = rotation.x;
         let y = rotation.y; 
         let z = rotation.z;
@@ -209,7 +209,7 @@ impl Matrix4 {
 
     pub fn new_from_trs(translation:&Vec3, rotation:&Quat, scale:&Vec3) -> Self {
         let mut m = Self::default();
-        m.set_from_trs(translation, rotation, scale);
+        m.reset_from_trs(translation, rotation, scale);
         m
     }
 
@@ -258,13 +258,8 @@ impl Matrix4 {
         self.15 = b0*a03 + b1*a13 + b2*a23 + b3*a33;
     }
 
-    pub fn invert_clone(orig:&Self) -> Result<Self, TransformError> {
-        let mut clone = orig.clone();
-        clone.invert_mut()?;
-        Ok(clone)
-    }
     /// returns true if it was able to invert, false otherwise
-    pub fn invert_mut(&mut self) -> Result<(), TransformError> {
+    pub fn invert_mut(&mut self) -> Result<(), MatrixError> {
         let a:&[f64] = self.as_ref();
         let a00 = a[0]; 
         let a01 = a[1]; 
@@ -297,7 +292,7 @@ impl Matrix4 {
         // Calculate the determinant
         let mut det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
         if det == 0.0 {
-            Err(TransformError::InvertMatrix)
+            Err(MatrixError::Invert)
         } else {
             det = 1.0 / det;
             self.0 = (a11 * b11 - a12 * b10 + a13 * b09) * det;
@@ -319,70 +314,18 @@ impl Matrix4 {
             Ok(())
         }
     }
-}
-impl TransformValues for Matrix4 {
-    fn len(&self) -> usize { 16 }
+    pub fn invert_clone(orig:&Self) -> Result<Self, MatrixError> {
+        let mut clone = orig.clone();
+        clone.invert_mut()?;
+        Ok(clone)
+    }
 }
 
 impl std::ops::Mul<Matrix4> for Matrix4 {
     type Output = Matrix4;
     fn mul(self, rhs: Matrix4) -> Self::Output {
-        let mut out = self.clone();
-        out.mul_mut(&rhs);
-        out
+        let mut clone = self.clone();
+        clone.mul_mut(&rhs);
+        clone
     }
 }
-
-pub trait TransformValues: AsRef<[f64]> + AsMut<[f64]> + Default {
-    fn len(self: &Self) -> usize;
-
-    //TODO: cache! maybe Cow?
-    fn to_vec_f32(self: &Self) -> Vec<f32> {
-        self.as_ref().iter().map(|n| *n as f32).collect()
-    }
-
-    fn copy_from_slice(&mut self, values:&[f64]) {
-        let curr:&mut [f64] = self.as_mut(); 
-        curr.copy_from_slice(values);
-    }
-
-    fn reset(&mut self) {
-        //TODO: might be possible to keep this as like a static somehow?
-        let _default = Self::default();
-        self.copy_from_slice(_default.as_ref());
-    }
-    fn new_from_slice(values:&[f64]) -> Self {
-        let mut _self = Self::default();
-        _self.copy_from_slice(values);
-        _self
-    }
-
-    fn copy_from(&mut self, other:&Self) {
-        self.copy_from_slice(other.as_ref());
-    }
-}
-macro_rules! impl_asref {
-    ( $( $x:ty ),* ) => {
-        $(
-
-            impl AsRef<[f64]> for $x {
-                //this is fast - no copy
-                fn as_ref(&self) -> &[f64] {
-                    let pointer = self as *const Self as *const f64;
-                    let slice: &[f64] = unsafe { std::slice::from_raw_parts(pointer, self.len()) };
-                    slice
-                }
-            }
-            impl AsMut<[f64]> for $x {
-                //this is fast - no copy
-                fn as_mut(&mut self) -> &mut [f64] {
-                    let pointer = self as *const Self as *mut f64;
-                    let slice: &mut [f64] = unsafe { std::slice::from_raw_parts_mut(pointer, self.len()) };
-                    slice
-                }
-            }
-        )*
-    };
-}
-
-impl_asref!{Vec3, Quat, Matrix4}

@@ -21,9 +21,12 @@ pub fn run (
 ) {
     renderer.pre_render(&stage_area.0).unwrap();
 
+    let mut scratch:[f32;16] = [0.0;16];
+
     (&world_transforms, &colors)
         .iter()
         .for_each(|(transform, color)| {
-            renderer.draw_square(&transform.0.to_vec_f32(), color).unwrap();
+            transform.0.write_to_vf32(&mut scratch);
+            renderer.draw_square(&scratch, color).unwrap();
     });
 }
