@@ -5,6 +5,7 @@ use crate::geometry::*;
 use crate::components::*;
 use crate::systems::{self, TICK};
 use crate::input;
+use shipyard_scenegraph as sg;
 
 use std::rc::{Rc};
 use std::cell::{RefCell};
@@ -80,6 +81,7 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
         EventListener::new(&window, "resize", on_resize).forget();
 
 
+
         //start the game loop!
         let tick = Raf::new({
             let world = Rc::clone(&world);
@@ -100,37 +102,44 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
 
 fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
 
-    let (mut entities, mut positions, mut areas, mut colors) = world.borrow::<(EntitiesMut, &mut Position, &mut ImageArea, &mut Color)>();
 
     let mut depth = 0.0;
     let mut create_square = |width: u32, height: u32, r: f64, g: f64, b: f64| {
-        entities.add_entity(
-            (&mut positions, &mut areas, &mut colors), 
-            (
-                Position (Point{ 
-                    x: 0.5 * (stage_width - (width as f64)), 
-                    y: 0.5 * (stage_height - (height as f64)),
-                    z: depth
-                }),
-                ImageArea (Area { width, height}),
-                Color (r,g,b, 1.0)
-            )
+
+        let entity = sg::create_entity(
+            world, 
+            Some(sg::Vec3::new(
+                    0.5,
+                    0.5,
+                    depth
+            )),
+            /*
+            Some(sg::Vec3::new(
+                    0.5 * (stage_width - (width as f64)), 
+                    0.5 * (stage_height - (height as f64)),
+                    depth
+            )),
+            */
+            None,
+            Some(sg::Vec3::new(width as f64, height as f64, 1.0))
         );
+
+        {
+            let (entities, mut areas, mut colors) = world.borrow::<(EntitiesMut, &mut ImageArea, &mut Color)>();
+            entities.add_component(
+                (&mut areas, &mut colors), 
+                (ImageArea (Area { width, height}), Color (r,g,b, 1.0)),
+                entity
+            );
+        }
 
         depth += 1.0;
     };
 
     create_square(400, 400, 1.0, 0.0, 0.0);
-    create_square(200, 200, 0.0, 1.0, 0.0);
-    create_square(100, 100, 0.0, 0.0, 1.0);
-
-    (&mut positions, &mut areas, &mut colors)
-        .sort()
-        .unstable(|a, b| {
-            let az:f64 = (a.0).0.z;
-            let bz:f64 = (b.0).0.z;
-            az.partial_cmp(&bz).unwrap()
-        });
+    //create_square(200, 200, 0.0, 1.0, 0.0);
+    //create_square(100, 100, 0.0, 0.0, 1.0);
+    //sg::sort_pack_by_depth_back_to_front(world);
 }
 
 /// Until Raf is availble in gloo...

@@ -13,7 +13,7 @@ run_task = [
 
 [tasks.watch]
 command = "watchexec"
-args = ["-w", "./src", "makers", "build-development"]
+args = ["-w", "./src", "-w", "../crate", "makers", "build-development"]
 
 [tasks.clean]
 script_runner = "@shell"
@@ -21,7 +21,7 @@ ignore_errors = true
 script = [ 
     "rm -rf ./target",
     "rm -rf ./pkg",
-    "rm -rf ./_static/wasm/shipyard_scenegraph"
+    "rm -rf ./_static/wasm/demo"
 ]
 
 #################
@@ -41,7 +41,7 @@ toolchain = "nightly"
 
 [tasks.bindgen-development]
 command = "wasm-bindgen"
-args = ["./target/wasm32-unknown-unknown/debug/shipyard_scenegraph.wasm","--debug", "--keep-debug", "--target","web","--out-dir","./_static/wasm/shipyard_scenegraph/pkg"]
+args = ["./target/wasm32-unknown-unknown/debug/demo.wasm","--debug", "--keep-debug", "--target","web","--out-dir","./_static/wasm/demo/pkg"]
 
 
 ################
@@ -62,9 +62,9 @@ toolchain = "nightly"
 
 [tasks.bindgen-production]
 command = "wasm-bindgen"
-args = ["./target/wasm32-unknown-unknown/release/shipyard_scenegraph.wasm", "--target","web","--out-dir","./_static/wasm/shipyard_scenegraph/pkg"]
+args = ["./target/wasm32-unknown-unknown/release/demo.wasm", "--target","web","--out-dir","./_static/wasm/demo/pkg"]
 
 [tasks.wasmopt-production]
 command = "wasm-opt"
 # if CI fails, try with BINARYEN_CORES=1 in an env
-args = ["-O3","-o","./_static/wasm/shipyard_scenegraph/pkg/shipyard_scenegraph_bg.wasm", "./_static/wasm/shipyard_scenegraph/pkg/shipyard_scenegraph_bg.wasm"]
+args = ["-O3","-o","./_static/wasm/demo/pkg/demo_bg.wasm", "./_static/wasm/demo/pkg/demo_bg.wasm"]

@@ -12,8 +12,10 @@ pub fn init_world(stage_area:Area,renderer:SceneRenderer) -> World {
     world.add_unique_non_send_sync(renderer);
 
     {
-        let (mut positions, mut areas, mut colors) = world.borrow::<(&mut Position, &mut ImageArea, &mut Color)>();
-        (&mut positions, &mut areas, &mut colors).tight_pack();
+        let (mut areas, mut colors) = world.borrow::<(&mut ImageArea, &mut Color)>();
+        (&mut areas, &mut colors).tight_pack();
+
+        shipyard_scenegraph::init(&world);
     }
 
     world

@@ -1,5 +1,6 @@
 use crate::geometry::*;
 use crate::components::Color;
+use shipyard_scenegraph::{Vec3};
 use web_sys::{HtmlImageElement};
 use nalgebra::{Matrix4, Vector3};
 
@@ -90,15 +91,16 @@ impl SceneRenderer {
         Ok(())
     }
 
-    pub fn draw_square(&mut self, img_area:&Area, pos:&Point, color:&Color) -> Result<(), awsm_web::errors::Error> {
+    pub fn draw_square(&mut self, model_mat:&[f32], color:&Color) -> Result<(), awsm_web::errors::Error> {
 
         let renderer = &mut self.renderer;
-
+        /*
         let model_mat = Matrix4::new_translation(&Vector3::new(pos.x as f32, pos.y as f32, 0.0));
         let scaling_mat = Matrix4::new_nonuniform_scaling(&Vector3::new(img_area.width as f32, img_area.height as f32, 0.0));
 
         let complete_model = model_mat * scaling_mat;
-        renderer.upload_uniform_mat_4("u_model", &complete_model.as_slice())?;
+        */
+        renderer.upload_uniform_mat_4("u_model", &model_mat)?;
         //renderer.upload_uniform_mat_4("u_size", &scaling_mat.as_slice())?;
         renderer.upload_uniform_fvals_4("u_color", color.get_tuple())?;
 

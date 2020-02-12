@@ -3,7 +3,6 @@ mod world;
 mod components;
 mod geometry;
 mod renderer;
-mod fps;
 mod input;
 mod init;
 mod systems;
