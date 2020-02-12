@@ -83,7 +83,7 @@ impl SceneRenderer {
         renderer.activate_program(program_id)?;
 
         //Build our matrices (must cast to f32)
-        let camera_mat = Matrix4::new_orthographic( 0.0, stage_area.width as f32, 0.0, stage_area.height as f32, 0.0, 1.0);
+        let camera_mat = Matrix4::new_orthographic( 0.0, stage_area.width as f32, 0.0, stage_area.height as f32, 0.0, 100.0);
 
         //Upload them to the GPU
         renderer.upload_uniform_mat_4("u_camera", &camera_mat.as_slice())?;

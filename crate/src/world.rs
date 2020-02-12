@@ -29,13 +29,9 @@ pub fn create_entity(world:&World, translation: Option<Vec3>, rotation: Option<Q
     let translation = translation.unwrap_or_default();
     let rotation = rotation.unwrap_or_default();
     let scale = scale.unwrap_or(Vec3::new(1.0, 1.0, 1.0));
-    let local_matrix = Matrix4::from_trs(&translation, &rotation, &scale);
+    let local_matrix = Matrix4::new_from_trs(&translation, &rotation, &scale);
     let world_matrix = Matrix4::default();
 
-    log::info!("{:#?}", translation.as_ref());
-    log::info!("{:#?}", rotation.as_ref());
-    log::info!("{:#?}", scale.as_ref());
-    log::info!("{:#?}", local_matrix.as_ref());
     let (
         mut entities, 
         mut translations,

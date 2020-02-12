@@ -94,37 +94,59 @@ impl Default for Matrix4 {
 
 impl Matrix4 {
 
-    pub fn from_translation(v: &Vec3) -> Self {
+    pub fn set_from_translation(&mut self, translation:&Vec3) {
+        self.reset();
+        self.12 = translation.x;
+        self.13 = translation.y;
+        self.14 = translation.z;
+    }
+    pub fn new_from_translation(translation: &Vec3) -> Self {
         Self(
             1.0, 0.0, 0.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
             0.0, 0.0, 1.0, 0.0,
-            v.x, v.y, v.z, 1.0,
+            translation.x, translation.y, translation.z, 1.0,
         )
     }
-    pub fn from_rotation(r: &Quat) -> Self {
-            let x2 = r.x + r.x;
-            let y2 = r.y + r.y;
-            let z2 = r.z + r.z;
+    pub fn new_from_rotation(rotation: &Quat) -> Self {
+        let mut m = Self::default();
+        m.set_from_rotation(rotation);
+        m
+    }
 
-            let xx2 = x2 * r.x;
-            let xy2 = x2 * r.y;
-            let xz2 = x2 * r.z;
-
-            let yy2 = y2 * r.y;
-            let yz2 = y2 * r.z;
-            let zz2 = z2 * r.z;
-
-            let sy2 = y2 * r.w;
-            let sz2 = z2 * r.w;
-            let sx2 = x2 * r.w;
-
-            Self(
-                1.0 - yy2 - zz2, xy2 + sz2, xz2 - sy2, 0.0,
-                xy2 - sz2, 1.0 - xx2 - zz2, yz2 + sx2, 0.0,
-                xz2 + sy2, yz2 - sx2, 1.0 - xx2 - yy2, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-            )
+    pub fn set_from_rotation(&mut self, rotation:&Quat) {
+        let x = rotation.x;
+        let y = rotation.y;
+        let z = rotation.z;
+        let w = rotation.w;
+        let x2 = x + x;
+        let y2 = y + y;
+        let z2 = z + z;
+        let xx = x * x2;
+        let yx = y * x2;
+        let yy = y * y2;
+        let zx = z * x2;
+        let zy = z * y2;
+        let zz = z * z2;
+        let wx = w * x2;
+        let wy = w * y2;
+        let wz = w * z2;
+        self.0 = 1.0 - yy - zz;
+        self.1 = yx + wz;
+        self.2 = zx - wy;
+        self.3 = 0.0;
+        self.4 = yx - wz;
+        self.5 = 1.0 - xx - zz;
+        self.6 = zy + wx;
+        self.7 = 0.0;
+        self.8 = zx + wy;
+        self.9 = zy - wx;
+        self.10 = 1.0 - xx - yy;
+        self.11 = 0.0;
+        self.12 = 0.0;
+        self.13 = 0.0;
+        self.14 = 0.0;
+        self.15 = 1.0;
     }
 
     pub fn set_from_scale(&mut self, scale:&Vec3) {
@@ -133,7 +155,7 @@ impl Matrix4 {
         self.5 = scale.y;
         self.10 = scale.z;
     }
-    pub fn from_scale(scale:&Vec3) -> Self {
+    pub fn new_from_scale(scale:&Vec3) -> Self {
         Self(
             scale.x, 0.0, 0.0, 0.0,
             0.0,   scale.y, 0.0, 0.0,
@@ -141,17 +163,54 @@ impl Matrix4 {
             0.0, 0.0, 0.0, 1.0,
         )
     }
-    pub fn from_trs_mut(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
-        self.set_from_scale(scale);
+    pub fn set_from_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
+        let x = rotation.x;
+        let y = rotation.y; 
+        let z = rotation.z;
+        let w = rotation.w;
+        let x2 = x + x;
+        let y2 = y + y;
+        let z2 = z + z;
+        let xx = x * x2;
+        let xy = x * y2;
+        let xz = x * z2;
+        let yy = y * y2;
+        let yz = y * z2;
+        let zz = z * z2;
+        let wx = w * x2;
+        let wy = w * y2;
+        let wz = w * z2;
+        let sx = scale.x;
+        let sy = scale.y;
+        let sz = scale.z;
+        self.0 = (1.0 - (yy + zz)) * sx;
+        self.1 = (xy + wz) * sx;
+        self.2 = (xz - wy) * sx;
+        self.3 = 0.0;
+        self.4 = (xy - wz) * sy;
+        self.5 = (1.0 - (xx + zz)) * sy;
+        self.6 = (yz + wx) * sy;
+        self.7 = 0.0;
+        self.8 = (xz + wy) * sz;
+        self.9 = (yz - wx) * sz;
+        self.10 = (1.0 - (xx + yy)) * sz;
+        self.11 = 0.0;
+        self.12 = translation.x;
+        self.13 = translation.y;
+        self.14 = translation.z;
+        self.15 = 1.0;
+
+        /* alternatively, but slower:
+        self.set_from_translation(translation);
         self.mul_mut(&Self::from_rotation(rotation));
-        self.mul_mut(&Self::from_translation(translation));
+        self.mul_mut(&Self::from_scale(scale));
+        */
     }
 
-    pub fn from_trs(translation:&Vec3, rotation:&Quat, scale:&Vec3) -> Self {
-        let mut _self = Self::from_scale(scale);
-        _self.mul_mut(&Self::from_rotation(rotation));
-        _self.mul_mut(&Self::from_translation(translation));
-        _self
+    pub fn new_from_trs(translation:&Vec3, rotation:&Quat, scale:&Vec3) -> Self {
+        let mut m = Self::default();
+        m.set_from_trs(translation, rotation, scale);
+        m
     }
 
     pub fn mul_mut(&mut self, rhs: &Matrix4) {

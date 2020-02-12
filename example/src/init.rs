@@ -80,8 +80,6 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
 
         EventListener::new(&window, "resize", on_resize).forget();
 
-
-
         //start the game loop!
         let tick = Raf::new({
             let world = Rc::clone(&world);
@@ -109,17 +107,10 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
         let entity = sg::create_entity(
             world, 
             Some(sg::Vec3::new(
-                    0.5,
-                    0.5,
-                    depth
-            )),
-            /*
-            Some(sg::Vec3::new(
                     0.5 * (stage_width - (width as f64)), 
                     0.5 * (stage_height - (height as f64)),
                     depth
             )),
-            */
             None,
             Some(sg::Vec3::new(width as f64, height as f64, 1.0))
         );
@@ -133,13 +124,13 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
             );
         }
 
-        depth += 1.0;
+        depth -= 1.0;
     };
 
     create_square(400, 400, 1.0, 0.0, 0.0);
-    //create_square(200, 200, 0.0, 1.0, 0.0);
-    //create_square(100, 100, 0.0, 0.0, 1.0);
-    //sg::sort_pack_by_depth_back_to_front(world);
+    create_square(200, 200, 0.0, 1.0, 0.0);
+    create_square(100, 100, 0.0, 0.0, 1.0);
+    sg::sort_pack_by_depth_front_to_back(world);
 }
 
 /// Until Raf is availble in gloo...

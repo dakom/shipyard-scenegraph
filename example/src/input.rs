@@ -9,7 +9,6 @@ use web_sys::{HtmlCanvasElement};
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
 
 pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
-
     EventListener::new(canvas, "pointerdown", {
         let world = Rc::clone(&world);
         move |event:&Event| {
@@ -33,10 +32,6 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
                 motion.last_pos = Some(mouse_point);
                 motion.current_pos = None;
             });
-                //.into_iter()
-                //.rev();
-
-            //*world.borrow::<Unique<&mut Controller>>() = Controller::Adding; 
         }
     }).forget();
 
