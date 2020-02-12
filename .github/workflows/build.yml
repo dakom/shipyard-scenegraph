@@ -80,7 +80,7 @@ jobs:
       run: cd example && cargo make build --profile production 
 
     - name: copy example to dist
-      run: cp -R ./example/_static ./dist
+      run: cp -R ./example/_static/* ./dist
 
     - name: deploy to gh_pages
       uses: maxheld83/ghpages@master
