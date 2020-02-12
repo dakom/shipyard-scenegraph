@@ -39,7 +39,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/.cargo/bin
-        key: ${{ runner.os }}-cargo-index-${{ hashFiles('~/.cargo/bin/**') }}
+        key: ${{ runner.os }}-cargo-index-${{ hashFiles('.cargo/bin/**') }}
 
     - name: Cache cargo build
       uses: actions/cache@v1
@@ -80,6 +80,9 @@ jobs:
 
     - name: install cargo make 
       run: cargo install cargo-make 
+
+    - name: show directory 
+      run: ls -la 
 
     - name: build for release 
       run: cargo make build --profile production 
