@@ -1,9 +1,3 @@
-/*
-    The math was taken and adapted from various places on the internet
-    Specifically, from gl-matrix and the gltf-rs crate (which in turn took from cg_math)
-
-    The idea is that we have a bespoke minimal math lib with no dependencies
-*/
 
 mod matrix;
 mod vec3;

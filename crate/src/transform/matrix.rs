@@ -1,3 +1,13 @@
+/*
+    The math was taken and adapted from various places on the internet
+    Specifically, from gl-matrix and the gltf-rs crate (which in turn took from cg_math)
+
+    The idea is that we have a bespoke minimal math lib with no dependencies
+
+    TODO: maybe impl From for nalgebra via a feature gate
+    Though since as_ref() returns a slice maybe that's not necessary?
+*/
+
 use super::values::*;
 use super::vec3::Vec3;
 use super::quat::Quat;
@@ -85,30 +95,36 @@ impl Default for Matrix4 {
     }
 }
 
-/*
-pub impl TransformCache for Matrix4 {
-    fn static_default() -> &'static [f64];
-}
-*/
-
 impl Matrix4 {
+    //translation
+    pub fn new_from_translation(translation: &Vec3) -> Self {
+        let mut m = Self::default();
+        m.set_translation(translation);
+        m
+    }
 
     pub fn reset_from_translation(&mut self, translation:&Vec3) {
         self.reset();
+        self.set_translation(translation);
+    }
+
+    pub fn set_translation(&mut self, translation:&Vec3) {
         self.12 = translation.x;
         self.13 = translation.y;
         self.14 = translation.z;
     }
-    pub fn new_from_translation(translation: &Vec3) -> Self {
-        Self(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            translation.x, translation.y, translation.z, 1.0,
-        )
-    }
 
+    //rotation
+    pub fn new_from_rotation(rotation: &Quat) -> Self {
+        let mut m = Self::default();
+        m.set_rotation(rotation);
+        m
+    }
     pub fn reset_from_rotation(&mut self, rotation:&Quat) {
+        self.reset();
+        self.set_rotation(rotation);
+    }
+    pub fn set_rotation(&mut self, rotation:&Quat) {
         let x = rotation.x;
         let y = rotation.y;
         let z = rotation.z;
@@ -128,42 +144,49 @@ impl Matrix4 {
         self.0 = 1.0 - yy - zz;
         self.1 = yx + wz;
         self.2 = zx - wy;
-        self.3 = 0.0;
+        //self.3 = 0.0;
         self.4 = yx - wz;
         self.5 = 1.0 - xx - zz;
         self.6 = zy + wx;
-        self.7 = 0.0;
+        //self.7 = 0.0;
         self.8 = zx + wy;
         self.9 = zy - wx;
         self.10 = 1.0 - xx - yy;
-        self.11 = 0.0;
-        self.12 = 0.0;
-        self.13 = 0.0;
-        self.14 = 0.0;
-        self.15 = 1.0;
-    }
-    pub fn new_from_rotation(rotation: &Quat) -> Self {
-        let mut m = Self::default();
-        m.reset_from_rotation(rotation);
-        m
+        //self.11 = 0.0;
+        //self.12 = 0.0;
+        //self.13 = 0.0;
+        //self.14 = 0.0;
+        //self.15 = 1.0;
     }
 
+    //scale
+    pub fn new_from_scale(scale:&Vec3) -> Self {
+        let mut m = Self::default();
+        m.set_scale(scale);
+        m
+    }
     pub fn reset_from_scale(&mut self, scale:&Vec3) {
         self.reset();
+        self.set_scale(scale);
+    }
+
+    pub fn set_scale(&mut self, scale:&Vec3) {
         self.0 = scale.x;
         self.5 = scale.y;
         self.10 = scale.z;
     }
-    pub fn new_from_scale(scale:&Vec3) -> Self {
-        Self(
-            scale.x, 0.0, 0.0, 0.0,
-            0.0,   scale.y, 0.0, 0.0,
-            0.0, 0.0,   scale.z, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-        )
-    }
 
+    //translation, rotation, scale
+    pub fn new_from_trs(translation:&Vec3, rotation:&Quat, scale:&Vec3) -> Self {
+        let mut m = Self::default();
+        m.set_trs(translation, rotation, scale);
+        m
+    }
     pub fn reset_from_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
+        self.reset();
+        self.set_trs(translation, rotation, scale);
+    }
+    pub fn set_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
         let x = rotation.x;
         let y = rotation.y; 
         let z = rotation.z;
@@ -186,19 +209,19 @@ impl Matrix4 {
         self.0 = (1.0 - (yy + zz)) * sx;
         self.1 = (xy + wz) * sx;
         self.2 = (xz - wy) * sx;
-        self.3 = 0.0;
+        //self.3 = 0.0;
         self.4 = (xy - wz) * sy;
         self.5 = (1.0 - (xx + zz)) * sy;
         self.6 = (yz + wx) * sy;
-        self.7 = 0.0;
+        //self.7 = 0.0;
         self.8 = (xz + wy) * sz;
         self.9 = (yz - wx) * sz;
         self.10 = (1.0 - (xx + yy)) * sz;
-        self.11 = 0.0;
+        //self.11 = 0.0;
         self.12 = translation.x;
         self.13 = translation.y;
         self.14 = translation.z;
-        self.15 = 1.0;
+        //self.15 = 1.0;
 
         /* alternatively, but slower:
         self.set_from_translation(translation);
@@ -207,12 +230,7 @@ impl Matrix4 {
         */
     }
 
-    pub fn new_from_trs(translation:&Vec3, rotation:&Quat, scale:&Vec3) -> Self {
-        let mut m = Self::default();
-        m.reset_from_trs(translation, rotation, scale);
-        m
-    }
-
+    // arithmetic 
     pub fn mul_mut(&mut self, rhs: &Matrix4) {
         let a:&[f64] = self.as_ref();
         let b:&[f64] = rhs.as_ref();
