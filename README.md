@@ -3,6 +3,8 @@
 # What is it?
 Scenegraph crate for [shipyard ECS](https://github.com/leudz/shipyard)
 
+An extended and usable implementation of the [Reference on Shipyard Hierarchies](https://leudz.github.io/shipyard/book/recipes/hierarchy.html)
+
 ## [BROWSER DEMO](https://dakom.github.io/shipyard-scenegraph)
 
 ## STATUS: JUST GETTING STARTED, NOT WORKING YET! :)
