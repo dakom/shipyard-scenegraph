@@ -28,6 +28,9 @@ pub trait Hierarchy {
 
     // Removes an subtree from the hierarchy
     fn remove(&mut self, id: EntityId);
+    
+    fn sort_children_by<F>(&mut self, id: EntityId, compare: F) 
+        where F: FnMut(&EntityId, &EntityId) -> std::cmp::Ordering;
 }
 
 //the storages we'll impl Hierarchy on
@@ -134,5 +137,26 @@ impl Hierarchy for HierarchyStorages<'_> {
             self.remove(child_id);
         }
         self.remove_single(id);
+    }
+
+
+    fn sort_children_by<F>(&mut self, id: EntityId, mut compare: F)
+    where
+        F: FnMut(&EntityId, &EntityId) -> std::cmp::Ordering,
+    {
+        let (_, parent_storage, child_storage) = self;
+        let mut children = (&*parent_storage, &*child_storage).children(id).collect::<Vec<EntityId>>();
+        if children.len() > 1 {
+            children.sort_by(|a, b| compare(a, b));
+            // set first_child in Parent component
+            parent_storage[id].first_child = children[0];
+            // loop through children and relink them
+            for i in 0..children.len() - 1 {
+                child_storage[children[i]].next = children[i + 1];
+                child_storage[children[i + 1]].prev = children[i];
+            }
+            child_storage[children[0]].prev = *children.last().unwrap();
+            child_storage[*children.last().unwrap()].next = children[0];
+        }
     }
 }

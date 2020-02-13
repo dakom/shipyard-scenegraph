@@ -57,3 +57,43 @@ fn test_hierarchy() {
         assert!(storages.ancestors(e5).eq(None));
     }
 }
+
+
+#[test]
+fn test_sorting() {
+    let world = World::new();
+
+    let (mut hierarchy, mut usizes) = world.borrow::<((EntitiesMut, &mut Parent, &mut Child), &mut usize)>();
+
+    let root = {
+        let entities = &mut hierarchy.0;
+        entities.add_entity((), ())
+    };
+
+    let e0 = hierarchy.attach_new(root);
+    let e1 = hierarchy.attach_new(root);
+    let e2 = hierarchy.attach_new(root);
+    let e3 = hierarchy.attach_new(root);
+    let e4 = hierarchy.attach_new(root);
+
+    {
+        let entities = &mut hierarchy.0;
+        entities.add_component(&mut usizes, 7, e0);
+        entities.add_component(&mut usizes, 5, e1);
+        entities.add_component(&mut usizes, 6, e2);
+        entities.add_component(&mut usizes, 1, e3);
+        entities.add_component(&mut usizes, 3, e4);
+    }
+
+    {
+        let storages = (&hierarchy.1, &hierarchy.2);
+        assert!(storages.children(root).eq([e0, e1, e2, e3, e4].iter().cloned()));
+    }
+
+    hierarchy.sort_children_by(root, |a, b| usizes[*a].cmp(&usizes[*b]));
+
+    {
+        let storages = (&hierarchy.1, &hierarchy.2);
+        assert!(storages.children(root).eq([e3, e4, e1, e2, e0].iter().cloned()));
+    }
+}
