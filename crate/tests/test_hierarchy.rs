@@ -29,6 +29,9 @@ fn test_hierarchy() {
 
         assert!(storages.descendants_depth_first(root1).eq([e1, e2].iter().cloned()));
         assert!(storages.descendants_depth_first(root2).eq([e3, e4, e5].iter().cloned()));
+
+        println!("{:?}", HierarchyDebug::new(storages, root1));
+        println!("{:?}", HierarchyDebug::new(storages, root2));
     }
 
     hierarchy.remove_single(e1);
