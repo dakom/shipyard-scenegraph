@@ -28,17 +28,7 @@ fn test_hierarchy() {
         assert!(storages.ancestors(e4).eq([e3, root2].iter().cloned()));
 
         assert!(storages.descendants_depth_first(root1).eq([e1, e2].iter().cloned()));
-
         assert!(storages.descendants_depth_first(root2).eq([e3, e4, e5].iter().cloned()));
-    }
-
-    detach(&mut hierarchy, e1);
-
-    {
-        let storages = (&hierarchy.1, &hierarchy.2);
-        assert!(storages.descendants_depth_first(root1).eq(None));
-        assert!(storages.ancestors(e1).eq(None));
-        assert!(storages.children(e1).eq([e2].iter().cloned()));
     }
 
     hierarchy.remove_single(e1);
@@ -60,7 +50,7 @@ fn test_hierarchy() {
 
 
 #[test]
-fn test_sorting() {
+fn test_sorting_depth_first() {
     let world = World::new();
 
     let (mut hierarchy, mut usizes) = world.borrow::<((EntitiesMut, &mut Parent, &mut Child), &mut usize)>();

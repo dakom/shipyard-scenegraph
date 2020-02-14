@@ -1,9 +1,11 @@
 //Mostly copy/paste from https://leudz.github.io/shipyard/book/recipes/hierarchy.html
 mod iter;
+mod debug;
 
 use shipyard::prelude::*;
 
 pub use iter::*;
+pub use debug::*;
 
 pub struct Parent {
     pub num_children: usize,
@@ -26,7 +28,7 @@ pub trait Hierarchy {
     // Removes an entity from the hierarchy
     fn remove_single(&mut self, id: EntityId);
 
-    // Removes an subtree from the hierarchy
+    // Removes a subtree from the hierarchy
     fn remove(&mut self, id: EntityId);
     
     fn sort_children_by<F>(&mut self, id: EntityId, compare: F) 
@@ -34,12 +36,12 @@ pub trait Hierarchy {
 }
 
 //the storages we'll impl Hierarchy on
-type HierarchyStorages<'a> = (EntitiesViewMut<'a>, ViewMut<'a, Parent>, ViewMut<'a, Child>);
+pub type HierarchyStorages<'a> = (EntitiesViewMut<'a>, ViewMut<'a, Parent>, ViewMut<'a, Child>);
 
 // detach an entity from the hierarchy.
 // it's not on the trait since it's only for internal use
 // the public api is remove/remove_single 
-pub fn detach (hierarchy: &mut HierarchyStorages, id: EntityId) {
+pub(super) fn detach (hierarchy: &mut HierarchyStorages, id: EntityId) {
     let (_, parent_storage, child_storage) = hierarchy;
 
     // remove the Child component - if nonexistent, do nothing
@@ -158,5 +160,29 @@ impl Hierarchy for HierarchyStorages<'_> {
             child_storage[children[0]].prev = *children.last().unwrap();
             child_storage[*children.last().unwrap()].next = children[0];
         }
+    }
+}
+
+
+#[test]
+fn test_detach() {
+    let world = World::new();
+
+    let mut hierarchy = world.borrow::<(EntitiesMut, &mut Parent, &mut Child)>();
+
+    let entities = &mut hierarchy.0;
+
+    let root1 = entities.add_entity((), ());
+
+    let e1 = hierarchy.attach_new(root1);
+    let e2 = hierarchy.attach_new(e1);
+
+    detach(&mut hierarchy, e1);
+
+    {
+        let storages = (&hierarchy.1, &hierarchy.2);
+        assert!(storages.descendants_depth_first(root1).eq(None));
+        assert!(storages.ancestors(e1).eq(None));
+        assert!(storages.children(e1).eq([e2].iter().cloned()));
     }
 }
