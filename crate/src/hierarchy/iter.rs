@@ -81,37 +81,39 @@ where
     }
 }
 
-pub struct ChildrenByLevelIter<P, C> {
+//TODO - FIXME!!
+//Push next level..
+pub struct DescendantsBreadthFirstIter<P, C> {
     pub parent_storage: P,
     pub child_storage: C,
-    //entity, sibling_index, num_siblings
+    //current parent, current child, sibling_index, num_siblings
     pub cursor: Option<(EntityId, usize, usize)>,
 }
 
-impl<'a, P, C> Iterator for ChildrenByLevelIter<P, C>
+impl<'a, P, C> Iterator for DescendantsBreadthFirstIter<P, C>
 where
     P: GetComponent<Out = &'a Parent> + Copy,
     C: GetComponent<Out = &'a Child> + Copy,
 {
-    // (Parent, ChildrenIterator)
-    type Item = (EntityId, ChildrenIter<C>);
+    type Item = EntityId;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.cursor.and_then(|(entity, sibling_index, num_siblings)| {
-            let ChildrenByLevelIter {parent_storage, child_storage, ..} = self;
+        self.cursor.and_then(|(current_child, sibling_index, num_siblings)| {
+            let DescendantsBreadthFirstIter {parent_storage, child_storage, ..} = self;
             if sibling_index < num_siblings {
-                let next_sibling = child_storage.get(entity).unwrap().next;
+                let next_sibling = child_storage.get(current_child).unwrap().next;
                 if sibling_index == num_siblings-1 {
                     //jump down to next level
                     //since siblings cycle, the child of the "next" sibling is the child of the current parent's first child
-                    self.cursor = parent_storage.get(entity).map_or(None, |next_parent| {
+                    self.cursor = parent_storage.get(next_sibling).map_or(None, |next_parent| {
                         Some((next_parent.first_child, 0, next_parent.num_children))
                     });
                 } else {
                     //keep going over siblings
                     self.cursor = Some((next_sibling, sibling_index+1, num_siblings));
                 }
-                Some((entity, (*parent_storage, *child_storage).children(entity)))
+                println!("{:?}", current_child);
+                Some(current_child)
             } else {
                 None
             }
@@ -119,17 +121,20 @@ where
     }
 }
 
-pub trait HierarchyIter<'a, P, C> {
+pub trait HierarchyIter<'a, P, C> 
+{
     fn ancestors(&self, id: EntityId) -> AncestorIter<C>;
     fn children(&self, id: EntityId) -> ChildrenIter<C>;
-    fn children_by_level(&self, id: EntityId) -> ChildrenByLevelIter<P, C>;
     fn descendants_depth_first(&self, id: EntityId) -> DescendantsDepthFirstIter<P, C>;
+    fn descendants_breadth_first(&self, id: EntityId) -> DescendantsBreadthFirstIter<P, C>;
 }
 
 impl<'a, P, C> HierarchyIter<'a, P, C> for (P, C)
 where
     P: GetComponent<Out = &'a Parent> + Copy,
+    //<P as IntoIter>::IntoIter: Shiperator + CurrentId<Id = EntityId>,
     C: GetComponent<Out = &'a Child> + Copy,
+    //<C as IntoIter>::IntoIter: Shiperator + CurrentId<Id = EntityId>,
 {
     fn ancestors(&self, id: EntityId) -> AncestorIter<C> {
         let (_, child_storage) = *self;
@@ -149,16 +154,6 @@ where
         }
     }
 
-    fn children_by_level(&self, id: EntityId) -> ChildrenByLevelIter<P, C> {
-        let (parent_storage, child_storage) = *self;
-        ChildrenByLevelIter{
-            parent_storage,
-            child_storage,
-            cursor: parent_storage
-                .get(id)
-                .map_or(None, |parent| Some((parent.first_child, 0, parent.num_children))),
-        }
-    }
     fn descendants_depth_first(&self, id: EntityId) -> DescendantsDepthFirstIter<P, C> {
         let (parent_storage, child_storage) = *self;
         DescendantsDepthFirstIter {
@@ -169,4 +164,21 @@ where
             }),
         }
     }
+    fn descendants_breadth_first(&self, id: EntityId) -> DescendantsBreadthFirstIter<P, C> {
+        let (parent_storage, child_storage) = *self;
+        DescendantsBreadthFirstIter {
+            parent_storage,
+            child_storage,
+            cursor: parent_storage
+                .get(id)
+                .map_or(None, |parent| Some((parent.first_child, 0, parent.num_children))),
+        }
+    }
+/*
+    fn roots(&self) -> dyn Iterator<Item = EntityId> {
+        let (parent_storage, child_storage) = *self;
+
+        (parent_storage, child_storage).iter().with_id()
+    }
+    */
 }

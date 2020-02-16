@@ -29,9 +29,6 @@ fn test_hierarchy() {
 
         assert!(storages.descendants_depth_first(root1).eq([e1, e2].iter().cloned()));
         assert!(storages.descendants_depth_first(root2).eq([e3, e4, e5].iter().cloned()));
-
-        println!("{:?}", HierarchyDebug::new(storages, root1));
-        println!("{:?}", HierarchyDebug::new(storages, root2));
     }
 
     hierarchy.remove_single(e1);
@@ -88,5 +85,70 @@ fn test_sorting_depth_first() {
     {
         let storages = (&hierarchy.1, &hierarchy.2);
         assert!(storages.children(root).eq([e3, e4, e1, e2, e0].iter().cloned()));
+    }
+}
+
+#[test]
+fn test_hierarchy_tree() {
+    let world = World::new();
+
+    let mut hierarchy = world.borrow::<(EntitiesMut, &mut Parent, &mut Child)>();
+
+    let entities = &mut hierarchy.0;
+
+    let root = entities.add_entity((), ());
+
+    let e1 = hierarchy.attach_new(root);
+    let e2 = hierarchy.attach_new(root);
+
+    let e3 = hierarchy.attach_new(e1);
+    let e4 = hierarchy.attach_new(e1);
+    
+    let e5 = hierarchy.attach_new(e2);
+    let e6 = hierarchy.attach_new(e2);
+    let e7 = hierarchy.attach_new(e5);
+    let e8 = hierarchy.attach_new(e6);
+
+    {
+        let storages = (&hierarchy.1, &hierarchy.2);
+
+        let (parent_storage, child_storage) = storages;
+
+        //storages.descendants_breadth_first(root).for_each(|_| {});
+        //assert!(storages.descendants_breadth_first(root).eq([e1, e2, e3, e4].iter().cloned()));
+        assert!(storages.descendants_breadth_first(root).eq([e1, e2, e3, e4, e5, e6, e7, e8].iter().cloned()));
+        //assert!(storages.descendants_depth_first(root).eq([e1, e3, e4, e2, e5, e7, e6, e8].iter().cloned()));
+    }
+}
+
+
+#[test]
+fn test_debug_print() {
+    let world = World::new();
+
+    let mut hierarchy = world.borrow::<(EntitiesMut, &mut Parent, &mut Child)>();
+
+    let entities = &mut hierarchy.0;
+
+    let root = entities.add_entity((), ());
+
+    let e1 = hierarchy.attach_new(root);
+    let e2 = hierarchy.attach_new(root);
+
+    let e3 = hierarchy.attach_new(e1);
+    let e4 = hierarchy.attach_new(e1);
+    
+    let e5 = hierarchy.attach_new(e2);
+    let e6 = hierarchy.attach_new(e2);
+    let e7 = hierarchy.attach_new(e5);
+    let e8 = hierarchy.attach_new(e6);
+
+
+    {
+        let storages = (&hierarchy.1, &hierarchy.2);
+
+        let (parent_storage, child_storage) = storages;
+
+        println!("{:?}", storages.debug_tree(root));
     }
 }
