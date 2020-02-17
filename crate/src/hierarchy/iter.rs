@@ -1,4 +1,5 @@
 use shipyard::prelude::*;
+use std::collections::VecDeque;
 use super::*;
 
 pub struct ChildrenIter<C> {
@@ -81,13 +82,10 @@ where
     }
 }
 
-//TODO - FIXME!!
-//Push next level..
 pub struct DescendantsBreadthFirstIter<P, C> {
     pub parent_storage: P,
     pub child_storage: C,
-    //current parent, current child, sibling_index, num_siblings
-    pub cursor: Option<(EntityId, usize, usize)>,
+    pub cursors: VecDeque<(EntityId, usize)>,
 }
 
 impl<'a, P, C> Iterator for DescendantsBreadthFirstIter<P, C>
@@ -98,26 +96,26 @@ where
     type Item = EntityId;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.cursor.and_then(|(current_child, sibling_index, num_siblings)| {
-            let DescendantsBreadthFirstIter {parent_storage, child_storage, ..} = self;
-            if sibling_index < num_siblings {
-                let next_sibling = child_storage.get(current_child).unwrap().next;
-                if sibling_index == num_siblings-1 {
-                    //jump down to next level
-                    //since siblings cycle, the child of the "next" sibling is the child of the current parent's first child
-                    self.cursor = parent_storage.get(next_sibling).map_or(None, |next_parent| {
-                        Some((next_parent.first_child, 0, next_parent.num_children))
-                    });
-                } else {
-                    //keep going over siblings
-                    self.cursor = Some((next_sibling, sibling_index+1, num_siblings));
+        if let Some(cursor) = self.cursors.front_mut() {
+            let (entity, num_children) = cursor;
+            if *num_children > 0 {
+                *num_children -= 1;
+
+                let ret = *entity;
+
+                *entity = self.child_storage.get(ret).unwrap().next;
+
+                if let Ok(parent) = self.parent_storage.get(ret) {
+                    self.cursors.push_back((parent.first_child, parent.num_children));
                 }
-                println!("{:?}", current_child);
-                Some(current_child)
+                Some(ret)
             } else {
-                None
+                self.cursors.pop_front();
+                self.next()
             }
-        })
+        } else {
+            None
+        }
     }
 }
 
@@ -169,9 +167,13 @@ where
         DescendantsBreadthFirstIter {
             parent_storage,
             child_storage,
-            cursor: parent_storage
+            cursors: parent_storage
                 .get(id)
-                .map_or(None, |parent| Some((parent.first_child, 0, parent.num_children))),
+                .map_or_else(|_| VecDeque::new(), |parent| {
+                    let mut queue = VecDeque::new();
+                    queue.push_front((parent.first_child, parent.num_children));
+                    queue
+                }),
         }
     }
 /*
