@@ -4,11 +4,14 @@ use super::*;
 /*
     The type signatures here are a bit intense. Some help from leudz:
 
-    P: IntoIter let us call iter() on P. This will give us <P as IntoIter>::IntoIter, whatever that is
-    We specify that this type needs to be iterable with Shiperator, which is like an iterator over the components.
-    Specifically making it Shiperator lets us call try_for_each()
-    Finally CurrentId will allow us to use with_id() and the id has to be EntityId (e.g. it won't work with chunk iterators but we don't care about those)
-    */
+    * P: IntoIter let us call iter() on P. This will give us <P as IntoIter>::IntoIter, whatever that is
+    * We specify that this type needs to be iterable with Shiperator, which is like an iterator over the components.
+    * Specifically making it Shiperator lets us call try_for_each()
+    * Finally CurrentId will allow us to use with_id() and the id has to be EntityId (e.g. it won't work with chunk iterators but we don't care about those)
+
+    Also, I'm not entirely sure if the debug printing is entirely correct. It's tested a bit but I'm not super confident
+    Seems to work so far though!
+*/
 
 pub trait HierarchyIterDebug<'a, P, C> 
 {

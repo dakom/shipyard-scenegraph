@@ -1,24 +1,16 @@
 //Mostly copy/paste from https://leudz.github.io/shipyard/book/recipes/hierarchy.html
 mod iter;
 mod debug;
+mod components;
 
 use shipyard::prelude::*;
 
-pub use iter::*;
-pub use debug::*;
+pub use self::iter::*;
+pub use self::debug::*;
+pub use self::components::*;
 
-pub struct Parent {
-    pub num_children: usize,
-    pub first_child: EntityId,
-}
 
-pub struct Child {
-    pub parent: EntityId,
-    pub prev: EntityId,
-    pub next: EntityId,
-}
-
-pub trait Hierarchy {
+pub trait HierarchyMut {
     // Attaches an entity as a child to a given parent entity.
     fn attach(&mut self, id: EntityId, parent: EntityId);
 
@@ -36,12 +28,12 @@ pub trait Hierarchy {
 }
 
 //the storages we'll impl Hierarchy on
-pub type HierarchyStorages<'a> = (EntitiesViewMut<'a>, ViewMut<'a, Parent>, ViewMut<'a, Child>);
+pub type HierarchyStoragesMut<'a, 'b> = (&'b mut EntitiesViewMut<'a>, &'b mut ViewMut<'a, Parent>, &'b mut ViewMut<'a, Child>);
 
 // detach an entity from the hierarchy.
 // it's not on the trait since it's only for internal use
 // the public api is remove/remove_single 
-pub(super) fn detach (hierarchy: &mut HierarchyStorages, id: EntityId) {
+pub(super) fn detach (hierarchy: &mut HierarchyStoragesMut, id: EntityId) {
     let (_, parent_storage, child_storage) = hierarchy;
 
     // remove the Child component - if nonexistent, do nothing
@@ -66,7 +58,7 @@ pub(super) fn detach (hierarchy: &mut HierarchyStorages, id: EntityId) {
     }
 }
 
-impl Hierarchy for HierarchyStorages<'_> {
+impl HierarchyMut for HierarchyStoragesMut<'_, '_> {
     fn attach(&mut self, id: EntityId, parent: EntityId) {
         detach(self, id);
 
@@ -87,12 +79,12 @@ impl Hierarchy for HierarchyStorages<'_> {
             child_storage[next].prev = id;
 
             // add the Child component to the new entity
-            entities.add_component(child_storage, Child { parent, prev, next }, id);
+            entities.add_component(&mut **child_storage, Child { parent, prev, next }, id);
         } else {
             // in this case our designated parent is missing a Parent component
             // we don't need to change any links, just insert both components
             entities.add_component(
-                child_storage,
+                &mut **child_storage,
                 Child {
                     parent,
                     prev: id,
@@ -101,7 +93,7 @@ impl Hierarchy for HierarchyStorages<'_> {
                 id,
             );
             entities.add_component(
-                parent_storage,
+                &mut **parent_storage,
                 Parent {
                     num_children: 1,
                     first_child: id,
@@ -122,8 +114,8 @@ impl Hierarchy for HierarchyStorages<'_> {
     fn remove_single(&mut self, id: EntityId) {
         detach(self, id);
 
-        let (_, parent_storage, child_storage) = &self;
-        let children = (parent_storage, child_storage).children(id).collect::<Vec<_>>();
+        let (_, parent_storage, child_storage) = self;
+        let children = (&**parent_storage, &**child_storage).children(id).collect::<Vec<_>>();
         for child_id in children {
             detach(self, child_id);
         }
@@ -134,8 +126,8 @@ impl Hierarchy for HierarchyStorages<'_> {
 
 
     fn remove(&mut self, id: EntityId) {
-        let (_, parent_storage, child_storage) = &self;
-        for child_id in (parent_storage, child_storage).children(id).collect::<Vec<_>>() {
+        let (_, parent_storage, child_storage) = self;
+        for child_id in (&**parent_storage, &**child_storage).children(id).collect::<Vec<_>>() {
             self.remove(child_id);
         }
         self.remove_single(id);
@@ -147,7 +139,7 @@ impl Hierarchy for HierarchyStorages<'_> {
         F: FnMut(&EntityId, &EntityId) -> std::cmp::Ordering,
     {
         let (_, parent_storage, child_storage) = self;
-        let mut children = (&*parent_storage, &*child_storage).children(id).collect::<Vec<EntityId>>();
+        let mut children = (&**parent_storage, &**child_storage).children(id).collect::<Vec<EntityId>>();
         if children.len() > 1 {
             children.sort_by(|a, b| compare(a, b));
             // set first_child in Parent component
@@ -168,21 +160,20 @@ impl Hierarchy for HierarchyStorages<'_> {
 fn test_detach() {
     let world = World::new();
 
-    let mut hierarchy = world.borrow::<(EntitiesMut, &mut Parent, &mut Child)>();
+    let mut storages = world.borrow::<(EntitiesMut, &mut Parent, &mut Child)>();
 
-    let entities = &mut hierarchy.0;
-
-    let root1 = entities.add_entity((), ());
-
+    let root1 = storages.0.add_entity((), ());
+    let mut hierarchy = (&mut storages.0, &mut storages.1, &mut storages.2);
     let e1 = hierarchy.attach_new(root1);
     let e2 = hierarchy.attach_new(e1);
 
     detach(&mut hierarchy, e1);
 
     {
-        let storages = (&hierarchy.1, &hierarchy.2);
+        let storages = (&*hierarchy.1, &*hierarchy.2);
         assert!(storages.descendants_depth_first(root1).eq(None));
         assert!(storages.ancestors(e1).eq(None));
         assert!(storages.children(e1).eq([e2].iter().cloned()));
+
     }
 }

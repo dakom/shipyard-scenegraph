@@ -1,11 +1,14 @@
 use shipyard::prelude::*;
 use shipyard_scenegraph::*;
 use std::collections::HashMap;
+
 #[test]
 fn test_hierarchy() {
     let world = World::new();
 
-    let mut hierarchy = world.borrow::<(EntitiesMut, &mut Parent, &mut Child)>();
+    let mut storages = world.borrow::<(EntitiesMut, &mut Parent, &mut Child)>();
+
+    let mut hierarchy = (&mut storages.0, &mut storages.1, &mut storages.2);
 
     let entities = &mut hierarchy.0;
 
@@ -22,7 +25,7 @@ fn test_hierarchy() {
     let e5 = hierarchy.attach_new(e3);
 
     {
-        let storages = (&hierarchy.1, &hierarchy.2);
+        let storages = (&*hierarchy.1, &*hierarchy.2);
 
         assert!(storages.children(e3).eq([e4, e5].iter().cloned()));
         assert!(storages.ancestors(e4).eq([e3, root2].iter().cloned()));
@@ -34,14 +37,14 @@ fn test_hierarchy() {
     hierarchy.remove_single(e1);
 
     {
-        let storages = (&hierarchy.1, &hierarchy.2);
+        let storages = (&*hierarchy.1, &*hierarchy.2);
         assert!(storages.children(e1).eq(None));
     }
 
     hierarchy.remove(root2);
 
     {
-        let storages = (&hierarchy.1, &hierarchy.2);
+        let storages = (&*hierarchy.1, &*hierarchy.2);
         assert!(storages.descendants_depth_first(root2).eq(None));
         assert!(storages.descendants_depth_first(e3).eq(None));
         assert!(storages.ancestors(e5).eq(None));
@@ -54,6 +57,8 @@ fn test_sorting_depth_first() {
     let world = World::new();
 
     let (mut hierarchy, mut usizes) = world.borrow::<((EntitiesMut, &mut Parent, &mut Child), &mut usize)>();
+
+    let mut hierarchy = (&mut hierarchy.0, &mut hierarchy.1, &mut hierarchy.2);
 
     let root = {
         let entities = &mut hierarchy.0;
@@ -76,14 +81,14 @@ fn test_sorting_depth_first() {
     }
 
     {
-        let storages = (&hierarchy.1, &hierarchy.2);
+        let storages = (&*hierarchy.1, &*hierarchy.2);
         assert!(storages.children(root).eq([e0, e1, e2, e3, e4].iter().cloned()));
     }
 
     hierarchy.sort_children_by(root, |a, b| usizes[*a].cmp(&usizes[*b]));
 
     {
-        let storages = (&hierarchy.1, &hierarchy.2);
+        let storages = (&*hierarchy.1, &*hierarchy.2);
         assert!(storages.children(root).eq([e3, e4, e1, e2, e0].iter().cloned()));
     }
 }
@@ -134,6 +139,7 @@ fn create_world_tree() -> (World, TestEntities, HashMap<EntityId, &'static str>)
     let entities = {
         let mut hierarchy = world.borrow::<(EntitiesMut, &mut Parent, &mut Child)>();
 
+        let mut hierarchy = (&mut hierarchy.0, &mut hierarchy.1, &mut hierarchy.2);
         let entities = &mut hierarchy.0;
 
         
@@ -198,6 +204,7 @@ fn test_debug_print() {
 
     let mut hierarchy = world.borrow::<(EntitiesMut, &mut Parent, &mut Child)>();
 
+    let mut hierarchy = (&mut hierarchy.0, &mut hierarchy.1, &mut hierarchy.2);
     let entities = &mut hierarchy.0;
 
     let root = entities.add_entity((), ());
@@ -215,7 +222,7 @@ fn test_debug_print() {
 
 
     {
-        let storages = (&hierarchy.1, &hierarchy.2);
+        let storages = (&*hierarchy.1, &*hierarchy.2);
         assert_eq!(EXPECTED_DEBUG_TREE_1, format!("{:?}", storages.debug_tree(root, |e| format!("{:?}", e))));
     }
 
@@ -226,6 +233,7 @@ fn test_debug_print() {
         let (parent_storage, child_storage) = world.borrow::<(&Parent, &Child)>();
         let storages = (&parent_storage, &child_storage);
         assert_eq!(EXPECTED_DEBUG_TREE_2, format!("{:?}", storages.debug_tree(entities.0, |e| labels.get(&e).unwrap().to_string())));
+        //println!("{:?}", storages.debug_tree(entities.0, |e| labels.get(&e).unwrap().to_string()));
     }
 }
 

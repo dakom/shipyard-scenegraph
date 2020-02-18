@@ -22,10 +22,11 @@ pub fn run (
     mut world_transforms: &mut WorldTransform, 
 ) {
     //TODO - only if dirty
+    //Account for hierarchy
+    //So maybe we need a custom iterator
     (&local_transforms, &mut world_transforms)
         .iter()
         .for_each(|(local, world)| {
-            //TODO - account for hierarchy!!
             world.0.copy_from(&local.0);
     });
 }

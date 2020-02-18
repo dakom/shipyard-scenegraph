@@ -1,7 +1,7 @@
 use super::*;
 
 #[repr(C)]
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Quat {
     pub x: f64,
     pub y: f64,

@@ -19,7 +19,7 @@ pub enum MatrixError {
 }
 
 #[repr(C)]
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Matrix4 (
     pub f64,
     pub f64,
