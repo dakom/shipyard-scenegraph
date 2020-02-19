@@ -61,10 +61,11 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
             scene_renderer
         ));
 
+        systems::register_workloads(&world);
+
         let root = sg::init(&world);
         create_squares(&world, root, stage_width as f64, stage_height as f64);
 
-        systems::register_workloads(&world);
         let on_resize = {
             let window = window.clone();
             let world = Rc::clone(&world);
@@ -108,14 +109,13 @@ fn create_squares(world:&World, root:EntityId, stage_width: f64, stage_height: f
         let entity = sg::spawn_child(
             world, 
             parent,
-            Some(sg::Vec3::new(
-                    0.5 * (stage_width - (width as f64)), 
-                    0.5 * (stage_height - (height as f64)),
-                    -1.0
-            )),
+            Some(sg::Vec3::new(0.5 * (stage_width - (width as f64)), 0.5 * (stage_height - (height as f64)), depth)),
+            //Some(sg::Vec3::new(0.0, 0.0, depth)),
             None,
-            Some(sg::Vec3::new(width as f64, height as f64, 1.0))
+            None,
         );
+
+        depth = 1.0;
 
         {
             let (entities, mut areas, mut colors) = world.borrow::<(EntitiesMut, &mut ImageArea, &mut Color)>();
@@ -131,8 +131,23 @@ fn create_squares(world:&World, root:EntityId, stage_width: f64, stage_height: f
 
     let square = create_square(root, 400, 400, 1.0, 0.0, 0.0);
     let square = create_square(square, 200, 200, 0.0, 1.0, 0.0);
-    let square = create_square(square, 100, 100, 0.0, 0.0, 1.0);
-    //sg::sort_pack_by_depth_front_to_back(world);
+    //let square = create_square(square, 100, 100, 0.0, 0.0, 1.0);
+
+    {
+        world.run_workload(TICK);
+        use shipyard_scenegraph::HierarchyIterDebug;
+        fn get_translation(mat:&sg::Matrix4) -> sg::Vec3 {
+            sg::Vec3::new(mat.12, mat.13, mat.14)
+        }
+        let (parent_storage, child_storage, translation_storage, world_storage) = world.borrow::<(&sg::Parent, &sg::Child, &sg::Translation, &sg::WorldTransform)>();
+        let storages = (&parent_storage, &child_storage);
+        log::info!("{:?}", storages.debug_tree(root, |e| {
+            format!("Local: {:?} World: {:?}", 
+                &(&translation_storage).get(e).unwrap().0,
+                get_translation(&(&world_storage).get(e).unwrap().0)
+            )
+        }));
+    }
 }
 
 /// Until Raf is availble in gloo...

@@ -5,7 +5,7 @@ use std::collections::HashMap;
 #[test]
 fn test_transform() {
     let (world, entities, labels) = create_scene_graph();
-    let root = entities.0;
+    let (root, a,b,c,d,e,f,g,h,i,j,k,l,m,n) = entities;
 
     {
 
@@ -17,7 +17,6 @@ fn test_transform() {
             (&translations, &rotations, &scales, &local_transforms, &world_transforms)
                 .iter()
                 .with_id()
-                .filter(|(id, data)| *id != root)
                 .for_each(|(id, data)| {
                     let (translation, rotation, scale, local_transform, world_transform) = (&(data.0).0, &(data.1).0, &(data.2).0, &(data.3).0, &(data.4).0);
                     assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(local_transform));
@@ -34,13 +33,19 @@ fn test_transform() {
             (&translations, &rotations, &scales, &local_transforms, &world_transforms)
                 .iter()
                 .with_id()
-                .filter(|(id, data)| *id != root)
                 .for_each(|(id, data)| {
                     let (translation, rotation, scale, local_transform, world_transform) = (&(data.0).0, &(data.1).0, &(data.2).0, &(data.3).0, &(data.4).0);
-                    assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(local_transform));
+
+                    if id == root {
+                        assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(local_transform));
+                    } else if id == g || id == j {
+                        assert_eq!(Vec3::new(20.0, 0.0, 0.0), get_translation(local_transform));
+                    } else {
+                        assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(local_transform));
+                    }
+
                     assert_eq!(*translation, get_translation(local_transform));
                     assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(world_transform));
-                    //println!("{:?} {:?}", id, translation);
                 }); 
         }
         
@@ -53,10 +58,15 @@ fn test_transform() {
             (&translations, &rotations, &scales, &local_transforms, &world_transforms)
                 .iter()
                 .with_id()
-                .filter(|(id, data)| *id != root)
                 .for_each(|(id, data)| {
                     let (translation, rotation, scale, local_transform, world_transform) = (&(data.0).0, &(data.1).0, &(data.2).0, &(data.3).0, &(data.4).0);
-                    assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(local_transform));
+                    if id == root {
+                        assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(local_transform));
+                    } else if id == g || id == j {
+                        assert_eq!(Vec3::new(20.0, 0.0, 0.0), get_translation(local_transform));
+                    } else {
+                        assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(local_transform));
+                    }
                     assert_eq!(*translation, get_translation(local_transform));
                     //println!("{:?} {:?}", id, translation);
                 }); 
@@ -81,7 +91,6 @@ fn test_transform() {
         {
             let world_storage = world.borrow::<&WorldTransform>();
 
-            let (root, a,b,c,d,e,f,g,h,i,j,k,l,m,n) = entities;
 
             let world_transform = (&world_storage).get(root).unwrap();
             assert_eq!(Vec3::new(0.0,0.0, 0.0), get_translation(&world_transform.0));
@@ -95,11 +104,38 @@ fn test_transform() {
             let world_transform = (&world_storage).get(c).unwrap();
             assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
 
-            //TODO - this should pass!
             let world_transform = (&world_storage).get(d).unwrap();
             assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
 
-            //TODO - continue for rest of alphabet
+            let world_transform = (&world_storage).get(e).unwrap();
+            assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
+
+            let world_transform = (&world_storage).get(f).unwrap();
+            assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
+
+            let world_transform = (&world_storage).get(g).unwrap();
+            assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
+
+            let world_transform = (&world_storage).get(h).unwrap();
+            assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
+
+            let world_transform = (&world_storage).get(i).unwrap();
+            assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
+
+            let world_transform = (&world_storage).get(j).unwrap();
+            assert_eq!(Vec3::new(50.0,0.0, 0.0), get_translation(&world_transform.0));
+
+            let world_transform = (&world_storage).get(k).unwrap();
+            assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform.0));
+            
+            let world_transform = (&world_storage).get(l).unwrap();
+            assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform.0));
+
+            let world_transform = (&world_storage).get(m).unwrap();
+            assert_eq!(Vec3::new(60.0,0.0, 0.0), get_translation(&world_transform.0));
+
+            let world_transform = (&world_storage).get(n).unwrap();
+            assert_eq!(Vec3::new(70.0,0.0, 0.0), get_translation(&world_transform.0));
         }
 
     }
@@ -139,11 +175,11 @@ fn create_scene_graph() -> (World, TestEntities, HashMap<EntityId, &'static str>
         let d = sg::spawn_child(&world, a, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
         let e = sg::spawn_child(&world, a, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
         let f = sg::spawn_child(&world, c, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let g = sg::spawn_child(&world, c, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
+        let g = sg::spawn_child(&world, c, Some(Vec3::new(20.0, 0.0, 0.0)), None, None);
         let h = sg::spawn_child(&world, d, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
         let i = sg::spawn_child(&world, d, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
         let l = sg::spawn_child(&world, h, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let j = sg::spawn_child(&world, g, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
+        let j = sg::spawn_child(&world, g, Some(Vec3::new(20.0, 0.0, 0.0)), None, None);
         let m = sg::spawn_child(&world, j, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
         let k = sg::spawn_child(&world, g, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
         let n = sg::spawn_child(&world, m, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);

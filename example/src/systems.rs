@@ -1,5 +1,5 @@
 use shipyard::prelude::*;
-use shipyard_scenegraph::{WorldTransform, TransformValues, systems as sg_systems};
+use shipyard_scenegraph::{self as sg, *};
 use rand::prelude::*;
 use crate::components::*;
 use crate::geometry::*;
@@ -8,7 +8,7 @@ use crate::config::*;
 pub const TICK:&'static str = "TICK";
 
 pub fn register_workloads(world:&World) {
-    world.add_workload::<(sg_systems::TrsToLocal, sg_systems::LocalToWorld, Render), _>(TICK); 
+    world.add_workload::<(sg::systems::TrsToLocal, sg::systems::LocalToWorld, Render), _>(TICK); 
 }
 
 #[system(Render)]
@@ -23,10 +23,11 @@ pub fn run (
 
     let mut scratch:[f32;16] = [0.0;16];
 
-    (&world_transforms, &colors)
+    (&world_transforms, &img_areas, &colors)
         .iter()
-        .for_each(|(transform, color)| {
+        .for_each(|(transform, img_area, color)| {
             transform.0.write_to_vf32(&mut scratch);
-            renderer.draw_square(&scratch, color).unwrap();
-    });
+            renderer.draw_square(&scratch, &img_area.0, color).unwrap();
+        });
+
 }

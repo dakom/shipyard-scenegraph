@@ -74,16 +74,15 @@ impl SceneRenderer {
         let renderer = &mut self.renderer;
         let SceneIds {program_id} = self.ids;
 
-        //set blend mode. this will be a noop internally if already set
         renderer.toggle(GlToggle::Blend, true);
-        renderer.toggle(GlToggle::DepthTest, false);
+        renderer.toggle(GlToggle::DepthTest, true);
         renderer.set_blend_func(BlendFactor::SrcAlpha, BlendFactor::OneMinusSrcAlpha);
 
         //will already be activated but internally that's a noop if true
         renderer.activate_program(program_id)?;
 
         //Build our matrices (must cast to f32)
-        let camera_mat = Matrix4::new_orthographic( 0.0, stage_area.width as f32, 0.0, stage_area.height as f32, 0.0, 100.0);
+        let camera_mat = Matrix4::new_orthographic( 0.0, stage_area.width as f32, 0.0, stage_area.height as f32, -100.0, 100.0);
 
         //Upload them to the GPU
         renderer.upload_uniform_mat_4("u_camera", &camera_mat.as_slice())?;
@@ -91,7 +90,7 @@ impl SceneRenderer {
         Ok(())
     }
 
-    pub fn draw_square(&mut self, model_mat:&[f32], color:&Color) -> Result<(), awsm_web::errors::Error> {
+    pub fn draw_square(&mut self, model_mat:&[f32], img_area:&Area, color:&Color) -> Result<(), awsm_web::errors::Error> {
 
         let renderer = &mut self.renderer;
         /*
@@ -101,6 +100,7 @@ impl SceneRenderer {
         let complete_model = model_mat * scaling_mat;
         */
         renderer.upload_uniform_mat_4("u_model", &model_mat)?;
+        renderer.upload_uniform_fvals_2("u_size", img_area.get_tuple())?;
         //renderer.upload_uniform_mat_4("u_size", &scaling_mat.as_slice())?;
         renderer.upload_uniform_fvals_4("u_color", color.get_tuple())?;
 

@@ -5,6 +5,11 @@ pub struct Area {
     pub width: u32,
     pub height: u32 
 }
+impl Area {
+    pub fn get_tuple(&self) -> (f32, f32) {
+        (self.width as f32, self.height as f32)
+    }
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct Bounds {

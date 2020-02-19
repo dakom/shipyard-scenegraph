@@ -5,6 +5,7 @@ use crate::geometry::*;
 //re-exported so its easier to just use components::*
 pub use crate::renderer::SceneRenderer;
 
+#[derive(Clone)]
 pub struct Color (pub f64, pub f64, pub f64, pub f64); 
 impl Color {
     pub fn get_tuple(&self) -> (f32, f32, f32, f32) {
