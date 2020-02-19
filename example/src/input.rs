@@ -1,13 +1,12 @@
 use crate::components::*;
 use crate::geometry::*;
-use shipyard_scenegraph::{Vec3, Translation};
+use shipyard_scenegraph::{Vec3, Matrix4, Translation, WorldTransform};
 use std::rc::{Rc};
 use gloo_events::{EventListener};
 use web_sys::{Event, MouseEvent};
 use shipyard::prelude::*;
 use web_sys::{HtmlCanvasElement};
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
-
 pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
     EventListener::new(canvas, "pointerdown", {
         let world = Rc::clone(&world);
@@ -17,14 +16,21 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
             let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
             let mouse_point = get_point(&stage_area, &event);
 
-            let (positions, areas) = world.borrow::<(&Translation, &ImageArea)>();
+            let (positions, areas) = world.borrow::<(&WorldTransform, &ImageArea)>();
 
-            let hits:Vec<(EntityId, Vec3)> = (&positions, &areas)
-                .iter()
-                .with_id()
-                .filter(|(id, (pos, obj_area))| get_bounds(&pos.0, &obj_area.0, &stage_area).contains(&mouse_point))
-                .map(|(id, (pos, obj_area))| (id, pos.0.clone()))
-                .collect();
+            let hits:Vec<(EntityId, Vec3)> = 
+                (&positions, &areas)
+                    .iter()
+                    .with_id()
+                    .map(|(id, (transform, obj_area))| {
+                        //get the position from world matrix
+                        let mat = &transform.0;
+                        let pos = Vec3::new(mat.12, mat.13, mat.14);
+                        (id,  pos, obj_area.0)
+                    })
+                    .filter(|(id, pos, obj_area)| get_bounds(&pos, &obj_area, &stage_area).contains(&mouse_point))
+                    .map(|(id, pos, obj_area)| (id, pos))
+                    .collect();
            
             hits.last().map(|(id, pos)| {
                 *world.borrow::<Unique<&mut Controller>>() = Controller::Selected(*id); 

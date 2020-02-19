@@ -109,8 +109,13 @@ fn create_squares(world:&World, root:EntityId, stage_width: f64, stage_height: f
         let entity = sg::spawn_child(
             world, 
             parent,
-            Some(sg::Vec3::new(0.5 * (stage_width - (width as f64)), 0.5 * (stage_height - (height as f64)), depth)),
-            //Some(sg::Vec3::new(0.0, 0.0, depth)),
+            Some(
+                if parent == root {
+                    sg::Vec3::new(0.5 * (stage_width - (width as f64)), 0.5 * (stage_height - (height as f64)), depth)
+                } else {
+                    sg::Vec3::new((width as f64)/2.0, (height as f64)/2.0, depth)
+                }
+            ),
             None,
             None,
         );
@@ -131,8 +136,9 @@ fn create_squares(world:&World, root:EntityId, stage_width: f64, stage_height: f
 
     let square = create_square(root, 400, 400, 1.0, 0.0, 0.0);
     let square = create_square(square, 200, 200, 0.0, 1.0, 0.0);
-    //let square = create_square(square, 100, 100, 0.0, 0.0, 1.0);
+    let _square = create_square(square, 100, 100, 0.0, 0.0, 1.0);
 
+    /*
     {
         world.run_workload(TICK);
         use shipyard_scenegraph::HierarchyIterDebug;
@@ -148,6 +154,7 @@ fn create_squares(world:&World, root:EntityId, stage_width: f64, stage_height: f
             )
         }));
     }
+    */
 }
 
 /// Until Raf is availble in gloo...
