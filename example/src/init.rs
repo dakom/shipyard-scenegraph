@@ -61,7 +61,8 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
             scene_renderer
         ));
 
-        create_squares(&world, stage_width as f64, stage_height as f64);
+        let root = sg::init(&world);
+        create_squares(&world, root, stage_width as f64, stage_height as f64);
 
         systems::register_workloads(&world);
         let on_resize = {
@@ -98,18 +99,19 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
     Ok(future_to_promise(future))
 }
 
-fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
+fn create_squares(world:&World, root:EntityId, stage_width: f64, stage_height: f64) {
 
 
     let mut depth = 0.0;
-    let mut create_square = |width: u32, height: u32, r: f64, g: f64, b: f64| {
+    let mut create_square = |parent:EntityId, width: u32, height: u32, r: f64, g: f64, b: f64| -> EntityId {
 
-        let entity = sg::create_entity(
+        let entity = sg::spawn_child(
             world, 
+            parent,
             Some(sg::Vec3::new(
                     0.5 * (stage_width - (width as f64)), 
                     0.5 * (stage_height - (height as f64)),
-                    depth
+                    -1.0
             )),
             None,
             Some(sg::Vec3::new(width as f64, height as f64, 1.0))
@@ -124,13 +126,13 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
             );
         }
 
-        depth -= 1.0;
+        entity
     };
 
-    create_square(400, 400, 1.0, 0.0, 0.0);
-    create_square(200, 200, 0.0, 1.0, 0.0);
-    create_square(100, 100, 0.0, 0.0, 1.0);
-    sg::sort_pack_by_depth_front_to_back(world);
+    let square = create_square(root, 400, 400, 1.0, 0.0, 0.0);
+    let square = create_square(square, 200, 200, 0.0, 1.0, 0.0);
+    let square = create_square(square, 100, 100, 0.0, 0.0, 1.0);
+    //sg::sort_pack_by_depth_front_to_back(world);
 }
 
 /// Until Raf is availble in gloo...

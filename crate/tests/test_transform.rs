@@ -63,6 +63,7 @@ fn test_transform() {
         }
 
         //debugging - print tree with transforms
+        /*
         {
             let (parent_storage, child_storage, translation_storage, world_storage) = world.borrow::<(&Parent, &Child, &Translation, &WorldTransform)>();
             let storages = (&parent_storage, &child_storage);
@@ -74,6 +75,7 @@ fn test_transform() {
                 )
             }));
         }
+        */
 
         //check all the world transforms
         {

@@ -14,8 +14,6 @@ pub fn init_world(stage_area:Area,renderer:SceneRenderer) -> World {
     {
         let (mut areas, mut colors) = world.borrow::<(&mut ImageArea, &mut Color)>();
         (&mut areas, &mut colors).tight_pack();
-
-        shipyard_scenegraph::init(&world);
     }
 
     world

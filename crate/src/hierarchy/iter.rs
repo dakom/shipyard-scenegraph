@@ -130,8 +130,8 @@ pub trait HierarchyIter<'a, P, C>
 impl<'a, P, C> HierarchyIter<'a, P, C> for (P, C)
 where
     P: GetComponent<Out = &'a Parent> + Copy,
-    //<P as IntoIter>::IntoIter: Shiperator + CurrentId<Id = EntityId>,
     C: GetComponent<Out = &'a Child> + Copy,
+    //<P as IntoIter>::IntoIter: Shiperator + CurrentId<Id = EntityId>,
     //<C as IntoIter>::IntoIter: Shiperator + CurrentId<Id = EntityId>,
 {
     fn ancestors(&self, id: EntityId) -> AncestorIter<C> {
