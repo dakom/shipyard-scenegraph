@@ -7,137 +7,157 @@ fn test_transform() {
     let (world, entities, labels) = create_scene_graph();
     let (root, a,b,c,d,e,f,g,h,i,j,k,l,m,n) = entities;
 
+    //adding the entities marks them as dirty
     {
+        let (translations, rotations, scales) = world.borrow::<(&Translation, &Rotation, &Scale)>(); 
 
+        let tlen = translations.inserted_or_modified().len();
+        let rlen = rotations.inserted_or_modified().len();
+        let slen = scales.inserted_or_modified().len();
 
-        //when first added - notes do not have their local_transform updated
-        {
-            let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(&Translation, &Rotation, &Scale, &LocalTransform, &WorldTransform)>(); 
+        assert_eq!(tlen, 15);
+        assert_eq!(tlen, rlen);
+        assert_eq!(tlen, slen);
+    }
 
-            (&translations, &rotations, &scales, &local_transforms, &world_transforms)
-                .iter()
-                .with_id()
-                .for_each(|(id, data)| {
-                    let (translation, rotation, scale, local_transform, world_transform) = (&(data.0).0, &(data.1).0, &(data.2).0, &(data.3).0, &(data.4).0);
+    //when first added - notes do not have their local_transform updated
+    {
+        let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(&Translation, &Rotation, &Scale, &LocalTransform, &WorldTransform)>(); 
+
+        (&translations, &rotations, &scales, &local_transforms, &world_transforms)
+            .iter()
+            .with_id()
+            .for_each(|(id, data)| {
+                let (translation, rotation, scale, local_transform, world_transform) = (&(data.0).0, &(data.1).0, &(data.2).0, &(data.3).0, &(data.4).0);
+                assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(local_transform));
+                //println!("{:?} {:?}", id, translation);
+            }); 
+    }
+
+    //update local_transform - world_transform should be unchanged
+    world.run_system::<sg::systems::TrsToLocal>();
+
+    //this now unmarks the local transforms as dirty
+    {
+        let (translations, rotations, scales) = world.borrow::<(&Translation, &Rotation, &Scale)>(); 
+
+        let tlen = translations.inserted_or_modified().len();
+        let rlen = rotations.inserted_or_modified().len();
+        let slen = scales.inserted_or_modified().len();
+
+        assert_eq!(tlen, 0);
+        assert_eq!(tlen, rlen);
+        assert_eq!(tlen, slen);
+    }
+    //now local_transform should match (world_transform is unchanged)
+    {
+        let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(&Translation, &Rotation, &Scale, &LocalTransform, &WorldTransform)>(); 
+        (&translations, &rotations, &scales, &local_transforms, &world_transforms)
+            .iter()
+            .with_id()
+            .for_each(|(id, data)| {
+                let (translation, rotation, scale, local_transform, world_transform) = (&(data.0).0, &(data.1).0, &(data.2).0, &(data.3).0, &(data.4).0);
+
+                if id == root {
                     assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(local_transform));
-                    //println!("{:?} {:?}", id, translation);
-                }); 
-        }
+                } else if id == g || id == j {
+                    assert_eq!(Vec3::new(20.0, 0.0, 0.0), get_translation(local_transform));
+                } else {
+                    assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(local_transform));
+                }
 
-        //update local_transform - world_transform should be unchanged
-        world.run_system::<sg::systems::TrsToLocal>();
+                assert_eq!(*translation, get_translation(local_transform));
+                assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(world_transform));
+            }); 
+    }
+    
+    //update world_transforms
+    world.run_system::<sg::systems::LocalToWorld>();
 
-        //now local_transform should match (world_transform is unchanged)
-        {
-            let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(&Translation, &Rotation, &Scale, &LocalTransform, &WorldTransform)>(); 
-            (&translations, &rotations, &scales, &local_transforms, &world_transforms)
-                .iter()
-                .with_id()
-                .for_each(|(id, data)| {
-                    let (translation, rotation, scale, local_transform, world_transform) = (&(data.0).0, &(data.1).0, &(data.2).0, &(data.3).0, &(data.4).0);
+    //local_transfrom should not be affected
+    {
+        let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(&Translation, &Rotation, &Scale, &LocalTransform, &WorldTransform)>(); 
+        (&translations, &rotations, &scales, &local_transforms, &world_transforms)
+            .iter()
+            .with_id()
+            .for_each(|(id, data)| {
+                let (translation, rotation, scale, local_transform, world_transform) = (&(data.0).0, &(data.1).0, &(data.2).0, &(data.3).0, &(data.4).0);
+                if id == root {
+                    assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(local_transform));
+                } else if id == g || id == j {
+                    assert_eq!(Vec3::new(20.0, 0.0, 0.0), get_translation(local_transform));
+                } else {
+                    assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(local_transform));
+                }
+                assert_eq!(*translation, get_translation(local_transform));
+                //println!("{:?} {:?}", id, translation);
+            }); 
+    }
 
-                    if id == root {
-                        assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(local_transform));
-                    } else if id == g || id == j {
-                        assert_eq!(Vec3::new(20.0, 0.0, 0.0), get_translation(local_transform));
-                    } else {
-                        assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(local_transform));
-                    }
+    //debugging - print tree with transforms
+    /*
+    {
+        let (parent_storage, child_storage, translation_storage, world_storage) = world.borrow::<(&Parent, &Child, &Translation, &WorldTransform)>();
+        let storages = (&parent_storage, &child_storage);
+        println!("{:?}", storages.debug_tree(entities.0, |e| {
+            format!("{:?}: Local: {:?} World: {:?}", 
+                labels.get(&e).unwrap(), 
+                &(&translation_storage).get(e).unwrap().0,
+                get_translation(&(&world_storage).get(e).unwrap().0)
+            )
+        }));
+    }
+    */
 
-                    assert_eq!(*translation, get_translation(local_transform));
-                    assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(world_transform));
-                }); 
-        }
+    //check all the world transforms
+    {
+        let world_storage = world.borrow::<&WorldTransform>();
+
+
+        let world_transform = (&world_storage).get(root).unwrap();
+        assert_eq!(Vec3::new(0.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(a).unwrap();
+        assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(b).unwrap();
+        assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(c).unwrap();
+        assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(d).unwrap();
+        assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(e).unwrap();
+        assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(f).unwrap();
+        assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(g).unwrap();
+        assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(h).unwrap();
+        assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(i).unwrap();
+        assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(j).unwrap();
+        assert_eq!(Vec3::new(50.0,0.0, 0.0), get_translation(&world_transform.0));
+
+        let world_transform = (&world_storage).get(k).unwrap();
+        assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform.0));
         
-        //update world_transforms
-        world.run_system::<sg::systems::LocalToWorld>();
+        let world_transform = (&world_storage).get(l).unwrap();
+        assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        //local_transfrom should not be affected
-        {
-            let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(&Translation, &Rotation, &Scale, &LocalTransform, &WorldTransform)>(); 
-            (&translations, &rotations, &scales, &local_transforms, &world_transforms)
-                .iter()
-                .with_id()
-                .for_each(|(id, data)| {
-                    let (translation, rotation, scale, local_transform, world_transform) = (&(data.0).0, &(data.1).0, &(data.2).0, &(data.3).0, &(data.4).0);
-                    if id == root {
-                        assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(local_transform));
-                    } else if id == g || id == j {
-                        assert_eq!(Vec3::new(20.0, 0.0, 0.0), get_translation(local_transform));
-                    } else {
-                        assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(local_transform));
-                    }
-                    assert_eq!(*translation, get_translation(local_transform));
-                    //println!("{:?} {:?}", id, translation);
-                }); 
-        }
+        let world_transform = (&world_storage).get(m).unwrap();
+        assert_eq!(Vec3::new(60.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        //debugging - print tree with transforms
-        /*
-        {
-            let (parent_storage, child_storage, translation_storage, world_storage) = world.borrow::<(&Parent, &Child, &Translation, &WorldTransform)>();
-            let storages = (&parent_storage, &child_storage);
-            println!("{:?}", storages.debug_tree(entities.0, |e| {
-                format!("{:?}: Local: {:?} World: {:?}", 
-                    labels.get(&e).unwrap(), 
-                    &(&translation_storage).get(e).unwrap().0,
-                    get_translation(&(&world_storage).get(e).unwrap().0)
-                )
-            }));
-        }
-        */
-
-        //check all the world transforms
-        {
-            let world_storage = world.borrow::<&WorldTransform>();
-
-
-            let world_transform = (&world_storage).get(root).unwrap();
-            assert_eq!(Vec3::new(0.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(a).unwrap();
-            assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(b).unwrap();
-            assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(c).unwrap();
-            assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(d).unwrap();
-            assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(e).unwrap();
-            assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(f).unwrap();
-            assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(g).unwrap();
-            assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(h).unwrap();
-            assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(i).unwrap();
-            assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(j).unwrap();
-            assert_eq!(Vec3::new(50.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(k).unwrap();
-            assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform.0));
-            
-            let world_transform = (&world_storage).get(l).unwrap();
-            assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(m).unwrap();
-            assert_eq!(Vec3::new(60.0,0.0, 0.0), get_translation(&world_transform.0));
-
-            let world_transform = (&world_storage).get(n).unwrap();
-            assert_eq!(Vec3::new(70.0,0.0, 0.0), get_translation(&world_transform.0));
-        }
-
+        let world_transform = (&world_storage).get(n).unwrap();
+        assert_eq!(Vec3::new(70.0,0.0, 0.0), get_translation(&world_transform.0));
     }
 }
 

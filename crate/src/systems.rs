@@ -1,20 +1,55 @@
 use shipyard::prelude::*;
+use std::collections::HashSet;
 use crate::transform::*;
 use crate::hierarchy::*;
 
 #[system(TrsToLocal)]
 pub fn run (
-    translations: &Translation, 
-    rotations: &Rotation, 
-    scales: &Scale,
+    mut translations: &mut Translation, 
+    mut rotations: &mut Rotation, 
+    mut scales: &mut Scale,
     mut local_transforms: &mut LocalTransform, 
 ) {
-    //TODO - only if dirty
-    (&translations, &rotations, &scales, &mut local_transforms)
+    let mut unique_ids = HashSet::<EntityId>::new();
+
+    translations
+        .inserted_or_modified()
         .iter()
-        .for_each(|(translation, rotation, scale, local_transform)| {
+        .with_id()
+        .map(|(id, _)| id)
+        .into_iter()
+        .zip(
+            rotations 
+                .inserted_or_modified()
+                .iter()
+                .with_id()
+                .map(|(id, _)| id)
+                .into_iter()
+        )
+        .zip(
+            scales 
+                .inserted_or_modified()
+                .iter()
+                .with_id()
+                .map(|(id, _)| id)
+                .into_iter()
+        )
+        .for_each(|((t, r), s)| {
+            unique_ids.insert(t);
+            unique_ids.insert(r);
+            unique_ids.insert(s);
+        });
+
+    unique_ids
+        .iter()
+        .for_each(|id| {
+            let (translation, rotation, scale, local_transform) = (&translations, &rotations, &scales, &mut local_transforms).get(*id).unwrap();
             local_transform.0.reset_from_trs(&translation.0, &rotation.0, &scale.0);
-    });
+        });
+
+    translations.clear_inserted_and_modified();
+    rotations.clear_inserted_and_modified();
+    scales.clear_inserted_and_modified();
 }
 
 #[system(LocalToWorld)]

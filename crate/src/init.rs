@@ -46,5 +46,10 @@ pub fn init(world:&World) -> EntityId {
 
     world.add_unique(TransformRoot(id));
 
+    let (mut translations,mut rotations,mut scales) = world.borrow::<( &mut Translation, &mut Rotation, &mut Scale)>();
+    translations.update_pack();
+    rotations.update_pack();
+    scales.update_pack();
+
     id
 }

@@ -9,7 +9,6 @@ pub use self::iter::*;
 pub use self::debug::*;
 pub use self::components::*;
 
-
 pub trait HierarchyMut {
     // Attaches an entity as a child to a given parent entity.
     fn attach(&mut self, id: EntityId, parent: EntityId);
