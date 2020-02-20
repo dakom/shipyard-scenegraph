@@ -13,3 +13,5 @@ pub struct Scale(pub Vec3);
 pub struct LocalTransform(pub Matrix4);
 #[derive(Debug)]
 pub struct WorldTransform(pub Matrix4);
+#[derive(Debug)]
+pub struct DirtyTransform(pub bool);

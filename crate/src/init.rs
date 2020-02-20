@@ -8,7 +8,6 @@ pub fn init(world:&World) -> EntityId {
     let local_matrix = Matrix4::default(); 
     let world_matrix = Matrix4::default();
 
-    
     let id = {
         let (
             mut entities,
@@ -16,7 +15,8 @@ pub fn init(world:&World) -> EntityId {
             mut rotations,
             mut scales,
             mut local_transforms,
-            mut world_transforms
+            mut world_transforms,
+            mut dirty_transforms
         ) = world.borrow::<(
             EntitiesMut, 
             &mut Translation,
@@ -24,6 +24,7 @@ pub fn init(world:&World) -> EntityId {
             &mut Scale,
             &mut LocalTransform,
             &mut WorldTransform,
+            &mut DirtyTransform,
         )>();
 
         entities.add_entity( 
@@ -32,14 +33,16 @@ pub fn init(world:&World) -> EntityId {
                 &mut rotations,
                 &mut scales,
                 &mut local_transforms,
-                &mut world_transforms
+                &mut world_transforms,
+                &mut dirty_transforms
             ),
             (
                 Translation(translation),
                 Rotation(rotation),
                 Scale(scale),
                 LocalTransform(local_matrix),
-                WorldTransform(world_matrix)
+                WorldTransform(world_matrix),
+                DirtyTransform(false)
             )
         )
     };
@@ -50,6 +53,10 @@ pub fn init(world:&World) -> EntityId {
     translations.update_pack();
     rotations.update_pack();
     scales.update_pack();
+
+    //translations.clear_inserted_and_modified();
+    //rotations.clear_inserted_and_modified();
+    //scales.clear_inserted_and_modified();
 
     id
 }

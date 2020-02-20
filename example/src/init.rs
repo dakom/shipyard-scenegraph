@@ -63,8 +63,8 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
 
         systems::register_workloads(&world);
 
-        let root = sg::init(&world);
-        create_squares(&world, root, stage_width as f64, stage_height as f64);
+        sg::init(&world);
+        create_squares(&world, stage_width as f64, stage_height as f64);
 
         let on_resize = {
             let window = window.clone();
@@ -100,17 +100,17 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
     Ok(future_to_promise(future))
 }
 
-fn create_squares(world:&World, root:EntityId, stage_width: f64, stage_height: f64) {
+fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
 
 
     let mut depth = 0.0;
-    let mut create_square = |parent:EntityId, width: u32, height: u32, r: f64, g: f64, b: f64| -> EntityId {
+    let mut create_square = |parent:Option<EntityId>, width: u32, height: u32, r: f64, g: f64, b: f64| -> EntityId {
 
         let entity = sg::spawn_child(
             world, 
             parent,
             Some(
-                if parent == root {
+                if parent.is_none() {
                     sg::Vec3::new(0.5 * (stage_width - (width as f64)), 0.5 * (stage_height - (height as f64)), depth)
                 } else {
                     sg::Vec3::new((width as f64)/2.0, (height as f64)/2.0, depth)
@@ -134,9 +134,9 @@ fn create_squares(world:&World, root:EntityId, stage_width: f64, stage_height: f
         entity
     };
 
-    let square = create_square(root, 400, 400, 1.0, 0.0, 0.0);
-    let square = create_square(square, 200, 200, 0.0, 1.0, 0.0);
-    let _square = create_square(square, 100, 100, 0.0, 0.0, 1.0);
+    let square = create_square(None, 400, 400, 1.0, 0.0, 0.0);
+    let square = create_square(Some(square), 200, 200, 0.0, 1.0, 0.0);
+    let _square = create_square(Some(square), 100, 100, 0.0, 0.0, 1.0);
 
     /*
     {

@@ -176,11 +176,4 @@ where
                 }),
         }
     }
-/*
-    fn roots(&self) -> dyn Iterator<Item = EntityId> {
-        let (parent_storage, child_storage) = *self;
-
-        (parent_storage, child_storage).iter().with_id()
-    }
-    */
 }

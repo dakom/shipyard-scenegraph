@@ -7,10 +7,10 @@ use shipyard::prelude::*;
 use crate::transform::*;
 use crate::hierarchy::*;
 
-pub fn spawn_child(world:&World, parent: EntityId, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>) -> EntityId {
+pub fn spawn_child(world:&World, parent: Option<EntityId>, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>) -> EntityId {
 
-    let mut storages = world.borrow::<(EntitiesMut, &mut Parent, &mut Child, &mut Translation, &mut Rotation, &mut Scale, &mut LocalTransform, &mut WorldTransform)>();
-    let mut storages:TransformHierarchyStoragesMut = (&mut storages.0, &mut storages.1, &mut storages.2, &mut storages.3, &mut storages.4,&mut storages.5,&mut storages.6,&mut storages.7);
+    let mut storages = world.borrow::<(EntitiesMut, Unique<&TransformRoot>, &mut Parent, &mut Child, &mut Translation, &mut Rotation, &mut Scale, &mut LocalTransform, &mut WorldTransform, &mut DirtyTransform)>();
+    let mut storages:TransformHierarchyStoragesMut = (&mut storages.0, &storages.1, &mut storages.2, &mut storages.3, &mut storages.4,&mut storages.5,&mut storages.6,&mut storages.7, &mut storages.8, &mut storages.9);
 
     storages.spawn_child(parent, translation, rotation, scale)
 }

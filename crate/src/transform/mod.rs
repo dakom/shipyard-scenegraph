@@ -18,11 +18,12 @@ use crate::hierarchy::*;
     these need access to the whole hierarchy
 */
 pub trait TransformHierarchyMut {
-    fn spawn_child(&mut self, parent: EntityId, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>) -> EntityId;
+    fn spawn_child(&mut self, parent: Option<EntityId>, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>) -> EntityId;
 }
 
 pub type TransformHierarchyStoragesMut<'a, 'b> = (
     &'b mut EntitiesViewMut<'a>, 
+    &'b UniqueView<'a, TransformRoot>, 
     &'b mut ViewMut<'a, Parent>, 
     &'b mut ViewMut<'a, Child>,
     &'b mut ViewMut<'a, Translation>,
@@ -30,20 +31,23 @@ pub type TransformHierarchyStoragesMut<'a, 'b> = (
     &'b mut ViewMut<'a, Scale>,
     &'b mut ViewMut<'a, LocalTransform>,
     &'b mut ViewMut<'a, WorldTransform>,
+    &'b mut ViewMut<'a, DirtyTransform>,
 );
 
 impl TransformHierarchyMut for TransformHierarchyStoragesMut<'_, '_> {
-    fn spawn_child(&mut self, parent: EntityId, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>) -> EntityId {
+    fn spawn_child(&mut self, parent: Option<EntityId>, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>) -> EntityId {
 
         let (
             entities, 
+            root,
             parents,
             childs,
             translations,
             rotations,
             scales,
             local_transforms,
-            world_transforms
+            world_transforms,
+            dirty_transforms
         ) = self;
 
         let translation = translation.unwrap_or_default();
@@ -58,18 +62,21 @@ impl TransformHierarchyMut for TransformHierarchyStoragesMut<'_, '_> {
                     &mut **rotations,
                     &mut **scales,
                     &mut **local_transforms,
-                    &mut **world_transforms
+                    &mut **world_transforms,
+                    &mut **dirty_transforms
                 ),
                 (
                     Translation(translation),
                     Rotation(rotation),
                     Scale(scale),
                     LocalTransform(local_matrix),
-                    WorldTransform(world_matrix)
+                    WorldTransform(world_matrix),
+                    DirtyTransform(false)
                 )
         );
 
         {
+            let parent = parent.unwrap_or(root.0);
 
             (&mut **entities, &mut **parents, &mut **childs).attach(entity, parent);
         }
