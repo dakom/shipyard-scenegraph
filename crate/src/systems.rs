@@ -56,7 +56,7 @@ pub fn run (
     //descendents from this branch onwards are dirty
     let mut branch_dirty = false;
 
-    for entity in (&parent_storage, &child_storage).descendants_breadth_first(root.0) {
+    for entity in (&parent_storage, &child_storage).descendants_depth_first(root.0) {
         let child = (&child_storage).get(entity).unwrap();
 
         //Next level in the tree
@@ -69,20 +69,6 @@ pub fn run (
 
         let _dirty_transform = (&mut dirty_transform_storage).get(entity).unwrap();
 
-        //set entire branch (descendents) to be dirty if this entity is dirty 
-        /*
-TODO: I think there are unneccessary updates... consider:
-        A B
-        /  \
-        C    D
-if A is dirty, but B is not 
-then C should be dirty but D should not
-However if the `branch_dirty` flag is set by A being dirty
-then it will make D dirty, since it will be the next iteration.
-
-B can be avoided by keeping a separate siblings_dirty flag
-but that doesn't really solve the issue
-        */
         branch_dirty |= _dirty_transform.0;
 
         if branch_dirty { 
