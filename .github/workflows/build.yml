@@ -67,7 +67,8 @@ jobs:
       run: cd example && npm ci
 
     - name: install rust nightly
-      run: rustup toolchain install nightly
+      # run: rustup toolchain install nightly
+      run: rustup toolchain install nightly-2020-02-07
 
     - name: make nightly the default
       # https://github.com/rustwasm/wasm-bindgen/issues/2009
