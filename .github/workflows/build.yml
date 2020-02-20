@@ -16,24 +16,24 @@ jobs:
       run: |
         echo "::set-output name=dir::$(npm config get cache)"
 
-    - uses: actions/cache@v1
-      with:
-        path: ${{ steps.npm-cache.outputs.dir }}
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+    #- uses: actions/cache@v1
+    #  with:
+    #    path: ${{ steps.npm-cache.outputs.dir }}
+    #    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+    #    restore-keys: |
+    #      ${{ runner.os }}-node-
 
-    - name: Cache cargo registry
-      uses: actions/cache@v1
-      with:
-        path: ~/.cargo/registry
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+    #- name: Cache cargo registry
+    #  uses: actions/cache@v1
+    #  with:
+    #    path: ~/.cargo/registry
+    #    key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
 
-    - name: Cache cargo index
-      uses: actions/cache@v1
-      with:
-        path: ~/.cargo/git
-        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+    #- name: Cache cargo index
+    #  uses: actions/cache@v1
+    #  with:
+    #    path: ~/.cargo/git
+    #    key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
 
     #- name: Cache cargo bin 
     #  uses: actions/cache@v1
@@ -41,11 +41,11 @@ jobs:
     #    path: ~/.cargo/bin
     #    key: ${{ runner.os }}-cargo-index-${{ hashFiles('.cargo/bin/**') }}
 
-    - name: Cache cargo build
-      uses: actions/cache@v1
-      with:
-        path: example/target
-        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+    #- name: Cache cargo build
+    #  uses: actions/cache@v1
+    #  with:
+    #    path: example/target
+    #    key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
     - name: download binaryen release
       run: curl -u dakom:"$GITHUB_TOKEN" -s https://api.github.com/repos/WebAssembly/binaryen/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | xargs -I {} wget -c https://github.com/WebAssembly/binaryen/releases/latest/download/binaryen-{}-x86_64-linux.tar.gz -O binaryen.tgz
