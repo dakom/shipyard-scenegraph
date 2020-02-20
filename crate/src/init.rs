@@ -54,9 +54,9 @@ pub fn init(world:&World) -> EntityId {
     rotations.update_pack();
     scales.update_pack();
 
-    //translations.clear_inserted_and_modified();
-    //rotations.clear_inserted_and_modified();
-    //scales.clear_inserted_and_modified();
+    translations.clear_inserted_and_modified();
+    rotations.clear_inserted_and_modified();
+    scales.clear_inserted_and_modified();
 
     id
 }
