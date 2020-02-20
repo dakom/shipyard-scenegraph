@@ -8,5 +8,5 @@ edition = "2018"
 
 [dependencies]
 shipyard = { git= "https://github.com/leudz/shipyard.git", features = ["proc", "serialization"], default-features = false}
-thiserror = "1.0"
+thiserror = "1.0.11"
 log = "0.4.8"

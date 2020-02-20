@@ -70,7 +70,9 @@ jobs:
       run: rustup toolchain install nightly
 
     - name: make nightly the default
-      run: rustup default nightly
+      # https://github.com/rustwasm/wasm-bindgen/issues/2009
+      # run: rustup default nightly
+      run: rustup default nightly-2020-02-07
 
     - name: add rust target
       run: rustup target add wasm32-unknown-unknown

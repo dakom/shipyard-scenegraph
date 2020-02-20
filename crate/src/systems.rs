@@ -71,17 +71,17 @@ pub fn run (
 
         //set entire branch (descendents) to be dirty if this entity is dirty 
         /*
-            TODO: I think there are unneccessary updates... consider:
-                    A B
-                   /  \
-                  C    D
-            if A is dirty, but B is not 
-            then C should be dirty but D should not
-            However if the `branch_dirty` flag is set by A being dirty
-            then it will make D dirty, since it will be the next iteration.
-            
-            B can be avoided by keeping a separate siblings_dirty flag
-            but that doesn't really solve the issue
+TODO: I think there are unneccessary updates... consider:
+        A B
+        /  \
+        C    D
+if A is dirty, but B is not 
+then C should be dirty but D should not
+However if the `branch_dirty` flag is set by A being dirty
+then it will make D dirty, since it will be the next iteration.
+
+B can be avoided by keeping a separate siblings_dirty flag
+but that doesn't really solve the issue
         */
         branch_dirty |= _dirty_transform.0;
 
