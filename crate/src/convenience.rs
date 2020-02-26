@@ -17,8 +17,8 @@ pub fn spawn_child(world:&World, parent: Option<EntityId>, translation: Option<V
 
 
 pub fn set_trs(world:&World, entity:EntityId, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>) {
-    let mut storages = world.borrow::<(EntitiesMut, &mut Translation, &mut Rotation, &mut Scale, &mut LocalTransform, &mut WorldTransform)>();
-    let mut storages:TransformStoragesMut = (&mut storages.0, &mut storages.1, &mut storages.2, &mut storages.3, &mut storages.4,&mut storages.5);
+    let mut storages = world.borrow::<(&mut Translation, &mut Rotation, &mut Scale)>();
+    let mut storages:TransformStoragesMut = (&mut storages.0, &mut storages.1, &mut storages.2);
 
     storages.set_trs(entity, translation, rotation, scale);
 }

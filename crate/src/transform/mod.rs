@@ -92,24 +92,14 @@ pub trait TransformMut {
 }
 
 pub type TransformStoragesMut<'a, 'b> = (
-    &'b mut EntitiesViewMut<'a>, 
     &'b mut ViewMut<'a, Translation>,
     &'b mut ViewMut<'a, Rotation>,
     &'b mut ViewMut<'a, Scale>,
-    &'b mut ViewMut<'a, LocalTransform>,
-    &'b mut ViewMut<'a, WorldTransform>,
 );
 
 impl TransformMut for TransformStoragesMut<'_, '_> {
     fn set_trs(&mut self, entity:EntityId, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>) {
-        let (
-            entities, 
-            translations,
-            rotations,
-            scales,
-            local_transforms,
-            world_transforms
-        ) = self;
+        let ( translations, rotations, scales,) = self;
 
         if let Some((t,r,s)) = (&mut **translations, &mut **rotations, &mut **scales).get(entity).iter_mut().next() {
             if let Some(translation) = translation {

@@ -5,7 +5,6 @@ use crate::hierarchy::*;
 
 #[system(TrsToLocal)]
 pub fn run (
-    root: Unique<&TransformRoot>,
     mut translations: &mut Translation, 
     mut rotations: &mut Rotation, 
     mut scales: &mut Scale,
@@ -36,6 +35,7 @@ pub fn run (
     scales.clear_inserted_and_modified();
 }
 
+//See: https://gameprogrammingpatterns.com/dirty-flag.html
 #[system(LocalToWorld)]
 pub fn run (
     root: Unique<&TransformRoot>,
@@ -46,41 +46,38 @@ pub fn run (
     mut world_transform_storage: &mut WorldTransform, 
 ) {
 
-    //we a copy since we can't have both immutable and mutable refs to the world transform storage
-    //maintaining a cache and copying into it is faster than cloning
-    let mut parent_matrix:Matrix4 = Matrix4::default(); 
-    //tracking when we've moved to the next level
-    let mut parent_id = root.0;
-    //no need to update matrices multiple times per siblings or when not dirty
-    let mut parent_matrix_updated = true;
-    //descendents from this branch onwards are dirty
-    let mut branch_dirty = false;
+    //the idea is really: world_transform_storage[id].0 = &local_transform_storage[id].0 * &world_transform_storage[parent].0;
+    //but this creates a new clone every time
+    //by passing a scratch target around we can avoid the allocation, at the expense of an extra memcpy 
+    let mut scratch_matrix:Matrix4 = Matrix4::default(); 
 
-    for entity in (&parent_storage, &child_storage).descendants_depth_first(root.0) {
-        let child = (&child_storage).get(entity).unwrap();
+    fn update(id: EntityId, mut dirty: bool, parent: EntityId, scratch_matrix:&mut Matrix4, parent_storage: &View<Parent>, child_storage: &View<Child>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
+        dirty |= dirty_transform_storage[id].0;
+        dirty_transform_storage[id].0 = false;
 
-        //Next level in the tree
-        if parent_id != child.parent {
-            parent_id = child.parent;
-            //Signal that we'll need to update the cached parent matrix before using it 
-            //But we may not need it so don't do it just yet
-            parent_matrix_updated = false; 
+        if dirty {
+            scratch_matrix.copy_from_slice(local_transform_storage[id].0.as_ref()); 
+            scratch_matrix.mul_mut(&world_transform_storage[parent].0);
+            world_transform_storage[id].0.copy_from_slice(scratch_matrix.as_ref());
         }
 
-        let _dirty_transform = (&mut dirty_transform_storage).get(entity).unwrap();
-
-        branch_dirty |= _dirty_transform.0;
-
-        if branch_dirty { 
-            _dirty_transform.0 = false;
-            if !parent_matrix_updated {
-                parent_matrix.copy_from_slice(world_transform_storage.get(parent_id).unwrap().0.as_ref());
-                parent_matrix_updated = true;
-            }
-            let local_transform = &local_transform_storage.get(entity).unwrap().0;
-            let mut world_transform = (&mut world_transform_storage).get(entity).unwrap();
-            world_transform.0.copy_from_slice(local_transform.as_ref());
-            world_transform.0.mul_mut(&parent_matrix);
-        } 
+        (parent_storage, child_storage).children(id).for_each(|child| {
+            update(child, dirty, id, scratch_matrix, parent_storage, child_storage, local_transform_storage, dirty_transform_storage, world_transform_storage);
+        });
     }
+
+    //first propogate the root transform if it changed
+    let root_id = root.0;
+    let dirty = dirty_transform_storage[root_id].0;
+    dirty_transform_storage[root_id].0 = false;
+
+    if dirty {
+        world_transform_storage[root_id].0.copy_from_slice(local_transform_storage[root_id].0.as_ref());
+    }
+
+    //then recursively update all the children
+    (&parent_storage, &child_storage).children(root_id).for_each(|child| {
+        update(root_id, dirty, child, &mut scratch_matrix, &parent_storage, &child_storage, &local_transform_storage, &mut dirty_transform_storage, &mut world_transform_storage);
+    });
 }
+

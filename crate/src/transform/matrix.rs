@@ -339,9 +339,9 @@ impl Matrix4 {
     }
 }
 
-impl std::ops::Mul<Matrix4> for Matrix4 {
+impl std::ops::Mul<&Matrix4> for &Matrix4 {
     type Output = Matrix4;
-    fn mul(self, rhs: Matrix4) -> Self::Output {
+    fn mul(self, rhs: &Matrix4) -> Self::Output {
         let mut clone = self.clone();
         clone.mul_mut(&rhs);
         clone
