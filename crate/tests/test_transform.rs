@@ -52,6 +52,7 @@ fn test_transform() {
         assert_eq!(tlen, slen);
         assert_eq!(dirty, true);
     }
+
     //now local_transform should match (world_transform is unchanged)
     {
         let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(&Translation, &Rotation, &Scale, &LocalTransform, &WorldTransform)>(); 
@@ -164,7 +165,6 @@ fn test_transform() {
         let world_transform = (&world_storage).get(n).unwrap();
         assert_eq!(Vec3::new(70.0,0.0, 0.0), get_translation(&world_transform.0));
     }
-
     //debugging - print tree with transforms
     /*
     {
@@ -400,21 +400,16 @@ fn get_traverse_dirty_ids(world:&World) -> Vec<EntityId> {
     let ( root, parent_storage, child_storage, local_transform_storage, mut dirty_transform_storage, mut world_transform_storage, ) = 
         world.borrow::<( Unique<&TransformRoot>, &Parent, &Child, &LocalTransform, &mut DirtyTransform, &mut WorldTransform, )>();
 
-    let mut scratch_matrix:Matrix4 = Matrix4::default(); 
-
-    fn update(dirty_list:&mut Vec<EntityId>, id: EntityId, mut dirty: bool, parent: EntityId, scratch_matrix:&mut Matrix4, parent_storage: &View<Parent>, child_storage: &View<Child>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
+    fn update(dirty_list:&mut Vec<EntityId>, id: EntityId, mut dirty: bool, parent: EntityId, parent_storage: &View<Parent>, child_storage: &View<Child>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
         dirty |= dirty_transform_storage[id].0;
         dirty_transform_storage[id].0 = false;
 
         if dirty {
             dirty_list.push(id);
-            scratch_matrix.copy_from_slice(local_transform_storage[id].0.as_ref()); 
-            scratch_matrix.mul_mut(&world_transform_storage[parent].0);
-            world_transform_storage[id].0.copy_from_slice(scratch_matrix.as_ref());
         }
 
         (parent_storage, child_storage).children(id).for_each(|child| {
-            update(dirty_list, child, dirty, id, scratch_matrix, parent_storage, child_storage, local_transform_storage, dirty_transform_storage, world_transform_storage);
+            update(dirty_list, child, dirty, id, parent_storage, child_storage, local_transform_storage, dirty_transform_storage, world_transform_storage);
         });
     }
 
@@ -423,13 +418,9 @@ fn get_traverse_dirty_ids(world:&World) -> Vec<EntityId> {
     let dirty = dirty_transform_storage[root_id].0;
     dirty_transform_storage[root_id].0 = false;
 
-    if dirty {
-        world_transform_storage[root_id].0.copy_from_slice(local_transform_storage[root_id].0.as_ref());
-    }
-
     //then recursively update all the children
     (&parent_storage, &child_storage).children(root_id).for_each(|child| {
-        update(&mut dirty_list, root_id, dirty, child, &mut scratch_matrix, &parent_storage, &child_storage, &local_transform_storage, &mut dirty_transform_storage, &mut world_transform_storage);
+        update(&mut dirty_list, root_id, dirty, child, &parent_storage, &child_storage, &local_transform_storage, &mut dirty_transform_storage, &mut world_transform_storage);
     });
     dirty_list
 }
@@ -500,7 +491,8 @@ fn create_scene_graph() -> (World, TestEntities, HashMap<EntityId, &'static str>
 }
 
 fn get_translation(mat:&Matrix4) -> Vec3 {
-    Vec3::new(mat.12, mat.13, mat.14)
+    let values = mat.as_slice();
+    Vec3::new(values[12], values[13], values[14])
 }
 
 type TestEntities = (

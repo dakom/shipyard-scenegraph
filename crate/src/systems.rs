@@ -46,23 +46,25 @@ pub fn run (
     mut world_transform_storage: &mut WorldTransform, 
 ) {
 
-    //the idea is really: world_transform_storage[id].0 = &local_transform_storage[id].0 * &world_transform_storage[parent].0;
-    //but this creates a new clone every time
-    //by passing a scratch target around we can avoid the allocation, at the expense of an extra memcpy 
-    let mut scratch_matrix:Matrix4 = Matrix4::default(); 
-
-    fn update(id: EntityId, mut dirty: bool, parent: EntityId, scratch_matrix:&mut Matrix4, parent_storage: &View<Parent>, child_storage: &View<Child>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
+    fn update(id: EntityId, mut dirty: bool, parent: EntityId, parent_storage: &View<Parent>, child_storage: &View<Child>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
         dirty |= dirty_transform_storage[id].0;
         dirty_transform_storage[id].0 = false;
 
         if dirty {
-            scratch_matrix.copy_from_slice(local_transform_storage[id].0.as_ref()); 
-            scratch_matrix.mul_mut(&world_transform_storage[parent].0);
-            world_transform_storage[id].0.copy_from_slice(scratch_matrix.as_ref());
+
+            world_transform_storage[id].0.copy_from_slice(local_transform_storage[id].0.as_slice()); 
+
+            //we have mutable and immutable ref at the same time.
+            //it's technically unsafe but the system gets world_transform_storage as mut
+            //so the scheduler will disallow another system from accessing it in parallel 
+            unsafe {
+                let parent_mat = &world_transform_storage[parent].0 as *const Matrix4;
+                world_transform_storage[id].0.mul_mut(&*parent_mat);
+            }
         }
 
         (parent_storage, child_storage).children(id).for_each(|child| {
-            update(child, dirty, id, scratch_matrix, parent_storage, child_storage, local_transform_storage, dirty_transform_storage, world_transform_storage);
+            update(child, dirty, id, parent_storage, child_storage, local_transform_storage, dirty_transform_storage, world_transform_storage);
         });
     }
 
@@ -72,12 +74,12 @@ pub fn run (
     dirty_transform_storage[root_id].0 = false;
 
     if dirty {
-        world_transform_storage[root_id].0.copy_from_slice(local_transform_storage[root_id].0.as_ref());
+        world_transform_storage[root_id].0.copy_from_slice(local_transform_storage[root_id].0.as_slice());
     }
 
     //then recursively update all the children
     (&parent_storage, &child_storage).children(root_id).for_each(|child| {
-        update(root_id, dirty, child, &mut scratch_matrix, &parent_storage, &child_storage, &local_transform_storage, &mut dirty_transform_storage, &mut world_transform_storage);
+        update(root_id, dirty, child, &parent_storage, &child_storage, &local_transform_storage, &mut dirty_transform_storage, &mut world_transform_storage);
     });
 }
 

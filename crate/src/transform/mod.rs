@@ -4,12 +4,17 @@ mod vec3;
 mod quat;
 mod values;
 mod components;
+#[cfg(feature = "nalgebra")]
+mod nalgebra_into;
 
 pub use self::matrix::*;
 pub use self::vec3::*;
 pub use self::quat::*;
 pub use self::values::*;
 pub use self::components::*;
+
+#[cfg(feature = "nalgebra")]
+pub use self::nalgebra_into::*;
 
 use shipyard::prelude::*;
 use crate::hierarchy::*;

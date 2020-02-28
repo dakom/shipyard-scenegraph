@@ -1,6 +1,6 @@
 use crate::components::*;
 use crate::geometry::*;
-use shipyard_scenegraph::{Vec3, Matrix4, Translation, WorldTransform};
+use shipyard_scenegraph::{Vec3, AsSlice, Translation, WorldTransform};
 use std::rc::{Rc};
 use gloo_events::{EventListener};
 use web_sys::{Event, MouseEvent};
@@ -24,8 +24,8 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
                     .with_id()
                     .map(|(id, (transform, obj_area))| {
                         //get the position from world matrix
-                        let mat = &transform.0;
-                        let pos = Vec3::new(mat.12, mat.13, mat.14);
+                        let mat = transform.0.as_slice();
+                        let pos = Vec3::new(mat[12], mat[13], mat[14]);
                         (id,  pos, obj_area.0)
                     })
                     .filter(|(id, pos, obj_area)| get_bounds(&pos, &obj_area, &stage_area).contains(&mouse_point))
