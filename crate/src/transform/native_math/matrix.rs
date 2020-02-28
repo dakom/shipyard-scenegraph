@@ -1,3 +1,5 @@
+use std::ops::Mul;
+use std::convert::AsRef;
 /*
     The math was taken and adapted from various places on the internet
     Specifically, from gl-matrix and the gltf-rs crate (which in turn took from cg_math)
@@ -313,11 +315,17 @@ impl Matrix4 {
     }
 }
 
-impl std::ops::Mul<&Matrix4> for &Matrix4 {
+impl <T: AsRef<Matrix4>> Mul<T> for Matrix4 {
     type Output = Matrix4;
-    fn mul(self, rhs: &Matrix4) -> Self::Output {
+    fn mul(self, rhs: T) -> Self::Output {
         let mut clone = self.clone();
-        clone.mul_mut(&rhs);
+        clone.mul_mut(rhs.as_ref());
         clone
+    }
+}
+
+impl AsRef<Matrix4> for Matrix4 {
+    fn as_ref(&self) -> &Self {
+        self
     }
 }
