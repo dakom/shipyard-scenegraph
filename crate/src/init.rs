@@ -2,11 +2,11 @@ use shipyard::prelude::*;
 use crate::transform::*;
 
 pub fn init(world:&World) -> EntityId {
-    let translation = Vec3::default();
-    let rotation = Quat::default();
+    let translation = Vec3::identity();
+    let rotation = Quat::identity();
     let scale = Vec3::new(1.0, 1.0, 1.0);
-    let local_matrix = Matrix4::default(); 
-    let world_matrix = Matrix4::default();
+    let local_matrix = Matrix4::identity(); 
+    let world_matrix = Matrix4::identity();
 
     let id = {
         let (

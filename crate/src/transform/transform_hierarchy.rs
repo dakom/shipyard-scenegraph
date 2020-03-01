@@ -38,11 +38,11 @@ impl TransformHierarchyMut for TransformHierarchyStoragesMut<'_, '_> {
             dirty_transforms
         ) = self;
 
-        let translation = translation.unwrap_or_default();
-        let rotation = rotation.unwrap_or_default();
+        let translation = translation.unwrap_or_else(|| Vec3::identity());
+        let rotation = rotation.unwrap_or_else(|| Quat::identity());
         let scale = scale.unwrap_or(Vec3::new(1.0, 1.0, 1.0));
-        let local_matrix = Matrix4::default(); //Matrix4::new_from_trs(&translation, &rotation, &scale);
-        let world_matrix = Matrix4::default();
+        let local_matrix = Matrix4::identity(); //Matrix4::new_from_trs(&translation, &rotation, &scale);
+        let world_matrix = Matrix4::identity();
 
         let entity = entities.add_entity( 
                 (

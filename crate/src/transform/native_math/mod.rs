@@ -2,13 +2,13 @@
 mod matrix;
 mod vec3;
 mod quat;
-mod values;
+mod slice;
 mod components;
 
 pub use self::matrix::*;
 pub use self::vec3::*;
 pub use self::quat::*;
-pub use self::values::*;
+pub use self::slice::*;
 pub use self::components::*;
 
 cfg_if::cfg_if! {

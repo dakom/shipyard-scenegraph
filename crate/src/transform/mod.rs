@@ -1,5 +1,9 @@
 mod transform_hierarchy;
+mod traits;
+mod errors;
 pub use self::transform_hierarchy::*;
+pub use self::traits::*;
+pub use self::errors::*;
 
 use cfg_if::cfg_if;
 cfg_if! {

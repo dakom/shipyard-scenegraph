@@ -1,4 +1,4 @@
-use super::values::*;
+use super::super::{TransformValuesExt, IdentityExt};
 
 #[repr(C)]
 #[derive(Clone, PartialEq, Debug)]
@@ -15,7 +15,7 @@ impl Vec3 {
 
 const VECTOR_IDENTITY:[f64;3] = [0.0, 0.0, 0.0];
 
-impl TransformValues for Vec3 {
+impl TransformValuesExt for Vec3 {
     fn len(&self) -> usize { 3 }
     fn static_default() -> &'static [f64] {
         &VECTOR_IDENTITY
@@ -26,10 +26,15 @@ impl TransformValues for Vec3 {
         target[1] = self.y as f32;
         target[2] = self.z as f32;
     }
+    fn from_slice(values:&[f64]) -> Self {
+        let mut _self = Self::identity();
+        _self.copy_from_slice(values);
+        _self
+    }
 }
 
-impl Default for Vec3 {
-    fn default() -> Self {
+impl IdentityExt for Vec3 {
+    fn identity() -> Self {
         Self::new( VECTOR_IDENTITY[0], VECTOR_IDENTITY[1], VECTOR_IDENTITY[2])
     }
 }

@@ -1,4 +1,4 @@
-use super::*;
+use super::super::{TransformValuesExt, IdentityExt};
 
 #[repr(C)]
 #[derive(Clone, PartialEq, Debug)]
@@ -16,7 +16,7 @@ impl Quat {
 
 const QUAT_IDENTITY:[f64;4] = [0.0, 0.0, 0.0, 1.0];
 
-impl TransformValues for Quat {
+impl TransformValuesExt for Quat {
     fn len(&self) -> usize { 4 }
     fn static_default() -> &'static [f64] {
         &QUAT_IDENTITY
@@ -28,10 +28,15 @@ impl TransformValues for Quat {
         target[2] = self.z as f32;
         target[3] = self.w as f32;
     }
+    fn from_slice(values:&[f64]) -> Self {
+        let mut _self = Self::identity();
+        _self.copy_from_slice(values);
+        _self
+    }
 }
 
-impl Default for Quat {
-    fn default() -> Self {
+impl IdentityExt for Quat {
+    fn identity() -> Self {
         Self::new(QUAT_IDENTITY[0], QUAT_IDENTITY[1], QUAT_IDENTITY[2], QUAT_IDENTITY[3])
     }
 }
