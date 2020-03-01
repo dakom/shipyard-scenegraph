@@ -57,13 +57,12 @@ pub fn run (
             //we have mutable and immutable ref at the same time.
             //it's technically unsafe but the system gets world_transform_storage as mut
             //so the scheduler will disallow another system from accessing it in parallel 
-            //TODO - from leudz: 
-            //      I think the unsafe version is UB, you have a exclusive access to the whole storage while also access to one element
-            //      if you do the same for id it should be good
+            //in order to avoid the UB we need to get each pointer _separately_ then call .mul_mut() with them
 
             unsafe {
-                let parent_mat = &world_transform_storage[parent].0 as *const Matrix4;
-                world_transform_storage[id].0.mul_mut(&*parent_mat);
+                let entity_ptr = &mut world_transform_storage[id].0 as *mut Matrix4;
+                let parent_ptr = &world_transform_storage[parent].0 as *const Matrix4;
+                (&mut *entity_ptr).mul_mut(&*parent_ptr);
             }
         }
 
