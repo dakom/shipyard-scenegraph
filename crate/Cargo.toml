@@ -14,5 +14,7 @@ cfg-if = "0.1.10"
 nalgebra = {version = "0.19.0", optional = true}
 
 [features]
-default = ["nalgebra_transforms"]
+# default = ["nalgebra_transforms"]
+# default = ["nalgebra"]
+default = []
 nalgebra_transforms = ["nalgebra"]

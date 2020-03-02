@@ -29,9 +29,7 @@ impl TransformValuesExt for Quat {
         target[3] = self.w as f32;
     }
     fn from_slice(values:&[f64]) -> Self {
-        let mut _self = Self::identity();
-        _self.copy_from_slice(values);
-        _self
+        Self::new(values[0], values[1], values[2], values[3])
     }
 }
 

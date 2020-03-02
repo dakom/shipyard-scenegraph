@@ -21,19 +21,25 @@ impl TransformValuesExt for Quat {
         target[3] = self.coords.w as f32;
     }
     fn from_slice(values:&[f64]) -> Self {
-        let mut _self = Self::identity();
-        _self.copy_from_slice(values);
-        _self
+        Self::new_unchecked(nalgebra::Quaternion::new(values[0], values[1], values[2], values[3]))
     }
 }
 
 impl AsSliceExt for Quat {
     fn as_slice(&self) -> &[f64] {
-        self.as_slice()
+        self.coords.as_slice()
     }
 
+    //TODO - https://discourse.nphysics.org/t/quaternion-to-from-slice/458/5?u=dakom
     fn as_slice_mut(&mut self) -> &mut [f64] {
-        self.coords.as_mut_slice()
+        let ptr = self.coords.as_slice();
+        let ptr = unsafe {
+            let ptr = ptr as *const [f64] as *mut [f64];
+            let ptr = &mut *ptr;
+            ptr
+        }; 
+        ptr
+        //self.coords.as_mut_slice()
     }
 }
 
@@ -57,9 +63,7 @@ impl TransformValuesExt for Vec3 {
         target[2] = self.z as f32;
     }
     fn from_slice(values:&[f64]) -> Self {
-        let mut _self = Self::identity();
-        _self.copy_from_slice(values);
-        _self
+        Self::from_row_slice(values)
     }
 }
 
@@ -115,9 +119,7 @@ impl TransformValuesExt for Matrix4 {
         target[15] = values[15] as f32;
     }
     fn from_slice(values:&[f64]) -> Self {
-        let mut _self = Self::identity();
-        _self.copy_from_slice(values);
-        _self
+        Self::from_row_slice(values)
     }
 }
 
@@ -156,7 +158,6 @@ impl MatrixOpsExt for Matrix4 {
         self.set_rotation(rotation);
     }
     fn set_rotation(&mut self, rotation:&Quat) {
-        //TODO - probably a faster way to do this
         let mat:Matrix4 = rotation.to_rotation_matrix().into();
         *self *= mat;
     }
@@ -176,19 +177,34 @@ impl MatrixOpsExt for Matrix4 {
 
     //translation, rotation, scale
     fn new_from_trs(translation:&Vec3, rotation:&Quat, scale:&Vec3) -> Self {
+        let mut mat = Matrix4::identity();
+        mat.set_trs(translation, rotation, scale);
+        mat
     }
     fn reset_from_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
+        self.fill_with_identity();
+        self.set_trs(translation, rotation, scale);
     }
     fn set_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
+        self.set_translation(translation);
+        self.set_scale(scale);
+        self.set_rotation(rotation);
     }
 
     // arithmetic 
     fn mul_mut(&mut self, rhs: &Matrix4) {
+        *self *= rhs;
     }
 
     /// returns true if it was able to invert, false otherwise
     fn invert_mut(&mut self) -> Result<(), MatrixError> {
+        if self.try_inverse_mut() {
+            Ok(())
+        } else {
+            Err(MatrixError::Invert)
+        }
     }
     fn invert(&self) -> Result<Self, MatrixError> {
+        self.try_inverse().ok_or(MatrixError::Invert)
     }
 }

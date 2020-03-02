@@ -1,6 +1,6 @@
 use crate::components::*;
 use crate::geometry::*;
-use shipyard_scenegraph::{Vec3, AsSlice, Translation, WorldTransform};
+use shipyard_scenegraph::{Vec3, AsSliceExt, Translation, WorldTransform};
 use std::rc::{Rc};
 use gloo_events::{EventListener};
 use web_sys::{Event, MouseEvent};

@@ -9,14 +9,14 @@
 */
 
 use std::ops::Mul;
-use std::convert::AsRef;
+use std::convert::{AsRef, TryInto};
 use super::vec3::Vec3;
 use super::quat::Quat;
 use super::super::{TransformValuesExt, AsSliceExt, IdentityExt, MatrixOpsExt, MatrixError};
 
-
 #[repr(C)]
 #[derive(Clone, PartialEq, Debug)]
+//pub struct Matrix4 (pub [f64;16]);
 pub struct Matrix4 (pub [f64;16]);
 
 const MATRIX_IDENTITY:[f64;16] = [
@@ -26,6 +26,20 @@ const MATRIX_IDENTITY:[f64;16] = [
     0.0,0.0,0.0,1.0,
 ];
 
+impl Matrix4 {
+    pub fn new( a:f64, b:f64, c:f64, d:f64,
+                e:f64, f:f64, g:f64, h:f64,  
+                i:f64, j:f64, k:f64, l:f64,
+                m:f64, n:f64, o:f64, p:f64,
+        ) -> Self {
+            Self([
+                a,b,c,d,
+                e,f,g,h,
+                i,j,k,l,
+                m,n,o,p,
+            ])
+    }
+}
 impl TransformValuesExt for Matrix4 {
     fn len(&self) -> usize { 16 }
     fn static_default() -> &'static [f64] {
@@ -53,9 +67,8 @@ impl TransformValuesExt for Matrix4 {
         target[15] = values[15] as f32;
     }
     fn from_slice(values:&[f64]) -> Self {
-        let mut _self = Self::identity();
-        _self.copy_from_slice(values);
-        _self
+        let mut data:[f64;16] = values.try_into().unwrap();
+        Self(data)
     }
 }
 
