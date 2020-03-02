@@ -135,29 +135,43 @@ impl AsSliceExt for Matrix4 {
 impl MatrixOpsExt for Matrix4 {
     //translation
     fn new_from_translation(translation: &Vec3) -> Self {
+        Matrix4::new_translation(translation)
     }
 
     fn reset_from_translation(&mut self, translation:&Vec3) {
+        self.fill_with_identity();
+        self.set_translation(translation);
     }
 
     fn set_translation(&mut self, translation:&Vec3) {
+        self.append_translation_mut(translation);
     }
 
     //rotation
     fn new_from_rotation(rotation: &Quat) -> Self {
+        rotation.to_rotation_matrix().into()
     }
     fn reset_from_rotation(&mut self, rotation:&Quat) {
+        self.fill_with_identity();
+        self.set_rotation(rotation);
     }
     fn set_rotation(&mut self, rotation:&Quat) {
+        //TODO - probably a faster way to do this
+        let mat:Matrix4 = rotation.to_rotation_matrix().into();
+        *self *= mat;
     }
 
     //scale
     fn new_from_scale(scale:&Vec3) -> Self {
+        Matrix4::new_nonuniform_scaling(scale)
     }
     fn reset_from_scale(&mut self, scale:&Vec3) {
+        self.fill_with_identity();
+        self.set_scale(scale);
     }
 
     fn set_scale(&mut self, scale:&Vec3) {
+        self.append_nonuniform_scaling_mut(scale);
     }
 
     //translation, rotation, scale

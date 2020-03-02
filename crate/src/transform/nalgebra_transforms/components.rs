@@ -1,7 +1,7 @@
 use shipyard::prelude::*;
 
 pub type Vec3 = nalgebra::Vector3<f64>;
-pub type Quat = nalgebra::Quaternion<f64>;
+pub type Quat = nalgebra::UnitQuaternion<f64>;
 pub type Matrix4 = nalgebra::Matrix4<f64>;
 
 pub struct TransformRoot(pub EntityId);
