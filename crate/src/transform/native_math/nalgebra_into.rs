@@ -1,5 +1,6 @@
 use nalgebra;
 use super::*;
+use super::super::*;
 
 //TODO - impl for refs too? https://users.rust-lang.org/t/impl-from-on-reference-without-repetition/38838
 impl From<nalgebra::Matrix4<f64>> for Matrix4 {
