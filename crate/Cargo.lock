@@ -475,7 +475,8 @@ checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 [[package]]
 name = "shipyard"
 version = "0.3.1"
-source = "git+https://github.com/leudz/shipyard.git#a5b1ef0bcebff18702d016f6b1ace44bfb3a573f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4cb90a351ca8169c37730a3221f9d1483b8f1c1b99416e74b878a97a688ccb03"
 dependencies = [
  "hashbrown",
  "num_cpus",
@@ -487,7 +488,8 @@ dependencies = [
 [[package]]
 name = "shipyard_hierarchy"
 version = "0.1.0"
-source = "git+https://github.com/dakom/shipyard-hierarchy.git#ca34c7e7381b7faf840523a4dd01a7eb97b59915"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1140ae968c59dc90c073dcb25d975471814a9f93437090471df6a16df9fde6e"
 dependencies = [
  "shipyard",
 ]
@@ -495,7 +497,8 @@ dependencies = [
 [[package]]
 name = "shipyard_proc"
 version = "0.2.1"
-source = "git+https://github.com/leudz/shipyard.git#a5b1ef0bcebff18702d016f6b1ace44bfb3a573f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4140ce979a743440c1ca04e3c8e334885a2c0b6b591567f25dd968370e485e77"
 dependencies = [
  "proc-macro2",
  "quote",
