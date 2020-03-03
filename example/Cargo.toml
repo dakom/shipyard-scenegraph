@@ -20,8 +20,8 @@ gloo-events = "0.1.1"
 awsm_web = { version = "0.0.13", features = ["tick", "webgl", "loaders", "audio"], default-features = false }
 wee_alloc = { version = "0.4.5", optional = true }
 wasm-logger = { version = "0.2.0", optional = true }
-shipyard = { version = "^0.3"}
-shipyard_scenegraph = { path = "../crate"}
+shipyard = { version = "^0.3", features = ["proc", "non_send", "non_sync"], default-features = false}
+shipyard_scenegraph = { path = "../crate", features = ["proc", "non_send", "non_sync"], default-features = false}
 cfg-if = "0.1.10"
 log = "0.4.8"
 lazy_static = "1.4.0"

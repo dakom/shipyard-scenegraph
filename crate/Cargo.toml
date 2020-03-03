@@ -1,6 +1,6 @@
 [package]
 name = "shipyard_scenegraph"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["David Komer <david.komer@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
