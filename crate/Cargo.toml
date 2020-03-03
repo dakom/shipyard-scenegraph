@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 description = "Scenegraph for Entity Component System"
 keywords = ["ecs", "entity", "component", "scenegraph"]
 categories = ["concurrency", "game-engines"]
-readme = "README.md"
+readme = "../README.md"
 repository = "https://github.com/dakom/shipyard-scenegraph"
 
 [dependencies]
