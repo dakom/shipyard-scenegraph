@@ -16,9 +16,9 @@ See [components.rs](crate/src/components.rs) for the full list of exported compo
 
 The way it all fits together is that `Translation`, `Rotation`, and `Scale` are in an "update pack". This allows for changes to these to be propagated to `LocalTransform` automatically and efficiently when the `TrsToLocal` system is run. 
 
-Similarly, the changes to `LocalTransform` are efficiently propagated to `WorldTransform` when the `LocalToWorld` system is run.
+Similarly, the changes to `LocalTransform` are efficiently propagated to `WorldTransform` when the `LocalToWorld` system is run. Currently this does not go through update pack and rather uses a separate `DirtyTransform` component, [though that may change soon](https://github.com/dakom/shipyard-scenegraph/issues/19)
 
-It is possible to set `LocalTransform` directly - though doing so requires also setting the `DirtyTransform` flag for that component to `true` (failure to do so will prevent it from propagating to `WorldTransform` when the `LocalToWorld` system is run). Also, doing this will _not_ push the changes in the other direction (e.g. to the TRS components).
+It is possible to set `LocalTransform` directly. However, doing this will _not_ push the changes in the other direction (e.g. to the TRS components).
 
 # Math lib interop
 
