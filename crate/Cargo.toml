@@ -11,12 +11,17 @@ readme = "README.md"
 repository = "https://github.com/dakom/shipyard-scenegraph"
 
 [dependencies]
-shipyard = { version = "^0.3" }
-shipyard_hierarchy = { version = "^0.1" } 
+shipyard = { version = "^0.3", default-features = false}
+shipyard_hierarchy = { version = "^0.1", default-features = false} 
 thiserror = "1.0.11"
 cfg-if = "0.1.10"
 nalgebra = {version = "0.19.0", optional = true}
 
 [features]
-default = []
 nalgebra_transforms = ["nalgebra"]
+default = ["shipyard/default", "shipyard_hierarchy/default"]
+parallel = ["shipyard/parallel", "shipyard_hierarchy/parallel"]
+proc = ["shipyard/proc", "shipyard_hierarchy/proc"]
+non_send = ["shipyard/non_send", "shipyard_hierarchy/non_send"]
+non_sync = ["shipyard/non_sync", "shipyard_hierarchy/non_sync"]
+std = ["shipyard/std", "shipyard_hierarchy/std"]
