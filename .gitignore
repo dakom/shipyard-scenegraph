@@ -1,3 +1,10 @@
+# rust/wasm
+.wasm
+target
+pkg
+**/*.rs.bk
+crate/Cargo.lock
+
 # Netlify
 .netlify
 
@@ -75,11 +82,6 @@ fabric.properties
 # rollup-plugin-typescript2
 .rpt2_cache
 
-# rust/wasm
-.wasm
-target
-pkg
-**/*.rs.bk
 
 # node
 npm-debug.log
