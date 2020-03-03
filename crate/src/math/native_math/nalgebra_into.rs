@@ -1,6 +1,6 @@
 use nalgebra;
+use crate::math::traits::{AsSliceExt, FromSliceExt};
 use super::*;
-use super::super::*;
 
 impl From<nalgebra::Matrix4<f64>> for Matrix4 {
     fn from(mat:nalgebra::Matrix4<f64>) -> Self {
@@ -86,7 +86,8 @@ impl From<Quat> for nalgebra::Quaternion<f64> {
 }
 impl From<&Quat> for nalgebra::Quaternion<f64> {
     fn from(quat:&Quat) -> Self {
-        Self::new(quat.x, quat.y, quat.z, quat.w)
+        //The storage order is [ i, j, k, w ] while the arguments for this functions are in the order (w, i, j, k).
+        Self::new(quat.w, quat.x, quat.y, quat.z)
     }
 }
 
@@ -109,6 +110,7 @@ impl From<Quat> for nalgebra::UnitQuaternion<f64> {
 }
 impl From<&Quat> for nalgebra::UnitQuaternion<f64> {
     fn from(quat:&Quat) -> Self {
-        Self::new_unchecked(nalgebra::Quaternion::new(quat.x, quat.y, quat.z, quat.w))
+        //The storage order is [ i, j, k, w ] while the arguments for this functions are in the order (w, i, j, k).
+        Self::new_unchecked(nalgebra::Quaternion::new(quat.w, quat.x, quat.y, quat.z))
     }
 }

@@ -1,4 +1,4 @@
-use super::super::{TransformValuesExt, IdentityExt};
+use crate::math::traits::{MathContainer, FromSliceExt, QuatExt};
 
 #[repr(C)]
 #[derive(Clone, PartialEq, Debug)]
@@ -16,11 +16,20 @@ impl Quat {
 
 const QUAT_IDENTITY:[f64;4] = [0.0, 0.0, 0.0, 1.0];
 
-impl TransformValuesExt for Quat {
-    fn len(&self) -> usize { 4 }
-    fn static_default() -> &'static [f64] {
-        &QUAT_IDENTITY
+impl From<&[f64]> for Quat {
+    fn from(values:&[f64]) -> Self {
+        Self::new(values[0], values[1], values[2], values[3])
     }
+}
+
+impl <'a> FromSliceExt<'a> for Quat {
+    fn from_slice(values:&'a [f64]) -> Self {
+        values.into()
+    }
+}
+
+impl <'a> MathContainer<'a> for Quat {
+    fn len(&self) -> usize { 4 }
     fn write_to_vf32(self: &Self, target:&mut [f32]) {
         //can't memcpy since it needs a cast
         target[0] = self.x as f32;
@@ -28,13 +37,10 @@ impl TransformValuesExt for Quat {
         target[2] = self.z as f32;
         target[3] = self.w as f32;
     }
-    fn from_slice(values:&[f64]) -> Self {
-        Self::new(values[0], values[1], values[2], values[3])
-    }
 }
 
-impl IdentityExt for Quat {
+impl QuatExt for Quat {
     fn identity() -> Self {
-        Self::new(QUAT_IDENTITY[0], QUAT_IDENTITY[1], QUAT_IDENTITY[2], QUAT_IDENTITY[3])
+        Quat::from_slice(&QUAT_IDENTITY)
     }
 }

@@ -1,11 +1,11 @@
-use super::super::{TransformValuesExt, AsSliceExt, IdentityExt};
+use crate::math::traits::{MathContainer, AsSliceExt};
 
+//all the as_slice impls are very fast, no copy
 
 macro_rules! impl_as_slice_repr {
     ( $( $x:ty ),* ) => {
         $(
             impl AsSliceExt for $x {
-                //this is fast - no copy
                 fn as_slice(&self) -> &[f64] {
                     let pointer = self as *const Self as *const f64;
                     let slice: &[f64] = unsafe { std::slice::from_raw_parts(pointer, self.len()) };

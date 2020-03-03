@@ -1,7 +1,8 @@
 use shipyard::prelude::*;
+use shipyard_hierarchy::*;
 use std::collections::HashSet;
-use crate::transform::*;
-use crate::hierarchy::*;
+use crate::components::*;
+use crate::math::*;
 
 #[system(TrsToLocal)]
 pub fn run (
@@ -52,17 +53,17 @@ pub fn run (
 
         if dirty {
 
-            world_transform_storage[id].0.copy_from_slice(local_transform_storage[id].0.as_slice()); 
-
             //we have mutable and immutable ref at the same time.
             //it's technically unsafe but the system gets world_transform_storage as mut
             //so the scheduler will disallow another system from accessing it in parallel 
             //in order to avoid the UB we need to get each pointer _separately_ then call .mul_mut() with them
 
+            world_transform_storage[id].0.copy_from_slice(local_transform_storage[id].0.as_slice()); 
+
             unsafe {
                 let entity_ptr = &mut world_transform_storage[id].0 as *mut Matrix4;
                 let parent_ptr = &world_transform_storage[parent].0 as *const Matrix4;
-                (&mut *entity_ptr).mul_mut(&*parent_ptr);
+                *(&mut *entity_ptr) *= &*parent_ptr;
             }
         }
 

@@ -4,7 +4,9 @@
     Call the same-named method on that tuple 
 */
 use shipyard::prelude::*;
-use crate::transform::*;
+use shipyard_hierarchy::*;
+use crate::math::*;
+use crate::components::*;
 use crate::hierarchy::*;
 
 pub fn spawn_child(world:&World, parent: Option<EntityId>, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>) -> EntityId {

@@ -1,8 +1,9 @@
 use shipyard::prelude::*;
-use crate::transform::*;
+use crate::components::*;
+use crate::math::*;
 
 pub fn init(world:&World) -> EntityId {
-    let translation = Vec3::identity();
+    let translation = Vec3::zero();
     let rotation = Quat::identity();
     let scale = Vec3::new(1.0, 1.0, 1.0);
     let local_matrix = Matrix4::identity(); 

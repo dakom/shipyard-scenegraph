@@ -8,11 +8,12 @@
     Though since as_ref() returns a slice maybe that's not necessary?
 */
 
-use std::ops::Mul;
+use std::ops::{Mul, MulAssign};
 use std::convert::{AsRef, TryInto};
 use super::vec3::Vec3;
 use super::quat::Quat;
-use super::super::{TransformValuesExt, AsSliceExt, IdentityExt, MatrixOpsExt, MatrixError};
+use crate::math::traits::{MathContainer, AsSliceExt, FromSliceExt, MatrixExt};
+use crate::errors::{MatrixError};
 
 #[repr(C)]
 #[derive(Clone, PartialEq, Debug)]
@@ -39,12 +40,26 @@ impl Matrix4 {
                 m,n,o,p,
             ])
     }
-}
-impl TransformValuesExt for Matrix4 {
-    fn len(&self) -> usize { 16 }
-    fn static_default() -> &'static [f64] {
-        &MATRIX_IDENTITY
+    fn reset(&mut self) {
+        self.copy_from_slice(&MATRIX_IDENTITY);
     }
+}
+
+impl From<&[f64]> for Matrix4 {
+    fn from(values:&[f64]) -> Self {
+        let data:[f64;16] = values.try_into().unwrap();
+        Self(data)
+    }
+}
+
+impl <'a> FromSliceExt<'a> for Matrix4 {
+    fn from_slice(values:&'a [f64]) -> Self {
+        values.into()
+    }
+}
+
+impl <'a> MathContainer<'a> for Matrix4 {
+    fn len(&self) -> usize { 16 }
     fn write_to_vf32(self: &Self, target:&mut [f32]) {
         let values = self.as_slice();
 
@@ -66,32 +81,25 @@ impl TransformValuesExt for Matrix4 {
         target[14] = values[14] as f32;
         target[15] = values[15] as f32;
     }
-    fn from_slice(values:&[f64]) -> Self {
-        let mut data:[f64;16] = values.try_into().unwrap();
-        Self(data)
-    }
 }
 
-impl IdentityExt for Matrix4 {
+impl MatrixExt for Matrix4 {
     fn identity() -> Self {
         Self(MATRIX_IDENTITY.clone())
     }
-}
-
-impl MatrixOpsExt for Matrix4 {
     //translation
     fn new_from_translation(translation: &Vec3) -> Self {
         let mut m = Self::identity();
-        m.set_translation(translation);
+        m.translate(translation);
         m
     }
 
     fn reset_from_translation(&mut self, translation:&Vec3) {
         self.reset();
-        self.set_translation(translation);
+        self.translate(translation);
     }
 
-    fn set_translation(&mut self, translation:&Vec3) {
+    fn translate(&mut self, translation:&Vec3) {
         let values = &mut self.0;
         values[12] = translation.x;
         values[13] = translation.y;
@@ -101,14 +109,14 @@ impl MatrixOpsExt for Matrix4 {
     //rotation
     fn new_from_rotation(rotation: &Quat) -> Self {
         let mut m = Self::identity();
-        m.set_rotation(rotation);
+        m.rotate(rotation);
         m
     }
     fn reset_from_rotation(&mut self, rotation:&Quat) {
         self.reset();
-        self.set_rotation(rotation);
+        self.rotate(rotation);
     }
-    fn set_rotation(&mut self, rotation:&Quat) {
+    fn rotate(&mut self, rotation:&Quat) {
         let values = &mut self.0;
         let x = rotation.x;
         let y = rotation.y;
@@ -147,15 +155,15 @@ impl MatrixOpsExt for Matrix4 {
     //scale
     fn new_from_scale(scale:&Vec3) -> Self {
         let mut m = Self::identity();
-        m.set_scale(scale);
+        m.scale(scale);
         m
     }
     fn reset_from_scale(&mut self, scale:&Vec3) {
         self.reset();
-        self.set_scale(scale);
+        self.scale(scale);
     }
 
-    fn set_scale(&mut self, scale:&Vec3) {
+    fn scale(&mut self, scale:&Vec3) {
         let values = &mut self.0;
         values[0] = scale.x;
         values[5] = scale.y;
@@ -218,51 +226,6 @@ impl MatrixOpsExt for Matrix4 {
     }
 
     // arithmetic 
-    fn mul_mut(&mut self, rhs: &Matrix4) {
-        let values = &mut self.0;
-        let a:&[f64] = values; 
-        let b:&[f64] = rhs.as_slice();
-        let a00 = a[0]; 
-        let a01 = a[1]; 
-        let a02 = a[2];
-        let a03 = a[3];
-        let a10 = a[4]; 
-        let a11 = a[5];
-        let a12 = a[6]; 
-        let a13 = a[7];
-        let a20 = a[8];
-        let a21 = a[9];
-        let a22 = a[10];
-        let a23 = a[11];
-        let a30 = a[12];
-        let a31 = a[13];
-        let a32 = a[14];
-        let a33 = a[15];
-        let mut b0  = b[0];
-        let mut b1 = b[1];
-        let mut b2 = b[2];
-        let mut b3 = b[3];
-
-        values[0] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
-        values[1] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
-        values[2] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
-        values[3] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
-        b0 = b[4]; b1 = b[5]; b2 = b[6]; b3 = b[7];
-        values[4] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
-        values[5] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
-        values[6] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
-        values[7] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
-        b0 = b[8]; b1 = b[9]; b2 = b[10]; b3 = b[11];
-        values[8] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
-        values[9] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
-        values[10] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
-        values[11] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
-        b0 = b[12]; b1 = b[13]; b2 = b[14]; b3 = b[15];
-        values[12] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
-        values[13] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
-        values[14] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
-        values[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
-    }
 
     /// returns true if it was able to invert, false otherwise
     fn invert_mut(&mut self) -> Result<(), MatrixError> {
@@ -328,17 +291,65 @@ impl MatrixOpsExt for Matrix4 {
     }
 }
 
-impl <T: AsRef<Matrix4>> Mul<T> for Matrix4 {
-    type Output = Matrix4;
-    fn mul(self, rhs: T) -> Self::Output {
-        let mut clone = self.clone();
-        clone.mul_mut(rhs.as_ref());
-        clone
-    }
-}
 
 impl AsRef<Matrix4> for Matrix4 {
     fn as_ref(&self) -> &Self {
         self
+    }
+}
+impl <T: AsRef<Matrix4>> Mul<T> for Matrix4 {
+    type Output = Matrix4;
+    fn mul(self, rhs: T) -> Self::Output {
+        let mut clone = self.clone();
+        clone *= rhs.as_ref();
+        clone
+    }
+}
+
+impl <T: AsRef<Matrix4>> MulAssign<T> for Matrix4 {
+    fn mul_assign(&mut self, rhs: T) {
+        let values = &mut self.0;
+        let a:&[f64] = values; 
+        let b:&[f64] = rhs.as_ref().as_slice();
+        let a00 = a[0]; 
+        let a01 = a[1]; 
+        let a02 = a[2];
+        let a03 = a[3];
+        let a10 = a[4]; 
+        let a11 = a[5];
+        let a12 = a[6]; 
+        let a13 = a[7];
+        let a20 = a[8];
+        let a21 = a[9];
+        let a22 = a[10];
+        let a23 = a[11];
+        let a30 = a[12];
+        let a31 = a[13];
+        let a32 = a[14];
+        let a33 = a[15];
+        let mut b0  = b[0];
+        let mut b1 = b[1];
+        let mut b2 = b[2];
+        let mut b3 = b[3];
+
+        values[0] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+        values[1] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+        values[2] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+        values[3] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
+        b0 = b[4]; b1 = b[5]; b2 = b[6]; b3 = b[7];
+        values[4] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+        values[5] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+        values[6] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+        values[7] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
+        b0 = b[8]; b1 = b[9]; b2 = b[10]; b3 = b[11];
+        values[8] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+        values[9] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+        values[10] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+        values[11] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
+        b0 = b[12]; b1 = b[13]; b2 = b[14]; b3 = b[15];
+        values[12] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+        values[13] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+        values[14] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+        values[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
     }
 }

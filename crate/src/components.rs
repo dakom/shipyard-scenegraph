@@ -1,5 +1,5 @@
-use shipyard::prelude::*;
-use super::{Vec3, Quat, Matrix4};
+use shipyard::EntityId;
+use crate::math::*;
 
 pub struct TransformRoot(pub EntityId);
 

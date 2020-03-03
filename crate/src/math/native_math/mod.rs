@@ -1,15 +1,12 @@
-
 mod matrix;
 mod vec3;
 mod quat;
-mod slice;
-mod components;
+mod as_slice_impls;
 
 pub use self::matrix::*;
 pub use self::vec3::*;
 pub use self::quat::*;
-pub use self::slice::*;
-pub use self::components::*;
+pub use self::as_slice_impls::*;
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "nalgebra")] {

@@ -1,10 +1,11 @@
 use shipyard::prelude::*;
+use shipyard_hierarchy::*;
 use shipyard_scenegraph::{self as sg, *};
 use std::collections::{HashMap, hash_map::Entry};
 use std::hash::Hash;
 
 #[test]
-fn test_transform() {
+fn test_transform_straight() {
     let (world, entities, _labels) = create_scene_graph();
     let (root, a,b,c,d,e,f,g,h,i,j,k,l,m,n) = entities;
 
@@ -304,20 +305,6 @@ fn test_transform_dirty() {
         assert_eq!(Vec3::new(70.0,700.0, 0.0), get_translation(&world_transform.0));
     }
 
-    //debugging - print tree with transforms
-    /*
-    {
-        let (parent_storage, child_storage, translation_storage, world_storage) = world.borrow::<(&Parent, &Child, &Translation, &WorldTransform)>();
-        let storages = (&parent_storage, &child_storage);
-        println!("{:?}", storages.debug_tree(root, |e| {
-            format!("{:?}: Local: {:?} World: {:?}", 
-                labels.get(&e).unwrap(), 
-                (&translation_storage).get(e).unwrap().0,
-                get_translation(&(&world_storage).get(e).unwrap().0)
-            )
-        }));
-    }
-    */
 }
 
 #[test]
@@ -400,7 +387,7 @@ fn get_traverse_dirty_ids(world:&World) -> Vec<EntityId> {
     let ( root, parent_storage, child_storage, local_transform_storage, mut dirty_transform_storage, mut world_transform_storage, ) = 
         world.borrow::<( Unique<&TransformRoot>, &Parent, &Child, &LocalTransform, &mut DirtyTransform, &mut WorldTransform, )>();
 
-    fn update(dirty_list:&mut Vec<EntityId>, id: EntityId, mut dirty: bool, parent: EntityId, parent_storage: &View<Parent>, child_storage: &View<Child>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
+    fn update(dirty_list:&mut Vec<EntityId>, id: EntityId, mut dirty: bool, _parent: EntityId, parent_storage: &View<Parent>, child_storage: &View<Child>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
         dirty |= dirty_transform_storage[id].0;
         dirty_transform_storage[id].0 = false;
 
@@ -490,10 +477,6 @@ fn create_scene_graph() -> (World, TestEntities, HashMap<EntityId, &'static str>
     (world, entities, labels)
 }
 
-fn get_translation(mat:&Matrix4) -> Vec3 {
-    let values = mat.as_slice();
-    Vec3::new(values[12], values[13], values[14])
-}
 
 type TestEntities = (
     EntityId, //root
@@ -512,3 +495,8 @@ type TestEntities = (
     EntityId, //m
     EntityId, //n
 );
+
+fn get_translation(mat:&Matrix4) -> Vec3 {
+    let values = mat.as_slice();
+    Vec3::new(values[12], values[13], values[14])
+}
