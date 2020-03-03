@@ -31,6 +31,7 @@ Other math crates may be added in the future fairly easily since there are reall
 1. Satisfy the [traits](crate/src/math/traits.rs)
 2. Make type aliases for `Matrix4`, `Vec3`, and `Quat`
 
+Currently it's assumed that all the math is done on `f64`'s, with helper methods to write to `&[f32]`'s when needed.
 
 # Usage
 
@@ -55,4 +56,4 @@ translation.0.y = 200.0;
 
 Since this builds on [shipyard-hierarchy](https://github.com/dakom/shipyard-hierarchy), the same methods for traversing and updating the hierarchy are available.
 
-In general, methods are on the storages. By implementing methods on the storages, they can be iterated and worked with more efficiently since the borrow only occurs once. Helpers like [set_trs()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.set_trs.html) and [spawn_child()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.spawn_child.html) that operate on the world, are really just for the sake of convenience.
+In general, methods are on the storages. They can be iterated and worked with more efficiently since the borrow only occurs once. Helpers like [set_trs()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.set_trs.html) and [spawn_child()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.spawn_child.html) that operate on the world, are really just for the sake of convenience and "one-offs".
