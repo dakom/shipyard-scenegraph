@@ -40,7 +40,7 @@ See code in [test_transform.rs](crate/tests/test_transform.rs) as well as the [e
 
 2. Call [init()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.init.html)
 
-3. Spawn children via [spawn_child()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.spawn_child.html)
+3. Spawn children via [spawn_child()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.spawn_child.html) (either via the borrowed storages or the world helper)
 
 4. Update Translation, Rotation, and Scale however you want. For example, on a given entity `hero`:
 ```
