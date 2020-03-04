@@ -8,7 +8,7 @@
 # What is it?
 Scenegraph crate for [shipyard ECS](https://github.com/leudz/shipyard)
 
-Builds on [shipyard-hierarchy](https://github.com/dakom/shipyard-hierarchy)
+Builds on and re-exports [shipyard-hierarchy](https://github.com/dakom/shipyard-hierarchy)
 
 # Components and Systems
 
