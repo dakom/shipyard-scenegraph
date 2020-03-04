@@ -12,3 +12,5 @@ pub use self::init::*;
 pub use self::helpers::*;
 pub use self::hierarchy::*;
 pub use self::errors::*;
+//re-export
+pub use shipyard_hierarchy::*;
