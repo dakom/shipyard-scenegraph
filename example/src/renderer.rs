@@ -5,7 +5,7 @@ use web_sys::{HtmlImageElement};
 use nalgebra::{Matrix4, Vector3};
 
 use awsm_web::webgl::{
-    ClearBufferMask,
+    BufferMask,
     WebGl1Renderer,
     AttributeOptions,
     BufferData,
@@ -64,8 +64,8 @@ impl SceneRenderer {
 
     pub fn clear(&mut self) {
         self.renderer.clear(&[
-            ClearBufferMask::ColorBufferBit,
-            ClearBufferMask::DepthBufferBit,
+            BufferMask::ColorBufferBit,
+            BufferMask::DepthBufferBit,
         ]);
     }
     pub fn pre_render(&mut self, stage_area:&Area) -> Result<(), awsm_web::errors::Error> {
