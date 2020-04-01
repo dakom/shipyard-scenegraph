@@ -52,7 +52,6 @@ pub fn run (
         dirty_transform_storage[id].0 = false;
 
         if dirty {
-
             //we have mutable and immutable ref at the same time.
             //it's technically unsafe but the system gets world_transform_storage as mut
             //so the scheduler will disallow another system from accessing it in parallel 
@@ -83,7 +82,7 @@ pub fn run (
 
     //then recursively update all the children
     (&parent_storage, &child_storage).children(root_id).for_each(|child| {
-        update(root_id, dirty, child, &parent_storage, &child_storage, &local_transform_storage, &mut dirty_transform_storage, &mut world_transform_storage);
+        update(child, dirty, root_id, &parent_storage, &child_storage, &local_transform_storage, &mut dirty_transform_storage, &mut world_transform_storage);
     });
 }
 
