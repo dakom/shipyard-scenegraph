@@ -242,6 +242,7 @@ fn test_transform_dirty() {
     }
 
     //make a change
+    #[cfg(not(feature = "easy_deref"))]
     {
         let mut translation_storage = world.borrow::<&mut Translation>();
         let translation = (&mut translation_storage).get(a).unwrap();
@@ -250,6 +251,17 @@ fn test_transform_dirty() {
         translation.0.y = 300.0;
         let translation = (&mut translation_storage).get(m).unwrap();
         translation.0.y = 400.0;
+    }
+    //might as well test easy_deref here too ;)
+    #[cfg(feature = "easy_deref")]
+    {
+        let mut translation_storage = world.borrow::<&mut Translation>();
+        let translation = (&mut translation_storage).get(a).unwrap();
+        translation.y = 200.0;
+        let translation = (&mut translation_storage).get(g).unwrap();
+        translation.y = 300.0;
+        let translation = (&mut translation_storage).get(m).unwrap();
+        translation.y = 400.0;
     }
 
     world.run_system::<sg::systems::TrsToLocal>();

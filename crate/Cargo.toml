@@ -1,6 +1,6 @@
 [package]
 name = "shipyard_scenegraph"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["David Komer <david.komer@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -16,10 +16,12 @@ shipyard_hierarchy = { version = "^0.1", default-features = false}
 thiserror = "^1.0"
 cfg-if = "^0.1"
 nalgebra = { version = "^0.20", optional = true }
+derive_deref = { version = "^1.1", optional = true }
 
 [features]
 nalgebra_transforms = ["nalgebra"]
-default = ["shipyard/default", "shipyard_hierarchy/default"]
+easy_deref = ["derive_deref"]
+default = ["easy_deref", "shipyard/default", "shipyard_hierarchy/default"]
 parallel = ["shipyard/parallel", "shipyard_hierarchy/parallel"]
 proc = ["shipyard/proc", "shipyard_hierarchy/proc"]
 non_send = ["shipyard/non_send", "shipyard_hierarchy/non_send"]

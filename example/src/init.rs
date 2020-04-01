@@ -73,8 +73,8 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
                 let (width, height) = get_window_size(&window).unwrap();
                 world.borrow::<Unique<NonSendSync<&mut SceneRenderer>>>().renderer.resize(width, height);
                 let mut stage_area = world.borrow::<Unique<&mut StageArea>>();
-                stage_area.0.width = width;
-                stage_area.0.height = height;
+                stage_area.width = width;
+                stage_area.height = height;
             }
         };
 
@@ -137,24 +137,6 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
     let square = create_square(None, 400, 400, 1.0, 0.0, 0.0);
     let square = create_square(Some(square), 200, 200, 0.0, 1.0, 0.0);
     let _square = create_square(Some(square), 100, 100, 0.0, 0.0, 1.0);
-
-    /*
-    {
-        world.run_workload(TICK);
-        use shipyard_scenegraph::HierarchyIterDebug;
-        fn get_translation(mat:&sg::Matrix4) -> sg::Vec3 {
-            sg::Vec3::new(mat.12, mat.13, mat.14)
-        }
-        let (parent_storage, child_storage, translation_storage, world_storage) = world.borrow::<(&sg::Parent, &sg::Child, &sg::Translation, &sg::WorldTransform)>();
-        let storages = (&parent_storage, &child_storage);
-        log::info!("{:?}", storages.debug_tree(root, |e| {
-            format!("Local: {:?} World: {:?}", 
-                &(&translation_storage).get(e).unwrap().0,
-                get_translation(&(&world_storage).get(e).unwrap().0)
-            )
-        }));
-    }
-    */
 }
 
 /// Until Raf is availble in gloo...

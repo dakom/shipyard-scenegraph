@@ -1,6 +1,6 @@
 use shipyard::prelude::*;
 use shipyard_scenegraph::Vec3;
-
+use derive_deref::{Deref, DerefMut};
 use crate::geometry::*;
 //re-exported so its easier to just use components::*
 pub use crate::renderer::SceneRenderer;
@@ -13,8 +13,12 @@ impl Color {
     }
 }
 
+#[derive(Clone, Deref, DerefMut)]
 pub struct ImageArea(pub Area);
+
+#[derive(Clone, Deref, DerefMut)]
 pub struct StageArea(pub Area);
+
 #[derive(PartialEq)]
 pub enum Controller {
     Waiting,

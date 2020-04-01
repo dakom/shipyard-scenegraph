@@ -12,7 +12,6 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
         let world = Rc::clone(&world);
         move |event:&Event| {
             let stage_area = world.borrow::<Unique<&mut StageArea>>();
-            let stage_area = stage_area.0;
             let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
             let mouse_point = get_point(&stage_area, &event);
 
@@ -24,9 +23,9 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
                     .with_id()
                     .map(|(id, (transform, obj_area))| {
                         //get the position from world matrix
-                        let mat = transform.0.as_slice();
+                        let mat = transform.as_slice();
                         let pos = Vec3::new(mat[12], mat[13], mat[14]);
-                        (id,  pos, obj_area.0)
+                        (id,  pos, obj_area)
                     })
                     .filter(|(id, pos, obj_area)| get_bounds(&pos, &obj_area, &stage_area).contains(&mouse_point))
                     .map(|(id, pos, obj_area)| (id, pos))
@@ -56,7 +55,6 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
         move |event:&Event| {
             if let Controller::Selected(id) = *world.borrow::<Unique<&mut Controller>>() {
                 let stage_area = world.borrow::<Unique<&mut StageArea>>();
-                let stage_area = stage_area.0;
                 let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
                 let mouse_point = get_point(&stage_area, &event);
                 let mut motion = world.borrow::<Unique<&mut Motion>>();
@@ -66,8 +64,8 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
                     
                     let mut positions = world.borrow::<&mut Translation>();
                     let mut position = (&mut positions).get(id).unwrap();
-                    position.0.x += delta_x;
-                    position.0.y += delta_y;
+                    position.x += delta_x;
+                    position.y += delta_y;
                     //log::info!("moving {:?} {} {}", id, delta_x, delta_y);
                 }
                 motion.last_pos = motion.current_pos.clone();

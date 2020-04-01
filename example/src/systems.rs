@@ -19,14 +19,14 @@ pub fn run (
     img_areas:&ImageArea,
     colors:&Color,
 ) {
-    renderer.pre_render(&stage_area.0).unwrap();
+    renderer.pre_render(&stage_area).unwrap();
 
     let mut scratch:[f32;16] = [0.0;16];
 
     (&world_transforms, &img_areas, &colors)
         .iter()
         .for_each(|(transform, img_area, color)| {
-            transform.0.write_to_vf32(&mut scratch);
+            transform.write_to_vf32(&mut scratch);
             renderer.draw_square(&scratch, &img_area.0, color).unwrap();
         });
 
