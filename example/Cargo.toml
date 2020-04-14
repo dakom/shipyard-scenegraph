@@ -49,6 +49,6 @@ features = [
 
 ]
 [features]
-default = ["wee_alloc"]
+default = ["wee_alloc", "nalgebra_transforms"]
 dev = ["wee_alloc", "wasm-logger", "console_error_panic_hook"]
 nalgebra_transforms = ["shipyard_scenegraph/nalgebra_transforms"]

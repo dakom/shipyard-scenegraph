@@ -213,19 +213,19 @@ impl MatrixExt for Matrix4 {
         values[0] = (1.0 - (yy + zz)) * sx;
         values[1] = (xy + wz) * sx;
         values[2] = (xz - wy) * sx;
-        //values[3 = 0.0;
+        values[3] = 0.0;
         values[4] = (xy - wz) * sy;
         values[5] = (1.0 - (xx + zz)) * sy;
         values[6] = (yz + wx) * sy;
-        //values[7 = 0.0;
+        values[7] = 0.0;
         values[8] = (xz + wy) * sz;
         values[9] = (yz - wx) * sz;
         values[10] = (1.0 - (xx + yy)) * sz;
-        //values[11 = 0.0;
+        values[11] = 0.0;
         values[12] = translation.x;
         values[13] = translation.y;
         values[14] = translation.z;
-        //values[15 = 1.0;
+        values[15] = 1.0;
     }
     fn set_trs_origin(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3, origin:&Vec3) {
         let values = &mut self.0;
