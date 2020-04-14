@@ -217,12 +217,6 @@ impl MatrixExt for Matrix4 {
         values[13] = translation.y;
         values[14] = translation.z;
         //values[15 = 1.0;
-
-        /* alternatively, but slower:
-        self.set_from_translation(translation);
-        self.mul_mut(&Self::from_rotation(rotation));
-        self.mul_mut(&Self::from_scale(scale));
-        */
     }
 
     // arithmetic 
@@ -298,6 +292,15 @@ impl AsRef<Matrix4> for Matrix4 {
     }
 }
 impl <T: AsRef<Matrix4>> Mul<T> for Matrix4 {
+    type Output = Matrix4;
+    fn mul(self, rhs: T) -> Self::Output {
+        let mut clone = self.clone();
+        clone *= rhs.as_ref();
+        clone
+    }
+}
+
+impl <T: AsRef<Matrix4>> Mul<T> for &Matrix4 {
     type Output = Matrix4;
     fn mul(self, rhs: T) -> Self::Output {
         let mut clone = self.clone();
