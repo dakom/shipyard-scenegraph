@@ -640,6 +640,8 @@ version = "0.1.5"
 dependencies = [
  "cfg-if",
  "derive_deref",
+ "log",
+ "nalgebra",
  "shipyard",
  "shipyard_hierarchy",
  "thiserror",
