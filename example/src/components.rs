@@ -19,6 +19,27 @@ pub struct ImageArea(pub Area);
 #[derive(Clone, Deref, DerefMut)]
 pub struct StageArea(pub Area);
 
+pub struct Tick {
+    pub last_time:f64,
+    pub now:f64,
+    pub delta:f64,
+    pub total: f64,
+}
+
+#[derive(Clone, Deref, DerefMut)]
+pub struct Spin(pub f64);
+
+impl Default for Tick {
+    fn default() -> Self {
+        Self {
+            last_time: 0.0,
+            now: 0.0,
+            delta: 0.0,
+            total: 0.0,
+        }
+    }
+}
+
 #[derive(PartialEq)]
 pub enum Controller {
     Waiting,

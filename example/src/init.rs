@@ -87,7 +87,19 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
             let world = Rc::clone(&world);
 
             move |timestamp| {
-                world.run_workload(TICK);
+                let will_run = {
+                    let mut tick = world.borrow::<Unique<&mut Tick>>();
+                    let will_run = if tick.last_time == 0.0 { false } else { true };
+                    tick.delta = timestamp - tick.last_time;
+                    tick.last_time = tick.now;
+                    tick.now = timestamp;
+                    tick.total += tick.delta;
+                    will_run
+                };
+                
+                if will_run {
+                    world.run_workload(TICK);
+                }
             }
         });
 
@@ -123,12 +135,23 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
         depth = 1.0;
 
         {
-            let (entities, mut areas, mut colors) = world.borrow::<(EntitiesMut, &mut ImageArea, &mut Color)>();
-            entities.add_component(
-                (&mut areas, &mut colors), 
-                (ImageArea (Area { width, height}), Color (r,g,b, 1.0)),
-                entity
-            );
+            let has_spin = if width == 100 { true } else { false };
+           
+            let (entities, mut areas, mut colors, mut spins) = world.borrow::<(EntitiesMut, &mut ImageArea, &mut Color, &mut Spin)>();
+
+            if has_spin {
+                entities.add_component(
+                    (&mut areas, &mut colors, &mut spins), 
+                    (ImageArea (Area { width, height}), Color (r,g,b, 1.0), Spin(0.0)),
+                    entity
+                );
+            } else {
+                entities.add_component(
+                    (&mut areas, &mut colors), 
+                    (ImageArea (Area { width, height}), Color (r,g,b, 1.0)),
+                    entity
+                );
+            }
         }
 
         entity
