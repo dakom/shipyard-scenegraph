@@ -57,3 +57,7 @@ translation.0.y = 200.0;
 Since this builds on [shipyard-hierarchy](https://github.com/dakom/shipyard-hierarchy), the same methods for traversing and updating the hierarchy are available.
 
 In general, methods are on the storages. They can be iterated and worked with more efficiently since the borrow only occurs once. Helpers like [set_trs()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.set_trs.html) and [spawn_child()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.spawn_child.html) that operate on the world, are really just for the sake of convenience and "one-offs".
+
+# TODO
+
+See issues. Also, ergonomics ;)
