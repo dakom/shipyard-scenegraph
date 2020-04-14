@@ -10,6 +10,7 @@ pub fn run (
     mut translations: &mut Translation, 
     mut rotations: &mut Rotation, 
     mut scales: &mut Scale,
+    mut origins: &mut Origin,
     mut local_transforms: &mut LocalTransform, 
     mut dirty_transforms: &mut DirtyTransform, 
 ) {
@@ -23,18 +24,20 @@ pub fn run (
     translations.inserted_or_modified().iter_ids().for_each(|id| { unique_ids.insert(id); });
     rotations.inserted_or_modified().iter_ids().for_each(|id| { unique_ids.insert(id); });
     scales.inserted_or_modified().iter_ids().for_each(|id| { unique_ids.insert(id); });
+    origins.inserted_or_modified().iter_ids().for_each(|id| { unique_ids.insert(id); });
 
     unique_ids
         .iter()
         .for_each(|id| {
-            let (translation, rotation, scale, local_transform, dirty_transform) = (&translations, &rotations, &scales, &mut local_transforms, &mut dirty_transforms).get(*id).unwrap();
-            local_transform.0.reset_from_trs(&translation.0, &rotation.0, &scale.0);
+            let (translation, rotation, scale, origin, local_transform, dirty_transform) = (&translations, &rotations, &scales, &origins, &mut local_transforms, &mut dirty_transforms).get(*id).unwrap();
+            local_transform.0.reset_from_trs_origin(&translation.0, &rotation.0, &scale.0, &origin.0);
             dirty_transform.0 = true;
         });
 
     translations.clear_inserted_and_modified();
     rotations.clear_inserted_and_modified();
     scales.clear_inserted_and_modified();
+    origins.clear_inserted_and_modified();
 }
 
 //See: https://gameprogrammingpatterns.com/dirty-flag.html

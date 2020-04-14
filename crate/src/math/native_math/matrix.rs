@@ -176,9 +176,18 @@ impl MatrixExt for Matrix4 {
         m.set_trs(translation, rotation, scale);
         m
     }
+    fn new_from_trs_origin(translation:&Vec3, rotation:&Quat, scale:&Vec3, origin:&Vec3) -> Self {
+        let mut m = Self::identity();
+        m.set_trs_origin(translation, rotation, scale, origin);
+        m
+    }
     fn reset_from_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
         self.reset();
         self.set_trs(translation, rotation, scale);
+    }
+    fn reset_from_trs_origin(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3, origin:&Vec3) {
+        self.reset();
+        self.set_trs_origin(translation, rotation, scale, origin);
     }
     fn set_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
         let values = &mut self.0;
@@ -217,6 +226,56 @@ impl MatrixExt for Matrix4 {
         values[13] = translation.y;
         values[14] = translation.z;
         //values[15 = 1.0;
+    }
+    fn set_trs_origin(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3, origin:&Vec3) {
+        let values = &mut self.0;
+        let x = rotation.x;
+        let y = rotation.y;
+        let z = rotation.z; 
+        let w = rotation.w;
+        let x2 = x + x;
+        let y2 = y + y;
+        let z2 = z + z;
+        let xx = x * x2;
+        let xy = x * y2;
+        let xz = x * z2;
+        let yy = y * y2;
+        let yz = y * z2;
+        let zz = z * z2;
+        let wx = w * x2;
+        let wy = w * y2;
+        let wz = w * z2;
+        let sx = scale.x;
+        let sy = scale.y;
+        let sz = scale.z;
+        let ox = origin.x;
+        let oy = origin.y;
+        let oz = origin.z;
+        let out0 = (1.0 - (yy + zz)) * sx;
+        let out1 = (xy + wz) * sx;
+        let out2 = (xz - wy) * sx;
+        let out4 = (xy - wz) * sy;
+        let out5 = (1.0 - (xx + zz)) * sy;
+        let out6 = (yz + wx) * sy;
+        let out8 = (xz + wy) * sz;
+        let out9 = (yz - wx) * sz;
+        let out10 = (1.0 - (xx + yy)) * sz;
+        values[0] = out0;
+        values[1] = out1;
+        values[2] = out2;
+        values[3] = 0.0;
+        values[4] = out4;
+        values[5] = out5;
+        values[6] = out6;
+        values[7] = 0.0;
+        values[8] = out8;
+        values[9] = out9;
+        values[10] = out10;
+        values[11] = 0.0;
+        values[12] = translation.x + ox - (out0 * ox + out4 * oy + out8 * oz);
+        values[13] = translation.y + oy - (out1 * ox + out5 * oy + out9 * oz);
+        values[14] = translation.z + oz - (out2 * ox + out6 * oy + out10 * oz);
+        values[15] = 1.0;
     }
 
     // arithmetic 

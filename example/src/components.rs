@@ -29,6 +29,8 @@ pub struct Tick {
 #[derive(Clone, Deref, DerefMut)]
 pub struct Spin(pub f64);
 
+pub struct Interactable {}
+
 impl Default for Tick {
     fn default() -> Self {
         Self {

@@ -20,6 +20,10 @@ pub struct Scale(pub Vec3);
 
 #[cfg_attr(feature = "easy_deref", derive(Deref, DerefMut))]
 #[derive(Debug)]
+pub struct Origin(pub Vec3);
+
+#[cfg_attr(feature = "easy_deref", derive(Deref, DerefMut))]
+#[derive(Debug)]
 pub struct LocalTransform(pub Matrix4);
 
 #[cfg_attr(feature = "easy_deref", derive(Deref, DerefMut))]

@@ -12,10 +12,5 @@ pub fn init_world(stage_area:Area,renderer:SceneRenderer) -> World {
     world.add_unique(Tick::default());
     world.add_unique_non_send_sync(renderer);
 
-    {
-        let (mut areas, mut colors) = world.borrow::<(&mut ImageArea, &mut Color)>();
-        (&mut areas, &mut colors).tight_pack();
-    }
-
     world
 }

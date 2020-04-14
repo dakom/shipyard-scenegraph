@@ -6,6 +6,7 @@ pub fn init(world:&World) -> EntityId {
     let translation = Vec3::zero();
     let rotation = Quat::identity();
     let scale = Vec3::new(1.0, 1.0, 1.0);
+    let origin = Vec3::zero();
     let local_matrix = Matrix4::identity(); 
     let world_matrix = Matrix4::identity();
 
@@ -15,6 +16,7 @@ pub fn init(world:&World) -> EntityId {
             mut translations,
             mut rotations,
             mut scales,
+            mut origins,
             mut local_transforms,
             mut world_transforms,
             mut dirty_transforms
@@ -23,6 +25,7 @@ pub fn init(world:&World) -> EntityId {
             &mut Translation,
             &mut Rotation,
             &mut Scale,
+            &mut Origin,
             &mut LocalTransform,
             &mut WorldTransform,
             &mut DirtyTransform,
@@ -33,6 +36,7 @@ pub fn init(world:&World) -> EntityId {
                 &mut translations,
                 &mut rotations,
                 &mut scales,
+                &mut origins,
                 &mut local_transforms,
                 &mut world_transforms,
                 &mut dirty_transforms
@@ -41,6 +45,7 @@ pub fn init(world:&World) -> EntityId {
                 Translation(translation),
                 Rotation(rotation),
                 Scale(scale),
+                Origin(origin),
                 LocalTransform(local_matrix),
                 WorldTransform(world_matrix),
                 DirtyTransform(false)
@@ -50,14 +55,16 @@ pub fn init(world:&World) -> EntityId {
 
     world.add_unique(TransformRoot(id));
 
-    let (mut translations,mut rotations,mut scales) = world.borrow::<( &mut Translation, &mut Rotation, &mut Scale)>();
+    let (mut translations,mut rotations,mut scales, mut origins) = world.borrow::<( &mut Translation, &mut Rotation, &mut Scale, &mut Origin)>();
     translations.update_pack();
     rotations.update_pack();
     scales.update_pack();
+    origins.update_pack();
 
     translations.clear_inserted_and_modified();
     rotations.clear_inserted_and_modified();
     scales.clear_inserted_and_modified();
+    origins.clear_inserted_and_modified();
 
     id
 }

@@ -116,50 +116,62 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
 
 
     let mut depth = 0.0;
-    let mut create_square = |parent:Option<EntityId>, width: u32, height: u32, r: f64, g: f64, b: f64| -> EntityId {
+    let mut create_square = |parent:Option<EntityId>, has_spin: bool, visible: bool, width: u32, height: u32, r: f64, g: f64, b: f64| -> EntityId {
+
+        let origin = {
+            if has_spin {
+                Some(sg::Vec3::new((width as f64)/2.0, (height as f64)/2.0, 0.0))
+            } else {
+                None
+            }
+        };
+
+        let translation = {
+            if has_spin {
+                None
+            } else {
+                Some(if parent.is_none() {
+                    sg::Vec3::new(0.5 * (stage_width - (width as f64)), 0.5 * (stage_height - (height as f64)), depth)
+                } else {
+                    sg::Vec3::new((width as f64)/2.0, (height as f64)/2.0, depth)
+                })
+            }
+        };
 
         let entity = sg::spawn_child(
             world, 
             parent,
-            Some(
-                if parent.is_none() {
-                    sg::Vec3::new(0.5 * (stage_width - (width as f64)), 0.5 * (stage_height - (height as f64)), depth)
-                } else {
-                    sg::Vec3::new((width as f64)/2.0, (height as f64)/2.0, depth)
-                }
-            ),
+            translation,
             None,
             None,
+            origin,
         );
 
         depth = 1.0;
 
         {
-            let has_spin = if width == 100 { true } else { false };
            
-            let (entities, mut areas, mut colors, mut spins) = world.borrow::<(EntitiesMut, &mut ImageArea, &mut Color, &mut Spin)>();
+            let (entities, mut areas, mut colors, mut spins, mut interactables) = world.borrow::<(EntitiesMut, &mut ImageArea, &mut Color, &mut Spin, &mut Interactable)>();
 
+            entities.add_component(&mut areas, ImageArea (Area { width, height}), entity);
+
+            if visible {
+                entities.add_component(&mut colors, Color (r,g,b, 1.0), entity);
+            }
             if has_spin {
-                entities.add_component(
-                    (&mut areas, &mut colors, &mut spins), 
-                    (ImageArea (Area { width, height}), Color (r,g,b, 1.0), Spin(0.0)),
-                    entity
-                );
+                entities.add_component(&mut spins, Spin(0.0), entity);
             } else {
-                entities.add_component(
-                    (&mut areas, &mut colors), 
-                    (ImageArea (Area { width, height}), Color (r,g,b, 1.0)),
-                    entity
-                );
+                entities.add_component(&mut interactables, Interactable{}, entity);
             }
         }
 
         entity
     };
 
-    let square = create_square(None, 400, 400, 1.0, 0.0, 0.0);
-    let square = create_square(Some(square), 200, 200, 0.0, 1.0, 0.0);
-    let _square = create_square(Some(square), 100, 100, 0.0, 0.0, 1.0);
+    let square = create_square(None, false, true, 400, 400, 1.0, 0.0, 0.0);
+    let square = create_square(Some(square), false, true, 200, 200, 0.0, 1.0, 0.0);
+    let square = create_square(Some(square), false, false, 100, 100, 0.0, 0.0, 1.0);
+    let _square = create_square(Some(square), true, true, 100, 100, 0.0, 0.0, 1.0);
 }
 
 /// Until Raf is availble in gloo...

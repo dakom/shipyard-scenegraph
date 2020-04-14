@@ -37,6 +37,9 @@ pub trait MatrixExt {
     fn new_from_trs(translation:&Vec3, rotation:&Quat, scale:&Vec3) -> Matrix4;
     fn reset_from_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3);
     fn set_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3);
+    fn new_from_trs_origin(translation:&Vec3, rotation:&Quat, scale:&Vec3, origin:&Vec3) -> Matrix4;
+    fn reset_from_trs_origin(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3, origin:&Vec3);
+    fn set_trs_origin(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3, origin:&Vec3);
     fn invert_mut(&mut self) -> Result<(), MatrixError>;
     fn invert(&self) -> Result<Matrix4, MatrixError>;
 }

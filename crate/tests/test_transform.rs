@@ -451,20 +451,20 @@ fn create_scene_graph() -> (World, TestEntities, HashMap<EntityId, &'static str>
         let root = sg::init(&world);
 
         //attach them somewhat out of order
-        let a = sg::spawn_child(&world, None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let b = sg::spawn_child(&world, None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let c = sg::spawn_child(&world, None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let d = sg::spawn_child(&world, Some(a), Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let e = sg::spawn_child(&world, Some(a), Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let f = sg::spawn_child(&world, Some(c), Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let g = sg::spawn_child(&world, Some(c), Some(Vec3::new(20.0, 0.0, 0.0)), None, None);
-        let h = sg::spawn_child(&world, Some(d), Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let i = sg::spawn_child(&world, Some(d), Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let l = sg::spawn_child(&world, Some(h), Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let j = sg::spawn_child(&world, Some(g), Some(Vec3::new(20.0, 0.0, 0.0)), None, None);
-        let m = sg::spawn_child(&world, Some(j), Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let k = sg::spawn_child(&world, Some(g), Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
-        let n = sg::spawn_child(&world, Some(m), Some(Vec3::new(10.0, 0.0, 0.0)), None, None);
+        let a = sg::spawn_child(&world, None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let b = sg::spawn_child(&world, None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let c = sg::spawn_child(&world, None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let d = sg::spawn_child(&world, Some(a), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let e = sg::spawn_child(&world, Some(a), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let f = sg::spawn_child(&world, Some(c), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let g = sg::spawn_child(&world, Some(c), Some(Vec3::new(20.0, 0.0, 0.0)), None, None, None);
+        let h = sg::spawn_child(&world, Some(d), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let i = sg::spawn_child(&world, Some(d), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let l = sg::spawn_child(&world, Some(h), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let j = sg::spawn_child(&world, Some(g), Some(Vec3::new(20.0, 0.0, 0.0)), None, None, None);
+        let m = sg::spawn_child(&world, Some(j), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let k = sg::spawn_child(&world, Some(g), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let n = sg::spawn_child(&world, Some(m), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
    
         labels.insert(root, "root");
         labels.insert(a, "a");

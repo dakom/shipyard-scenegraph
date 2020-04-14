@@ -1,6 +1,6 @@
 use crate::components::*;
 use crate::geometry::*;
-use shipyard_scenegraph::{Vec3, AsSliceExt, Translation, WorldTransform};
+use shipyard_scenegraph::{Vec3, AsSliceExt, Translation, Origin, WorldTransform};
 use std::rc::{Rc};
 use gloo_events::{EventListener};
 use web_sys::{Event, MouseEvent};
@@ -15,16 +15,22 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
             let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
             let mouse_point = get_point(&stage_area, &event);
 
-            let (positions, areas) = world.borrow::<(&WorldTransform, &ImageArea)>();
+            let (positions, origins, areas, interactables) = world.borrow::<(&WorldTransform, &Origin, &ImageArea, &Interactable)>();
 
             let hits:Vec<(EntityId, Vec3)> = 
-                (&positions, &areas)
+                (&positions, &origins, &areas, &interactables)
                     .iter()
                     .with_id()
-                    .map(|(id, (transform, obj_area))| {
+                    .map(|(id, (transform, origin, obj_area, _interactable))| {
                         //get the position from world matrix
                         let mat = transform.as_slice();
                         let pos = Vec3::new(mat[12], mat[13], mat[14]);
+                       
+                        if origin.x == 0.0 && origin.y == 0.0 && origin.z == 0.0 {
+                        }  else {
+                            log::info!("{:?}", mouse_point);
+                            log::info!("{:?}", pos);
+                        }
                         (id,  pos, obj_area)
                     })
                     .filter(|(id, pos, obj_area)| get_bounds(&pos, &obj_area, &stage_area).contains(&mouse_point))
