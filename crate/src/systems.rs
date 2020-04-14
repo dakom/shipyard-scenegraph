@@ -1,6 +1,7 @@
 use shipyard::prelude::*;
 use shipyard_hierarchy::*;
 use std::collections::HashSet;
+use std::ops::{Mul, MulAssign};
 use crate::components::*;
 use crate::math::*;
 
@@ -52,18 +53,29 @@ pub fn run (
         dirty_transform_storage[id].0 = false;
 
         if dirty {
-            //we have mutable and immutable ref at the same time.
-            //it's technically unsafe but the system gets world_transform_storage as mut
+            //we need to operate on 2 parts of the storage at the same time
+            //which effectively means taking 2 mutable refs (or a mutable and immutable)
+            //this is technically unsafe but the system gets world_transform_storage as mut
             //so the scheduler will disallow another system from accessing it in parallel 
             //in order to avoid the UB we need to get each pointer _separately_ then call .mul_mut() with them
-
-            world_transform_storage[id].0.copy_from_slice(local_transform_storage[id].0.as_slice()); 
-
+            //only the first part of the operation (copying world transform of parent to world of entity)
+            //is actually unsafe - after that's done we can do a safe mul_assign against local_transform
             unsafe {
-                let entity_ptr = &mut world_transform_storage[id].0 as *mut Matrix4;
-                let parent_ptr = &world_transform_storage[parent].0 as *const Matrix4;
-                *(&mut *entity_ptr) *= &*parent_ptr;
+                let world_ptr = &mut world_transform_storage[id].0 as *mut Matrix4;
+                let parent_world_ptr = &world_transform_storage[parent].0 as *const Matrix4;
+                (&mut *world_ptr).copy_from_slice((&*parent_world_ptr).as_slice()); 
             }
+            
+            world_transform_storage[id].0 *= &local_transform_storage[id].0;
+
+
+            //Safe version, but costs a clone of Mat4 each time
+            /*
+            let local = &local_transform_storage[id].0;
+            let parent_world = &world_transform_storage[parent].0;
+            let local_world = parent_world * local;
+            world_transform_storage[id].0 = local_world;
+            */
         }
 
         (parent_storage, child_storage).children(id).for_each(|child| {
