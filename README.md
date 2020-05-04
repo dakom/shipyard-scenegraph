@@ -14,7 +14,7 @@ Builds on and re-exports [shipyard-hierarchy](https://github.com/dakom/shipyard-
 
 See [components.rs](crate/src/components.rs) for the full list of exported components. They are mainly just thin wrappers around math primitives. [systems.rs](crate/src/systems.rs) has the exported systems (these are not exported on the root, but rather as `systems::*`).
 
-The way it all fits together is that `Translation`, `Rotation`, and `Scale` are in an "update pack". This allows for changes to these to be propagated to `LocalTransform` automatically and efficiently when the `TrsToLocal` system is run. 
+The way it all fits together is that `Translation`, `Rotation`, `Scale` and `Origin` are in an "update pack". This allows for changes to these to be propagated to `LocalTransform` automatically and efficiently when the `TrsToLocal` system is run. 
 
 Similarly, the changes to `LocalTransform` are efficiently propagated to `WorldTransform` when the `LocalToWorld` system is run. Currently this does not go through update pack and rather uses a separate `DirtyTransform` component, [though that may change soon](https://github.com/dakom/shipyard-scenegraph/issues/19)
 
