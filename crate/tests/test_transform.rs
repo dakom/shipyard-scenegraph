@@ -1,4 +1,4 @@
-use shipyard::prelude::*;
+use shipyard::*;
 use shipyard_hierarchy::*;
 use shipyard_scenegraph::{self as sg, *};
 use std::collections::{HashMap, hash_map::Entry};
@@ -11,7 +11,7 @@ fn test_transform_straight() {
 
     //adding the entities makes trs dirty, but not yet world
     {
-        let (translations, rotations, scales, dirty) = world.borrow::<(&Translation, &Rotation, &Scale, &DirtyTransform)>(); 
+        let (translations, rotations, scales, dirty) = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<DirtyTransform>)>(); 
 
         let tlen = translations.inserted_or_modified().len();
         let rlen = rotations.inserted_or_modified().len();
@@ -26,7 +26,7 @@ fn test_transform_straight() {
 
     //when first added - notes do not have their local_transform updated
     {
-        let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(&Translation, &Rotation, &Scale, &LocalTransform, &WorldTransform)>(); 
+        let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<LocalTransform>, View<WorldTransform>)>(); 
 
         (&translations, &rotations, &scales, &local_transforms, &world_transforms)
             .iter()
@@ -37,11 +37,11 @@ fn test_transform_straight() {
     }
 
     //update local_transform - world_transform should be unchanged
-    world.run_system::<sg::systems::TrsToLocal>();
+    world.run(sg::systems::trs_to_local);
 
     //this now unmarks trs as dirty, but marks world as dirty 
     {
-        let (translations, rotations, scales, dirty) = world.borrow::<(&Translation, &Rotation, &Scale, &DirtyTransform)>(); 
+        let (translations, rotations, scales, dirty) = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<DirtyTransform>)>(); 
 
         let tlen = translations.inserted_or_modified().len();
         let rlen = rotations.inserted_or_modified().len();
@@ -56,7 +56,7 @@ fn test_transform_straight() {
 
     //now local_transform should match (world_transform is unchanged)
     {
-        let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(&Translation, &Rotation, &Scale, &LocalTransform, &WorldTransform)>(); 
+        let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<LocalTransform>, View<WorldTransform>)>(); 
         (&translations, &rotations, &scales, &local_transforms, &world_transforms)
             .iter()
             .with_id()
@@ -78,11 +78,11 @@ fn test_transform_straight() {
 
     
     //update world_transforms
-    world.run_system::<sg::systems::LocalToWorld>();
+    world.run(sg::systems::local_to_world);
 
     //nothing should be dirty
     {
-        let (translations, rotations, scales, dirty) = world.borrow::<(&Translation, &Rotation, &Scale, &DirtyTransform)>(); 
+        let (translations, rotations, scales, dirty) = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<DirtyTransform>)>(); 
 
         let tlen = translations.inserted_or_modified().len();
         let rlen = rotations.inserted_or_modified().len();
@@ -97,7 +97,7 @@ fn test_transform_straight() {
 
     //local_transfrom should not be affected
     {
-        let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(&Translation, &Rotation, &Scale, &LocalTransform, &WorldTransform)>(); 
+        let (translations, rotations, scales, local_transforms, world_transforms) = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<LocalTransform>, View<WorldTransform>)>(); 
         (&translations, &rotations, &scales, &local_transforms, &world_transforms)
             .iter()
             .with_id()
@@ -118,64 +118,64 @@ fn test_transform_straight() {
 
     //check all the world transforms
     {
-        let world_storage = world.borrow::<&WorldTransform>();
+        let world_storage = world.borrow::<View<WorldTransform>>();
 
 
-        let world_transform = (&world_storage).get(root).unwrap();
+        let world_transform = (&world_storage).try_get(root).unwrap();
         assert_eq!(Vec3::new(0.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(a).unwrap();
+        let world_transform = (&world_storage).try_get(a).unwrap();
         assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(b).unwrap();
+        let world_transform = (&world_storage).try_get(b).unwrap();
         assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(c).unwrap();
+        let world_transform = (&world_storage).try_get(c).unwrap();
         assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(d).unwrap();
+        let world_transform = (&world_storage).try_get(d).unwrap();
         assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(e).unwrap();
+        let world_transform = (&world_storage).try_get(e).unwrap();
         assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(f).unwrap();
+        let world_transform = (&world_storage).try_get(f).unwrap();
         assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(g).unwrap();
+        let world_transform = (&world_storage).try_get(g).unwrap();
         assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(h).unwrap();
+        let world_transform = (&world_storage).try_get(h).unwrap();
         assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(i).unwrap();
+        let world_transform = (&world_storage).try_get(i).unwrap();
         assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(j).unwrap();
+        let world_transform = (&world_storage).try_get(j).unwrap();
         assert_eq!(Vec3::new(50.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(k).unwrap();
+        let world_transform = (&world_storage).try_get(k).unwrap();
         assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform.0));
         
-        let world_transform = (&world_storage).get(l).unwrap();
+        let world_transform = (&world_storage).try_get(l).unwrap();
         assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(m).unwrap();
+        let world_transform = (&world_storage).try_get(m).unwrap();
         assert_eq!(Vec3::new(60.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(n).unwrap();
+        let world_transform = (&world_storage).try_get(n).unwrap();
         assert_eq!(Vec3::new(70.0,0.0, 0.0), get_translation(&world_transform.0));
     }
     //debugging - print tree with transforms
     /*
     {
-        let (parent_storage, child_storage, translation_storage, world_storage) = world.borrow::<(&Parent, &Child, &Translation, &WorldTransform)>();
+        let (parent_storage, child_storage, translation_storage, world_storage) = world.borrow::<(&Parent, &Child, View<Translation>, View<WorldTransform>)>();
         let storages = (&parent_storage, &child_storage);
         println!("{:?}", storages.debug_tree(entities.0, |e| {
             format!("{:?}: Local: {:?} World: {:?}", 
                 labels.get(&e).unwrap(), 
                 &(&translation_storage).get(e).unwrap().0,
-                get_translation(&(&world_storage).get(e).unwrap().0)
+                get_translation(&(&world_storage).try_get(e).unwrap().0)
             )
         }));
     }
@@ -187,57 +187,57 @@ fn test_transform_dirty() {
     let (world, entities, _labels) = create_scene_graph();
     let (root, a,b,c,d,e,f,g,h,i,j,k,l,m,n) = entities;
 
-    world.run_system::<sg::systems::TrsToLocal>();
-    world.run_system::<sg::systems::LocalToWorld>();
+    world.run(sg::systems::trs_to_local);
+    world.run(sg::systems::local_to_world);
 
     //check all the world transforms before making changes
     {
-        let world_storage = world.borrow::<&WorldTransform>();
+        let world_storage = world.borrow::<View<WorldTransform>>();
 
 
-        let world_transform = (&world_storage).get(root).unwrap();
+        let world_transform = (&world_storage).try_get(root).unwrap();
         assert_eq!(Vec3::new(0.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(a).unwrap();
+        let world_transform = (&world_storage).try_get(a).unwrap();
         assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(b).unwrap();
+        let world_transform = (&world_storage).try_get(b).unwrap();
         assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(c).unwrap();
+        let world_transform = (&world_storage).try_get(c).unwrap();
         assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(d).unwrap();
+        let world_transform = (&world_storage).try_get(d).unwrap();
         assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(e).unwrap();
+        let world_transform = (&world_storage).try_get(e).unwrap();
         assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(f).unwrap();
+        let world_transform = (&world_storage).try_get(f).unwrap();
         assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(g).unwrap();
+        let world_transform = (&world_storage).try_get(g).unwrap();
         assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(h).unwrap();
+        let world_transform = (&world_storage).try_get(h).unwrap();
         assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(i).unwrap();
+        let world_transform = (&world_storage).try_get(i).unwrap();
         assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(j).unwrap();
+        let world_transform = (&world_storage).try_get(j).unwrap();
         assert_eq!(Vec3::new(50.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(k).unwrap();
+        let world_transform = (&world_storage).try_get(k).unwrap();
         assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform.0));
         
-        let world_transform = (&world_storage).get(l).unwrap();
+        let world_transform = (&world_storage).try_get(l).unwrap();
         assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(m).unwrap();
+        let world_transform = (&world_storage).try_get(m).unwrap();
         assert_eq!(Vec3::new(60.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(n).unwrap();
+        let world_transform = (&world_storage).try_get(n).unwrap();
         assert_eq!(Vec3::new(70.0,0.0, 0.0), get_translation(&world_transform.0));
     }
 
@@ -255,65 +255,65 @@ fn test_transform_dirty() {
     //might as well test easy_deref here too ;)
     #[cfg(feature = "easy_deref")]
     {
-        let mut translation_storage = world.borrow::<&mut Translation>();
-        let translation = (&mut translation_storage).get(a).unwrap();
+        let mut translation_storage = world.borrow::<ViewMut<Translation>>();
+        let translation = (&mut translation_storage).try_get(a).unwrap();
         translation.y = 200.0;
-        let translation = (&mut translation_storage).get(g).unwrap();
+        let translation = (&mut translation_storage).try_get(g).unwrap();
         translation.y = 300.0;
-        let translation = (&mut translation_storage).get(m).unwrap();
+        let translation = (&mut translation_storage).try_get(m).unwrap();
         translation.y = 400.0;
     }
 
-    world.run_system::<sg::systems::TrsToLocal>();
-    world.run_system::<sg::systems::LocalToWorld>();
+    world.run(sg::systems::trs_to_local);
+    world.run(sg::systems::local_to_world);
 
     //check all the transforms after making changes
     {
-        let world_storage = world.borrow::<&WorldTransform>();
+        let world_storage = world.borrow::<View<WorldTransform>>();
 
-        let world_transform = (&world_storage).get(root).unwrap();
+        let world_transform = (&world_storage).try_get(root).unwrap();
         assert_eq!(Vec3::new(0.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(a).unwrap();
+        let world_transform = (&world_storage).try_get(a).unwrap();
         assert_eq!(Vec3::new(10.0,200.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(b).unwrap();
+        let world_transform = (&world_storage).try_get(b).unwrap();
         assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(c).unwrap();
+        let world_transform = (&world_storage).try_get(c).unwrap();
         assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(d).unwrap();
+        let world_transform = (&world_storage).try_get(d).unwrap();
         assert_eq!(Vec3::new(20.0,200.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(e).unwrap();
+        let world_transform = (&world_storage).try_get(e).unwrap();
         assert_eq!(Vec3::new(20.0,200.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(f).unwrap();
+        let world_transform = (&world_storage).try_get(f).unwrap();
         assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(g).unwrap();
+        let world_transform = (&world_storage).try_get(g).unwrap();
         assert_eq!(Vec3::new(30.0,300.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(h).unwrap();
+        let world_transform = (&world_storage).try_get(h).unwrap();
         assert_eq!(Vec3::new(30.0,200.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(i).unwrap();
+        let world_transform = (&world_storage).try_get(i).unwrap();
         assert_eq!(Vec3::new(30.0,200.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(j).unwrap();
+        let world_transform = (&world_storage).try_get(j).unwrap();
         assert_eq!(Vec3::new(50.0,300.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(k).unwrap();
+        let world_transform = (&world_storage).try_get(k).unwrap();
         assert_eq!(Vec3::new(40.0,300.0, 0.0), get_translation(&world_transform.0));
         
-        let world_transform = (&world_storage).get(l).unwrap();
+        let world_transform = (&world_storage).try_get(l).unwrap();
         assert_eq!(Vec3::new(40.0,200.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(m).unwrap();
+        let world_transform = (&world_storage).try_get(m).unwrap();
         assert_eq!(Vec3::new(60.0,700.0, 0.0), get_translation(&world_transform.0));
 
-        let world_transform = (&world_storage).get(n).unwrap();
+        let world_transform = (&world_storage).try_get(n).unwrap();
         assert_eq!(Vec3::new(70.0,700.0, 0.0), get_translation(&world_transform.0));
     }
 
@@ -324,8 +324,8 @@ fn test_transform_dirty_ids() {
     let (world, entities, _labels) = create_scene_graph();
     let (_root, _a,_b,_c,d,e,_f,_g,h,i,j,_k,l,m,n) = entities;
 
-    world.run_system::<sg::systems::TrsToLocal>();
-    world.run_system::<sg::systems::LocalToWorld>();
+    world.run(sg::systems::trs_to_local);
+    world.run(sg::systems::local_to_world);
 
     fn iters_equal_anyorder<T: Eq + Hash>(i1:impl Iterator<Item = T>, i2: impl Iterator<Item = T>) -> bool {
         fn get_lookup<T: Eq + Hash>(iter:impl Iterator<Item = T>) -> HashMap<T, usize> {
@@ -342,7 +342,7 @@ fn test_transform_dirty_ids() {
     }
 
     fn get_marked_dirty_ids(world:&World) -> Vec<EntityId> {
-        let dirty_storage = world.borrow::<&DirtyTransform>();
+        let dirty_storage = world.borrow::<View<DirtyTransform>>();
 
         (&dirty_storage)
             .iter()
@@ -359,12 +359,12 @@ fn test_transform_dirty_ids() {
 
     //change D, E and J
     {
-        let mut translation_storage = world.borrow::<&mut Translation>();
-        let translation = (&mut translation_storage).get(d).unwrap();
+        let mut translation_storage = world.borrow::<ViewMut<Translation>>();
+        let translation = (&mut translation_storage).try_get(d).unwrap();
         translation.0.y = 200.0;
-        let translation = (&mut translation_storage).get(e).unwrap();
+        let translation = (&mut translation_storage).try_get(e).unwrap();
         translation.0.y = 300.0;
-        let translation = (&mut translation_storage).get(j).unwrap();
+        let translation = (&mut translation_storage).try_get(j).unwrap();
         translation.0.y = 400.0;
     }
 
@@ -374,7 +374,7 @@ fn test_transform_dirty_ids() {
         assert_eq!(get_marked_dirty_ids(&world).len(), 0);
     }
 
-    world.run_system::<sg::systems::TrsToLocal>();
+    world.run(sg::systems::trs_to_local);
 
     //and then only d, e and j should be the changed ones
     {
@@ -397,7 +397,7 @@ fn test_transform_dirty_ids() {
 fn get_traverse_dirty_ids(world:&World) -> Vec<EntityId> {
     let mut dirty_list = Vec::<EntityId>::new();
     let ( root, parent_storage, child_storage, local_transform_storage, mut dirty_transform_storage, mut world_transform_storage, ) = 
-        world.borrow::<( Unique<&TransformRoot>, &Parent, &Child, &LocalTransform, &mut DirtyTransform, &mut WorldTransform, )>();
+        world.borrow::<( UniqueView<TransformRoot>, View<Parent>, View<Child>, View<LocalTransform>, ViewMut<DirtyTransform>, ViewMut<WorldTransform>, )>();
 
     fn update(dirty_list:&mut Vec<EntityId>, id: EntityId, mut dirty: bool, _parent: EntityId, parent_storage: &View<Parent>, child_storage: &View<Child>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
         dirty |= dirty_transform_storage[id].0;

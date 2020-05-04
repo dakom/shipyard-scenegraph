@@ -1,4 +1,4 @@
-use shipyard::prelude::*;
+use shipyard::*;
 use crate::components::*;
 use crate::math::*;
 
@@ -21,14 +21,14 @@ pub fn init(world:&World) -> EntityId {
             mut world_transforms,
             mut dirty_transforms
         ) = world.borrow::<(
-            EntitiesMut, 
-            &mut Translation,
-            &mut Rotation,
-            &mut Scale,
-            &mut Origin,
-            &mut LocalTransform,
-            &mut WorldTransform,
-            &mut DirtyTransform,
+            EntitiesViewMut, 
+            ViewMut<Translation>,
+            ViewMut<Rotation>,
+            ViewMut<Scale>,
+            ViewMut<Origin>,
+            ViewMut<LocalTransform>,
+            ViewMut<WorldTransform>,
+            ViewMut<DirtyTransform>,
         )>();
 
         entities.add_entity( 
@@ -55,7 +55,7 @@ pub fn init(world:&World) -> EntityId {
 
     world.add_unique(TransformRoot(id));
 
-    let (mut translations,mut rotations,mut scales, mut origins) = world.borrow::<( &mut Translation, &mut Rotation, &mut Scale, &mut Origin)>();
+    let (mut translations,mut rotations,mut scales, mut origins) = world.borrow::<( ViewMut<Translation>, ViewMut<Rotation>, ViewMut<Scale>, ViewMut<Origin>)>();
     translations.update_pack();
     rotations.update_pack();
     scales.update_pack();

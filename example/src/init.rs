@@ -12,7 +12,7 @@ use std::cell::{RefCell};
 use gloo_events::{EventListener};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use shipyard::prelude::*;
+use shipyard::*;
 use web_sys::{HtmlElement, HtmlCanvasElement};
 use wasm_bindgen_futures::future_to_promise;
 use awsm_web::window::{get_window_size};
@@ -22,7 +22,8 @@ use awsm_web::webgl::{
     WebGlContextOptions, 
     WebGl1Renderer,
     get_texture_size,
-    WebGlTextureSource
+    WebGlTextureSource,
+    ResizeStrategy
 };
 
 pub fn start() -> Result<js_sys::Promise, JsValue> {
@@ -71,8 +72,8 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
             let world = Rc::clone(&world);
             move |_: &web_sys::Event| {
                 let (width, height) = get_window_size(&window).unwrap();
-                world.borrow::<Unique<NonSendSync<&mut SceneRenderer>>>().renderer.resize(width, height);
-                let mut stage_area = world.borrow::<Unique<&mut StageArea>>();
+                world.borrow::<NonSendSync<UniqueViewMut<SceneRenderer>>>().renderer.resize(ResizeStrategy::All(width, height));
+                let mut stage_area = world.borrow::<UniqueViewMut<StageArea>>();
                 stage_area.width = width;
                 stage_area.height = height;
             }
@@ -88,7 +89,7 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
 
             move |timestamp| {
                 let will_run = {
-                    let mut tick = world.borrow::<Unique<&mut Tick>>();
+                    let mut tick = world.borrow::<UniqueViewMut<Tick>>();
                     let will_run = if tick.last_time == 0.0 { false } else { true };
                     tick.delta = timestamp - tick.last_time;
                     tick.last_time = tick.now;
@@ -151,7 +152,7 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
 
         {
            
-            let (entities, mut areas, mut colors, mut spins, mut interactables) = world.borrow::<(EntitiesMut, &mut ImageArea, &mut Color, &mut Spin, &mut Interactable)>();
+            let (entities, mut areas, mut colors, mut spins, mut interactables) = world.borrow::<(EntitiesViewMut, ViewMut<ImageArea>, ViewMut<Color>, ViewMut<Spin>, ViewMut<Interactable>)>();
 
             entities.add_component(&mut areas, ImageArea (Area { width, height}), entity);
 

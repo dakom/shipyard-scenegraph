@@ -1,4 +1,4 @@
-use shipyard::prelude::*;
+use shipyard::*;
 use crate::components::*;
 use crate::geometry::*;
 use crate::renderer::SceneRenderer;

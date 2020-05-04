@@ -4,18 +4,18 @@ use shipyard_scenegraph::{Vec3, AsSliceExt, Translation, Origin, WorldTransform}
 use std::rc::{Rc};
 use gloo_events::{EventListener};
 use web_sys::{Event, MouseEvent};
-use shipyard::prelude::*;
+use shipyard::*;
 use web_sys::{HtmlCanvasElement};
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
 pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
     EventListener::new(canvas, "pointerdown", {
         let world = Rc::clone(&world);
         move |event:&Event| {
-            let stage_area = world.borrow::<Unique<&mut StageArea>>();
+            let stage_area = world.borrow::<UniqueViewMut<StageArea>>();
             let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
             let mouse_point = get_point(&stage_area, &event);
 
-            let (positions, origins, areas, interactables) = world.borrow::<(&WorldTransform, &Origin, &ImageArea, &Interactable)>();
+            let (positions, origins, areas, interactables) = world.borrow::<(View<WorldTransform>, View<Origin>, View<ImageArea>, View<Interactable>)>();
 
             let hits:Vec<(EntityId, Vec3)> = 
                 (&positions, &origins, &areas, &interactables)
@@ -38,8 +38,8 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
                     .collect();
            
             hits.last().map(|(id, pos)| {
-                *world.borrow::<Unique<&mut Controller>>() = Controller::Selected(*id); 
-                let mut motion = world.borrow::<Unique<&mut Motion>>();
+                *world.borrow::<UniqueViewMut<Controller>>() = Controller::Selected(*id); 
+                let mut motion = world.borrow::<UniqueViewMut<Motion>>();
                 motion.last_pos = Some(mouse_point);
                 motion.current_pos = None;
             });
@@ -49,8 +49,8 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
     EventListener::new(canvas, "pointerup", {
         let world = Rc::clone(&world);
         move |_e:&Event| {
-            *world.borrow::<Unique<&mut Controller>>() = Controller::Waiting; 
-            let mut motion = world.borrow::<Unique<&mut Motion>>();
+            *world.borrow::<UniqueViewMut<Controller>>() = Controller::Waiting; 
+            let mut motion = world.borrow::<UniqueViewMut<Motion>>();
             motion.last_pos = None;
             motion.current_pos = None;
         }
@@ -59,17 +59,17 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
     EventListener::new(canvas, "pointermove", {
         let world = Rc::clone(&world);
         move |event:&Event| {
-            if let Controller::Selected(id) = *world.borrow::<Unique<&mut Controller>>() {
-                let stage_area = world.borrow::<Unique<&mut StageArea>>();
+            if let Controller::Selected(id) = *world.borrow::<UniqueViewMut< Controller>>() {
+                let stage_area = world.borrow::<UniqueViewMut< StageArea>>();
                 let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
                 let mouse_point = get_point(&stage_area, &event);
-                let mut motion = world.borrow::<Unique<&mut Motion>>();
+                let mut motion = world.borrow::<UniqueViewMut< Motion>>();
                 if let Some(ref last_pos) = motion.current_pos {
                     let delta_x = mouse_point.x - last_pos.x;
                     let delta_y = mouse_point.y - last_pos.y;
                     
-                    let mut positions = world.borrow::<&mut Translation>();
-                    let mut position = (&mut positions).get(id).unwrap();
+                    let mut positions = world.borrow::<ViewMut<Translation>>();
+                    let mut position = (&mut positions).try_get(id).unwrap();
                     position.x += delta_x;
                     position.y += delta_y;
                     //log::info!("moving {:?} {} {}", id, delta_x, delta_y);

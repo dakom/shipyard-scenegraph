@@ -1,4 +1,4 @@
-use shipyard::prelude::*;
+use shipyard::*;
 use shipyard_hierarchy::*;
 
 use super::*;
@@ -95,7 +95,7 @@ impl TransformMut for TransformStoragesMut<'_, '_> {
     fn set_trs_origin(&mut self, entity:EntityId, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>, origin: Option<Vec3>) {
         let ( translations, rotations, scales, origins) = self;
 
-        if let Some((t,r,s,o)) = (&mut **translations, &mut **rotations, &mut **scales, &mut **origins).get(entity).iter_mut().next() {
+        if let Some((t,r,s,o)) = (&mut **translations, &mut **rotations, &mut **scales, &mut **origins).try_get(entity).iter_mut().next() {
             if let Some(translation) = translation {
                 t.0.copy_from(&translation);
             }

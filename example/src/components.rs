@@ -1,4 +1,4 @@
-use shipyard::prelude::*;
+use shipyard::*;
 use shipyard_scenegraph::Vec3;
 use derive_deref::{Deref, DerefMut};
 use crate::geometry::*;

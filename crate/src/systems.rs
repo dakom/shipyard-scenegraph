@@ -1,18 +1,17 @@
-use shipyard::prelude::*;
+use shipyard::*;
 use shipyard_hierarchy::*;
 use std::collections::HashSet;
 use std::ops::{Mul, MulAssign};
 use crate::components::*;
 use crate::math::*;
 
-#[system(TrsToLocal)]
-pub fn run (
-    mut translations: &mut Translation, 
-    mut rotations: &mut Rotation, 
-    mut scales: &mut Scale,
-    mut origins: &mut Origin,
-    mut local_transforms: &mut LocalTransform, 
-    mut dirty_transforms: &mut DirtyTransform, 
+pub fn trs_to_local(
+    mut translations:ViewMut<Translation>,
+    mut rotations:ViewMut<Rotation>,
+    mut scales:ViewMut<Scale>,
+    mut origins:ViewMut<Origin>,
+    mut local_transforms:ViewMut<LocalTransform>,
+    mut dirty_transforms:ViewMut<DirtyTransform>,
 ) {
 
     /*
@@ -29,7 +28,7 @@ pub fn run (
     unique_ids
         .iter()
         .for_each(|id| {
-            let (translation, rotation, scale, origin, local_transform, dirty_transform) = (&translations, &rotations, &scales, &origins, &mut local_transforms, &mut dirty_transforms).get(*id).unwrap();
+            let (translation, rotation, scale, origin, local_transform, dirty_transform) = (&translations, &rotations, &scales, &origins, &mut local_transforms, &mut dirty_transforms).try_get(*id).unwrap();
             local_transform.0.reset_from_trs_origin(&translation.0, &rotation.0, &scale.0, &origin.0);
             dirty_transform.0 = true;
         });
@@ -41,16 +40,14 @@ pub fn run (
 }
 
 //See: https://gameprogrammingpatterns.com/dirty-flag.html
-#[system(LocalToWorld)]
-pub fn run (
-    root: Unique<&TransformRoot>,
-    parent_storage: &Parent, 
-    child_storage: &Child, 
-    local_transform_storage: &LocalTransform, 
-    mut dirty_transform_storage: &mut DirtyTransform, 
-    mut world_transform_storage: &mut WorldTransform, 
+pub fn local_to_world(
+    root: UniqueView<TransformRoot>,
+    parent_storage: View<Parent>,
+    child_storage: View<Child>,
+    local_transform_storage: View<LocalTransform>,
+    mut dirty_transform_storage: ViewMut<DirtyTransform>,
+    mut world_transform_storage: ViewMut<WorldTransform>,
 ) {
-
     fn update(id: EntityId, mut dirty: bool, parent: EntityId, parent_storage: &View<Parent>, child_storage: &View<Child>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
         dirty |= dirty_transform_storage[id].0;
         dirty_transform_storage[id].0 = false;

@@ -1,4 +1,4 @@
-use shipyard::prelude::*;
+use shipyard::*;
 use shipyard_scenegraph::{self as sg, *};
 use nalgebra::{Vector3, Quaternion, Unit, UnitQuaternion};
 use rand::prelude::*;
@@ -9,18 +9,23 @@ use crate::config::*;
 pub const TICK:&'static str = "TICK";
 
 pub fn register_workloads(world:&World) {
-    world.add_workload::<(SpinSys, sg::systems::TrsToLocal, sg::systems::LocalToWorld, Render), _>(TICK); 
+    world
+        .add_workload(TICK)
+        .with_system(system!(spin))
+        .with_system(system!(sg::systems::trs_to_local))
+        .with_system(system!(sg::systems::local_to_world))
+        .with_system(system!(render))
+        .build();
 }
 
-#[system(SpinSys)]
-pub fn run (
-    tick: Unique<&Tick>,
-    mut translations: &mut Translation, 
-    mut rotations: &mut Rotation, 
-    mut spins: &mut Spin, 
-    world_transforms: &WorldTransform, 
-    stage_area:Unique<&StageArea>, 
-    img_areas:&ImageArea,
+pub fn spin(
+    tick: UniqueView<Tick>,
+    mut translations: ViewMut<Translation>, 
+    mut rotations: ViewMut<Rotation>, 
+    mut spins: ViewMut<Spin>, 
+    world_transforms: View<WorldTransform>, 
+    stage_area:UniqueView<StageArea>, 
+    img_areas:View<ImageArea>,
 ) {
     let Tick {delta, ..} = *tick;
 
@@ -58,13 +63,13 @@ pub fn run (
         });
 
 }
-#[system(Render)]
-pub fn run (
-    mut renderer: Unique<NonSendSync<&mut SceneRenderer>>,
-    world_transforms: &WorldTransform, 
-    stage_area:Unique<&StageArea>, 
-    img_areas:&ImageArea,
-    colors:&Color,
+
+pub fn render(
+    mut renderer: NonSendSync<UniqueViewMut<SceneRenderer>>,
+    world_transforms: View<WorldTransform>, 
+    stage_area:UniqueView<StageArea>, 
+    img_areas:View<ImageArea>,
+    colors:View<Color>,
 ) {
     renderer.pre_render(&stage_area).unwrap();
 
