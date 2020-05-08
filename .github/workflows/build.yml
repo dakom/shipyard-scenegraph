@@ -53,18 +53,18 @@ jobs:
     - name: add rust target
       run: rustup target add wasm32-unknown-unknown
 
-    # - name: install wasm-bindgen
-    #  run: cargo install wasm-bindgen-cli
-
     - name: build for release 
       run: npm run build 
       working-directory: ./example
 
-    - name: copy example to dist
+    - name: create dist directory
+      run: mkdir ./dist
+
+    - name: copy example public to dist
       run: cp -R ./example/public/* ./dist
 
     - name: deploy to gh_pages
       uses: maxheld83/ghpages@master
       env:
-        BUILD_DIR: "public/"
+        BUILD_DIR: "dist/"
         GH_PAT: ${{ secrets.GH_PAT }}
