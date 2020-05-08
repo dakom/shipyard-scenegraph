@@ -31,9 +31,8 @@ cfg_if! {
     }
 }
 
-// Called by our JS entry point to run the example.
-#[wasm_bindgen]
-pub fn run() -> Result<js_sys::Promise, JsValue> {
+#[wasm_bindgen(start)]
+pub fn run() {
     setup();
-    init::start()
+    init::start().unwrap();
 }

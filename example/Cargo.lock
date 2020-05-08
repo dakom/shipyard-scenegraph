@@ -568,7 +568,7 @@ dependencies = [
 
 [[package]]
 name = "shipyard_scenegraph"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "cfg-if",
  "derive_deref",
