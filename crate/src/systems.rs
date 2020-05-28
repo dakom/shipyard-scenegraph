@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use std::ops::{Mul, MulAssign};
 use crate::components::*;
 use crate::math::*;
+use crate::hierarchy::SceneGraph;
 
 pub fn trs_to_local(
     mut translations:ViewMut<Translation>,
@@ -42,13 +43,13 @@ pub fn trs_to_local(
 //See: https://gameprogrammingpatterns.com/dirty-flag.html
 pub fn local_to_world(
     root: UniqueView<TransformRoot>,
-    parent_storage: View<Parent>,
-    child_storage: View<Child>,
+    parent_storage: View<Parent<SceneGraph>>,
+    child_storage: View<Child<SceneGraph>>,
     local_transform_storage: View<LocalTransform>,
     mut dirty_transform_storage: ViewMut<DirtyTransform>,
     mut world_transform_storage: ViewMut<WorldTransform>,
 ) {
-    fn update(id: EntityId, mut dirty: bool, parent: EntityId, parent_storage: &View<Parent>, child_storage: &View<Child>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
+    fn update(id: EntityId, mut dirty: bool, parent: EntityId, parent_storage: &View<Parent<SceneGraph>>, child_storage: &View<Child<SceneGraph>>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
         dirty |= dirty_transform_storage[id].0;
         dirty_transform_storage[id].0 = false;
 

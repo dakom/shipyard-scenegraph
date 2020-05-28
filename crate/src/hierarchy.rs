@@ -5,6 +5,10 @@ use super::*;
 /*
     these need access to the whole hierarchy
 */
+
+//a marker for the hierarchy
+pub struct SceneGraph {}
+
 pub trait TransformHierarchyMut {
     fn spawn_child(&mut self, parent: Option<EntityId>, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>, origin: Option<Vec3>) -> EntityId;
 }
@@ -12,8 +16,8 @@ pub trait TransformHierarchyMut {
 pub type TransformHierarchyStoragesMut<'a, 'b> = (
     &'b mut EntitiesViewMut<'a>, 
     &'b UniqueView<'a, TransformRoot>, 
-    &'b mut ViewMut<'a, Parent>, 
-    &'b mut ViewMut<'a, Child>,
+    &'b mut ViewMut<'a, Parent<SceneGraph>>, 
+    &'b mut ViewMut<'a, Child<SceneGraph>>,
     &'b mut ViewMut<'a, Translation>,
     &'b mut ViewMut<'a, Rotation>,
     &'b mut ViewMut<'a, Scale>,

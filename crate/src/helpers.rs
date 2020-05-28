@@ -12,7 +12,7 @@ use crate::hierarchy::*;
 pub fn spawn_child(world:&World, parent: Option<EntityId>, translation: Option<Vec3>, rotation: Option<Quat>, scale: Option<Vec3>, origin:Option<Vec3>) -> EntityId {
 
     let mut entities = world.borrow::<EntitiesViewMut>();
-    let mut hierarchy_storages = world.borrow::<(UniqueView<TransformRoot>, ViewMut<Parent>, ViewMut<Child>)>();
+    let mut hierarchy_storages = world.borrow::<(UniqueView<TransformRoot>, ViewMut<Parent<SceneGraph>>, ViewMut<Child<SceneGraph>>)>();
     let mut transform_storages = world.borrow::<(ViewMut<Translation>, ViewMut<Rotation>, ViewMut<Scale>, ViewMut<Origin>, ViewMut<LocalTransform>, ViewMut<WorldTransform>, ViewMut<DirtyTransform>)>();
     
     //let mut storages = world.borrow::<(EntitiesMut, Unique<&TransformRoot>, &mut Parent, &mut Child, &mut Translation, &mut Rotation, &mut Scale, &mut Origin, &mut LocalTransform, &mut WorldTransform, &mut DirtyTransform)>();
