@@ -8,41 +8,12 @@ jobs:
     - name: checkout repo
       uses: actions/checkout@v1
 
-    - name: Get npm cache directory
-      id: npm-cache
-      run: |
-        echo "::set-output name=dir::$(npm config get cache)"
-
-    - uses: actions/cache@v1
-      with:
-        path: ${{ steps.npm-cache.outputs.dir }}
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-
-    - name: Cache cargo registry
-      uses: actions/cache@v1
-      with:
-        path: ~/.cargo/registry
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Cache cargo index
-      uses: actions/cache@v1
-      with:
-        path: ~/.cargo/git
-        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Cache cargo build
-      uses: actions/cache@v1
-      with:
-        path: example/target
-        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-
     - name: install node
       uses: actions/setup-node@v1
 
     - name: install npm deps
-      run: cd example && npm ci
+      run: npm ci
+      working-directory: ./example
 
     - name: install rust nightly
       run: rustup toolchain install nightly
