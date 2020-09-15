@@ -16,7 +16,7 @@ use shipyard::*;
 use web_sys::{HtmlElement, HtmlCanvasElement};
 use wasm_bindgen_futures::future_to_promise;
 use awsm_web::window::{get_window_size};
-use awsm_web::loaders::fetch;
+use awsm_web::loaders::fetch::fetch_url;
 use awsm_web::webgl::{
     get_webgl_context_1, 
     WebGlContextOptions, 
@@ -39,8 +39,8 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
 
 
     let future = async move {
-        let vertex = fetch::text(&get_media_href("vertex.glsl")).await?;
-        let fragment = fetch::text(&get_media_href("fragment.glsl")).await?;
+        let vertex = fetch_url(&get_media_href("vertex.glsl")).await?.text().await?;
+        let fragment = fetch_url(&get_media_href("fragment.glsl")).await?.text().await?;
 
         let (stage_width, stage_height) = get_window_size(&window).unwrap();
 

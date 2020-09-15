@@ -9,12 +9,12 @@
 		"clean": "rimraf ./public/wasm"
 	},
 	"dependencies": {
-		"@wasm-tool/rollup-plugin-rust": "^1.0.2",
+		"@wasm-tool/rollup-plugin-rust": "^1.0.5",
 		"rimraf": "^3.0.2",
-		"rollup": "^2.7.6"
+		"rollup": "^2.26.11"
 	},
 	"devDependencies": {
-		"rollup-plugin-livereload": "^1.3.0",
-		"rollup-plugin-serve": "^1.0.1"
+		"rollup-plugin-livereload": "^2.0.0",
+		"rollup-plugin-serve": "^1.0.4"
 	}
 }
