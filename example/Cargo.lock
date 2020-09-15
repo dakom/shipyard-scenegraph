@@ -94,7 +94,7 @@ dependencies = [
  "js-sys",
  "lazy_static",
  "log",
- "nalgebra",
+ "nalgebra 0.21.0",
  "shipyard",
  "shipyard_scenegraph",
  "wasm-bindgen",
@@ -314,7 +314,23 @@ dependencies = [
  "num-rational",
  "num-traits",
  "rand",
- "simba",
+ "simba 0.1.2",
+ "typenum",
+]
+
+[[package]]
+name = "nalgebra"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a3f0b89b0a44cb7bb9b62c5e6fd485145ddc6bc14483ab005355e96029b3fbf"
+dependencies = [
+ "approx",
+ "generic-array",
+ "num-complex",
+ "num-rational",
+ "num-traits",
+ "rand",
+ "simba 0.2.0",
  "typenum",
 ]
 
@@ -598,11 +614,11 @@ dependencies = [
 
 [[package]]
 name = "shipyard_scenegraph"
-version = "0.3.1"
+version = "0.3.3"
 dependencies = [
  "cfg-if",
  "derive_deref",
- "nalgebra",
+ "nalgebra 0.22.0",
  "shipyard",
  "shipyard_hierarchy",
  "thiserror",
@@ -613,6 +629,18 @@ name = "simba"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d771bffb178827708f83829713e3a214bc8a9879a8f27ca548965bd849ed130"
+dependencies = [
+ "approx",
+ "num-complex",
+ "num-traits",
+ "paste",
+]
+
+[[package]]
+name = "simba"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1585d831b5c904e42c4df7a4fcfa03e4b56a8cfa445aff0a04f4effe397ecac9"
 dependencies = [
  "approx",
  "num-complex",
