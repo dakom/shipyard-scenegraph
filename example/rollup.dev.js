@@ -13,7 +13,7 @@ export default {
     },
     plugins: [
         rust({
-            serverPath: "/wasm/",
+            serverPath: "wasm/",
             debug: true,
             watchPatterns: ["src/**", "../crate", "../../shipyard-hierarchy/src/**"],
             cargoArgs: ["--features", "dev"],
