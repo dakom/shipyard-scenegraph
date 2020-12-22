@@ -1,5 +1,4 @@
-use shipyard_scenegraph::Vec3;
-
+use shipyard_scenegraph::prelude::*;
 #[derive(Debug, Copy, Clone)]
 pub struct Area {
     pub width: u32,
@@ -21,10 +20,10 @@ pub struct Bounds {
 
 impl Bounds {
     pub fn contains(&self, point:&Vec3) -> bool {
-        if self.left <= point.x
-            && self.right >= point.x
-            && self.bottom <= point.y
-            && self.top >= point.y
+        if self.left <= point.x()
+            && self.right >= point.x()
+            && self.bottom <= point.y()
+            && self.top >= point.y()
             {
                 true
             } else {

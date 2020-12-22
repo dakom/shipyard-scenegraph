@@ -1,19 +1,24 @@
 use shipyard::*;
 use shipyard_hierarchy::*;
 use std::collections::HashSet;
-use std::ops::{Mul, MulAssign};
 use crate::components::*;
-use crate::math::*;
+use crate::math::traits::*;
 use crate::hierarchy::SceneGraph;
 
-pub fn trs_to_local(
-    mut translations:ViewMut<Translation>,
-    mut rotations:ViewMut<Rotation>,
-    mut scales:ViewMut<Scale>,
-    mut origins:ViewMut<Origin>,
-    mut local_transforms:ViewMut<LocalTransform>,
+pub fn trs_to_local<V, Q, M, N>(
+    mut translations:ViewMut<Translation<V, N>>,
+    mut rotations:ViewMut<Rotation<Q, N>>,
+    mut scales:ViewMut<Scale<V, N>>,
+    mut origins:ViewMut<Origin<V, N>>,
+    mut local_transforms:ViewMut<LocalTransform<M, N>>,
     mut dirty_transforms:ViewMut<DirtyTransform>,
-) {
+) 
+where
+    V: Vec3<N> + Send + Sync + 'static,
+    Q: Quat<N> + Send + Sync + 'static,
+    M: Matrix4<N> + Send + Sync + 'static,
+    N: Copy + Send + Sync + 'static
+{
 
     /*
         We only want to propogate changes if TRS is dirty
@@ -21,16 +26,17 @@ pub fn trs_to_local(
     */
     let mut unique_ids = HashSet::<EntityId>::new();
 
-    translations.inserted_or_modified().iter_ids().for_each(|id| { unique_ids.insert(id); });
-    rotations.inserted_or_modified().iter_ids().for_each(|id| { unique_ids.insert(id); });
-    scales.inserted_or_modified().iter_ids().for_each(|id| { unique_ids.insert(id); });
-    origins.inserted_or_modified().iter_ids().for_each(|id| { unique_ids.insert(id); });
+    translations.inserted_or_modified().iter().ids().for_each(|id| { unique_ids.insert(id); });
+    rotations.inserted_or_modified().iter().ids().for_each(|id| { unique_ids.insert(id); });
+    scales.inserted_or_modified().iter().ids().for_each(|id| { unique_ids.insert(id); });
+    origins.inserted_or_modified().iter().ids().for_each(|id| { unique_ids.insert(id); });
 
     unique_ids
         .iter()
         .for_each(|id| {
-            let (translation, rotation, scale, origin, local_transform, dirty_transform) = (&translations, &rotations, &scales, &origins, &mut local_transforms, &mut dirty_transforms).try_get(*id).unwrap();
-            local_transform.0.reset_from_trs_origin(&translation.0, &rotation.0, &scale.0, &origin.0);
+            let (translation, rotation, scale, origin, mut local_transform, mut dirty_transform) = 
+                (&translations, &rotations, &scales, &origins, &mut local_transforms, &mut dirty_transforms).get(*id).unwrap();
+            local_transform.reset_from_trs_origin(translation.as_slice(), rotation.as_slice(), scale.as_slice(), origin.as_slice());
             dirty_transform.0 = true;
         });
 
@@ -41,15 +47,33 @@ pub fn trs_to_local(
 }
 
 //See: https://gameprogrammingpatterns.com/dirty-flag.html
-pub fn local_to_world(
+pub fn local_to_world<M, N>(
     root: UniqueView<TransformRoot>,
     parent_storage: View<Parent<SceneGraph>>,
     child_storage: View<Child<SceneGraph>>,
-    local_transform_storage: View<LocalTransform>,
+    local_transform_storage: View<LocalTransform<M, N>>,
     mut dirty_transform_storage: ViewMut<DirtyTransform>,
-    mut world_transform_storage: ViewMut<WorldTransform>,
-) {
-    fn update(id: EntityId, mut dirty: bool, parent: EntityId, parent_storage: &View<Parent<SceneGraph>>, child_storage: &View<Child<SceneGraph>>, local_transform_storage: &View<LocalTransform>, dirty_transform_storage: &mut ViewMut<DirtyTransform>, world_transform_storage: &mut ViewMut<WorldTransform>) {
+    mut world_transform_storage: ViewMut<WorldTransform<M, N>>,
+) 
+where
+    M: Matrix4<N> + Send + Sync,
+    N: Copy + Send + Sync + 'static
+{
+    fn update<M, N>(
+        id: EntityId, 
+        mut dirty: bool, 
+        parent: EntityId, 
+        parent_storage: &View<Parent<SceneGraph>>, 
+        child_storage: &View<Child<SceneGraph>>, 
+        local_transform_storage: &View<LocalTransform<M, N>>, 
+        dirty_transform_storage: &mut ViewMut<DirtyTransform>, 
+        world_transform_storage: &mut ViewMut<WorldTransform<M, N>>
+    ) 
+    where
+        M: Matrix4<N> + Send + Sync,
+        N: Copy + Send + Sync,
+    
+    {
         dirty |= dirty_transform_storage[id].0;
         dirty_transform_storage[id].0 = false;
 
@@ -58,25 +82,20 @@ pub fn local_to_world(
             //which effectively means taking 2 mutable refs (or a mutable and immutable)
             //this is technically unsafe but the system gets world_transform_storage as mut
             //so the scheduler will disallow another system from accessing it in parallel 
-            //in order to avoid the UB we need to get each pointer _separately_ then call .mul_mut() with them
+            //in order to avoid the UB we need to get each pointer _separately_ then multiply them
             //only the first part of the operation (copying world transform of parent to world of entity)
             //is actually unsafe - after that's done we can do a safe mul_assign against local_transform
             unsafe {
-                let world_ptr = &mut world_transform_storage[id].0 as *mut Matrix4;
-                let parent_world_ptr = &world_transform_storage[parent].0 as *const Matrix4;
-                (&mut *world_ptr).copy_from_slice((&*parent_world_ptr).as_slice()); 
+                let world_ptr = world_transform_storage[id].as_slice_mut().as_mut_ptr();
+                let parent_world_ptr = world_transform_storage[parent].as_slice().as_ptr();
+                
+                //4x4 matrix is always 16 items
+                //the std function will get the byte count internally
+                std::ptr::copy_nonoverlapping(parent_world_ptr, world_ptr, 16)
             }
             
-            world_transform_storage[id].0 *= &local_transform_storage[id].0;
+            world_transform_storage[id].mul_assign(&local_transform_storage[id]);
 
-
-            //Safe version, but costs a clone of Mat4 each time
-            /*
-            let local = &local_transform_storage[id].0;
-            let parent_world = &world_transform_storage[parent].0;
-            let local_world = parent_world * local;
-            world_transform_storage[id].0 = local_world;
-            */
         }
 
         (parent_storage, child_storage).children(id).for_each(|child| {
@@ -90,7 +109,7 @@ pub fn local_to_world(
     dirty_transform_storage[root_id].0 = false;
 
     if dirty {
-        world_transform_storage[root_id].0.copy_from_slice(local_transform_storage[root_id].0.as_slice());
+        world_transform_storage[root_id].copy_from_slice(local_transform_storage[root_id].as_slice());
     }
 
     //then recursively update all the children
@@ -98,4 +117,3 @@ pub fn local_to_world(
         update(child, dirty, root_id, &parent_storage, &child_storage, &local_transform_storage, &mut dirty_transform_storage, &mut world_transform_storage);
     });
 }
-

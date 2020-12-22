@@ -4,17 +4,18 @@
 	"repository": "https://github.com/dakom/shipyard",
 	"license": "(MIT OR Apache-2.0)",
 	"scripts": {
-		"build": "npm run clean && rollup --config rollup.prod.js",
-		"start": "npm run clean && rollup --config rollup.dev.js --watch",
+		"build": "cross-env RUSTUP_TOOLCHAIN=nightly npm run clean && rollup --config rollup.prod.js",
+		"start": "cross-env RUSTUP_TOOLCHAIN=nightly npm run clean && rollup --config rollup.dev.js --watch",
 		"clean": "rimraf ./public/wasm"
 	},
 	"dependencies": {
 		"@wasm-tool/rollup-plugin-rust": "^1.0.5",
-		"rimraf": "^3.0.2",
-		"rollup": "^2.26.11"
+		"rollup": "^2.35.1"
 	},
 	"devDependencies": {
+		"cross-env": "^7.0.3",
+		"rimraf": "^3.0.2",
 		"rollup-plugin-livereload": "^2.0.0",
-		"rollup-plugin-serve": "^1.0.4"
+		"rollup-plugin-serve": "^1.1.0"
 	}
 }

@@ -1,31 +1,17 @@
-/*
-    The math was taken and adapted from various places on the internet
-    Specifically, from gl-matrix and the gltf-rs crate (which in turn took from cg_math)
-
-    The idea is that we have a bespoke minimal math lib with no dependencies
-
-    TODO: maybe impl From for nalgebra via a feature gate
-    Though since as_ref() returns a slice maybe that's not necessary?
-*/
-
-use std::ops::{Mul, MulAssign};
+use std::ops::{Mul, MulAssign, Deref, DerefMut};
 use std::convert::{AsRef, TryInto};
-use super::vec3::Vec3;
-use super::quat::Quat;
-use crate::math::traits::{MathContainer, AsSliceExt, FromSliceExt, MatrixExt};
-use crate::errors::{MatrixError};
+use crate::slice::*;
+
+#[derive(thiserror::Error, Debug)]
+pub enum MatrixError {
+    #[error("cannot invert the matrix")]
+    Invert
+}
 
 #[repr(C)]
-#[derive(Clone, PartialEq, Debug)]
-//pub struct Matrix4 (pub [f64;16]);
-pub struct Matrix4 (pub [f64;16]);
+#[derive(PartialEq, Debug)]
+pub struct Matrix4 ([f64;16]);
 
-const MATRIX_IDENTITY:[f64;16] = [
-    1.0,0.0,0.0,0.0,
-    0.0,1.0,0.0,0.0,
-    0.0,0.0,1.0,0.0,
-    0.0,0.0,0.0,1.0,
-];
 
 impl Matrix4 {
     pub fn new( a:f64, b:f64, c:f64, d:f64,
@@ -52,15 +38,57 @@ impl From<&[f64]> for Matrix4 {
     }
 }
 
-impl <'a> FromSliceExt<'a> for Matrix4 {
-    fn from_slice(values:&'a [f64]) -> Self {
-        values.into()
+impl Deref for Matrix4 { 
+    type Target = [f64];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
-impl <'a> MathContainer<'a> for Matrix4 {
-    fn len(&self) -> usize { 16 }
-    fn write_to_vf32(self: &Self, target:&mut [f32]) {
+impl DerefMut for Matrix4 {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl SliceExt<f64> for Matrix4 {
+    fn as_slice(&self) -> &[f64] {
+        &self.0
+    }
+
+    fn as_slice_mut(&mut self) -> &mut [f64] {
+        &mut self.0
+    }
+
+}
+
+
+const MATRIX_IDENTITY:[f64;16] = [
+    1.0,0.0,0.0,0.0,
+    0.0,1.0,0.0,0.0,
+    0.0,0.0,1.0,0.0,
+    0.0,0.0,0.0,1.0,
+];
+
+impl crate::math::traits::Matrix4<f64> for Matrix4 {
+    fn identity() -> Self {
+        Matrix4::identity()
+    }
+    fn reset_from_trs_origin( &mut self, translation:&[f64], rotation: &[f64], scale: &[f64], origin: &[f64]) {
+        self.reset();
+        self.set_trs_origin(translation, rotation, scale, origin);
+    }
+    fn mul_assign(&mut self, other:&Self) {
+        *self *= other;
+    }
+}
+impl Matrix4 {
+    pub fn identity() -> Self {
+        MATRIX_IDENTITY.as_ref().into()
+    }
+
+    pub fn write_to_vf32(self: &Self, target:&mut [f32]) {
         let values = self.as_slice();
 
         //can't memcpy since it needs a cast
@@ -81,47 +109,41 @@ impl <'a> MathContainer<'a> for Matrix4 {
         target[14] = values[14] as f32;
         target[15] = values[15] as f32;
     }
-}
-
-impl MatrixExt for Matrix4 {
-    fn identity() -> Self {
-        Self(MATRIX_IDENTITY.clone())
-    }
     //translation
-    fn new_from_translation(translation: &Vec3) -> Self {
+    pub fn new_from_translation(translation: &[f64]) -> Self {
         let mut m = Self::identity();
         m.translate(translation);
         m
     }
 
-    fn reset_from_translation(&mut self, translation:&Vec3) {
+    pub fn reset_from_translation(&mut self, translation:&[f64]) {
         self.reset();
         self.translate(translation);
     }
 
-    fn translate(&mut self, translation:&Vec3) {
+    pub fn translate(&mut self, translation:&[f64]) {
         let values = &mut self.0;
-        values[12] = translation.x;
-        values[13] = translation.y;
-        values[14] = translation.z;
+        values[12] = translation[0];
+        values[13] = translation[1];
+        values[14] = translation[2];
     }
 
     //rotation
-    fn new_from_rotation(rotation: &Quat) -> Self {
+    pub fn new_from_rotation(rotation: &[f64]) -> Self {
         let mut m = Self::identity();
         m.rotate(rotation);
         m
     }
-    fn reset_from_rotation(&mut self, rotation:&Quat) {
+    pub fn reset_from_rotation(&mut self, rotation:&[f64]) {
         self.reset();
         self.rotate(rotation);
     }
-    fn rotate(&mut self, rotation:&Quat) {
+    pub fn rotate(&mut self, rotation:&[f64]) {
         let values = &mut self.0;
-        let x = rotation.x;
-        let y = rotation.y;
-        let z = rotation.z;
-        let w = rotation.w;
+        let x = rotation[0];
+        let y = rotation[1];
+        let z = rotation[2];
+        let w = rotation[3];
         let x2 = x + x;
         let y2 = y + y;
         let z2 = z + z;
@@ -153,48 +175,48 @@ impl MatrixExt for Matrix4 {
     }
 
     //scale
-    fn new_from_scale(scale:&Vec3) -> Self {
+    pub fn new_from_scale(scale:&[f64]) -> Self {
         let mut m = Self::identity();
         m.scale(scale);
         m
     }
-    fn reset_from_scale(&mut self, scale:&Vec3) {
+    pub fn reset_from_scale(&mut self, scale:&[f64]) {
         self.reset();
         self.scale(scale);
     }
 
-    fn scale(&mut self, scale:&Vec3) {
+    pub fn scale(&mut self, scale:&[f64]) {
         let values = &mut self.0;
-        values[0] = scale.x;
-        values[5] = scale.y;
-        values[10] = scale.z;
+        values[0] = scale[0];
+        values[5] = scale[1];
+        values[10] = scale[2];
     }
 
     //translation, rotation, scale
-    fn new_from_trs(translation:&Vec3, rotation:&Quat, scale:&Vec3) -> Self {
+    pub fn new_from_trs(translation:&[f64], rotation:&[f64], scale:&[f64]) -> Self {
         let mut m = Self::identity();
         m.set_trs(translation, rotation, scale);
         m
     }
-    fn new_from_trs_origin(translation:&Vec3, rotation:&Quat, scale:&Vec3, origin:&Vec3) -> Self {
+    pub fn new_from_trs_origin(translation:&[f64], rotation:&[f64], scale:&[f64], origin:&[f64]) -> Self {
         let mut m = Self::identity();
         m.set_trs_origin(translation, rotation, scale, origin);
         m
     }
-    fn reset_from_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
+    pub fn reset_from_trs(&mut self, translation:&[f64], rotation:&[f64], scale:&[f64]) {
         self.reset();
         self.set_trs(translation, rotation, scale);
     }
-    fn reset_from_trs_origin(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3, origin:&Vec3) {
+    pub fn reset_from_trs_origin(&mut self, translation:&[f64], rotation:&[f64], scale:&[f64], origin:&[f64]) {
         self.reset();
         self.set_trs_origin(translation, rotation, scale, origin);
     }
-    fn set_trs(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3) {
+    pub fn set_trs(&mut self, translation:&[f64], rotation:&[f64], scale:&[f64]) {
         let values = &mut self.0;
-        let x = rotation.x;
-        let y = rotation.y; 
-        let z = rotation.z;
-        let w = rotation.w;
+        let x = rotation[0];
+        let y = rotation[1]; 
+        let z = rotation[2];
+        let w = rotation[3];
         let x2 = x + x;
         let y2 = y + y;
         let z2 = z + z;
@@ -207,9 +229,9 @@ impl MatrixExt for Matrix4 {
         let wx = w * x2;
         let wy = w * y2;
         let wz = w * z2;
-        let sx = scale.x;
-        let sy = scale.y;
-        let sz = scale.z;
+        let sx = scale[0];
+        let sy = scale[1];
+        let sz = scale[2];
         values[0] = (1.0 - (yy + zz)) * sx;
         values[1] = (xy + wz) * sx;
         values[2] = (xz - wy) * sx;
@@ -222,17 +244,17 @@ impl MatrixExt for Matrix4 {
         values[9] = (yz - wx) * sz;
         values[10] = (1.0 - (xx + yy)) * sz;
         values[11] = 0.0;
-        values[12] = translation.x;
-        values[13] = translation.y;
-        values[14] = translation.z;
+        values[12] = translation[0];
+        values[13] = translation[1];
+        values[14] = translation[2];
         values[15] = 1.0;
     }
-    fn set_trs_origin(&mut self, translation:&Vec3, rotation:&Quat, scale:&Vec3, origin:&Vec3) {
+    pub fn set_trs_origin(&mut self, translation:&[f64], rotation:&[f64], scale:&[f64], origin:&[f64]) {
         let values = &mut self.0;
-        let x = rotation.x;
-        let y = rotation.y;
-        let z = rotation.z; 
-        let w = rotation.w;
+        let x = rotation[0];
+        let y = rotation[1];
+        let z = rotation[2]; 
+        let w = rotation[3];
         let x2 = x + x;
         let y2 = y + y;
         let z2 = z + z;
@@ -245,12 +267,12 @@ impl MatrixExt for Matrix4 {
         let wx = w * x2;
         let wy = w * y2;
         let wz = w * z2;
-        let sx = scale.x;
-        let sy = scale.y;
-        let sz = scale.z;
-        let ox = origin.x;
-        let oy = origin.y;
-        let oz = origin.z;
+        let sx = scale[0];
+        let sy = scale[1];
+        let sz = scale[2];
+        let ox = origin[0];
+        let oy = origin[1];
+        let oz = origin[2];
         let out0 = (1.0 - (yy + zz)) * sx;
         let out1 = (xy + wz) * sx;
         let out2 = (xz - wy) * sx;
@@ -272,16 +294,16 @@ impl MatrixExt for Matrix4 {
         values[9] = out9;
         values[10] = out10;
         values[11] = 0.0;
-        values[12] = translation.x + ox - (out0 * ox + out4 * oy + out8 * oz);
-        values[13] = translation.y + oy - (out1 * ox + out5 * oy + out9 * oz);
-        values[14] = translation.z + oz - (out2 * ox + out6 * oy + out10 * oz);
+        values[12] = translation[0] + ox - (out0 * ox + out4 * oy + out8 * oz);
+        values[13] = translation[1] + oy - (out1 * ox + out5 * oy + out9 * oz);
+        values[14] = translation[2] + oz - (out2 * ox + out6 * oy + out10 * oz);
         values[15] = 1.0;
     }
 
     // arithmetic 
 
     /// returns true if it was able to invert, false otherwise
-    fn invert_mut(&mut self) -> Result<(), MatrixError> {
+    pub fn invert_mut(&mut self) -> Result<(), MatrixError> {
         let values = &mut self.0;
         let a:&[f64] = values; 
         let a00 = a[0]; 
@@ -337,13 +359,19 @@ impl MatrixExt for Matrix4 {
             Ok(())
         }
     }
-    fn invert(&self) -> Result<Self, MatrixError> {
+    pub fn invert(&self) -> Result<Self, MatrixError> {
         let mut clone = self.clone();
         clone.invert_mut()?;
         Ok(clone)
     }
 }
 
+
+impl Clone for Matrix4 {
+    fn clone(&self) -> Self {
+        self.as_slice().into()
+    }
+}
 
 impl AsRef<Matrix4> for Matrix4 {
     fn as_ref(&self) -> &Self {
@@ -369,10 +397,11 @@ impl <T: AsRef<Matrix4>> Mul<T> for &Matrix4 {
 }
 
 impl <T: AsRef<Matrix4>> MulAssign<T> for Matrix4 {
-    fn mul_assign(&mut self, rhs: T) {
+
+    fn mul_assign(&mut self, other:T) {
         let values = &mut self.0;
         let a:&[f64] = values; 
-        let b:&[f64] = rhs.as_ref().as_slice();
+        let b:&[f64] = other.as_ref().as_slice();
         let a00 = a[0]; 
         let a01 = a[1]; 
         let a02 = a[2];

@@ -1,5 +1,5 @@
 use shipyard::*;
-use shipyard_scenegraph::Vec3;
+use shipyard_scenegraph::prelude::*;
 use derive_deref::{Deref, DerefMut};
 use crate::geometry::*;
 //re-exported so its easier to just use components::*

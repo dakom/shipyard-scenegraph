@@ -10,53 +10,68 @@ Scenegraph crate for [shipyard ECS](https://github.com/leudz/shipyard)
 
 Builds on and re-exports [shipyard-hierarchy](https://github.com/dakom/shipyard-hierarchy)
 
-# Components and Systems
+# How to use
 
-See [components.rs](crate/src/components.rs) for the full list of exported components. They are mainly just thin wrappers around math primitives. [systems.rs](crate/src/systems.rs) has the exported systems (these are not exported on the root, but rather as `systems::*`).
+1. First, decide on a math lib - out of the box is a small native lib, and interop support for `nalgebra`. Enable the appropriate feature (e.g. `native_math`)
 
-The way it all fits together is that `Translation`, `Rotation`, `Scale` and `Origin` are in an "update pack". This allows for changes to these to be propagated to `LocalTransform` automatically and efficiently when the `TrsToLocal` system is run. 
+2. Use `shipyard_scenegraph::prelude::*` everywhere
 
-Similarly, the changes to `LocalTransform` are efficiently propagated to `WorldTransform` when the `LocalToWorld` system is run. Currently this does not go through update pack and rather uses a separate `DirtyTransform` component, [though that may change soon](https://github.com/dakom/shipyard-scenegraph/issues/19)
+3. Call `init()` somewhere around main
+
+4. To add entities to the tree, borrow `SceneGraphStoragesMut` and then call `spawn_child()` on that.
+
+5. To update things - mutably borrow `Translation`, `Rotation`, `Scale`, and `Origin`.
+
+6. Run `trs_to_local` and `local_to_world` systems (like on a tick), and all the Local and World transforms will be propogated.
 
 It is possible to set `LocalTransform` directly. However, doing this will _not_ push the changes in the other direction (e.g. to the TRS components).
 
-# Math lib interop
+# Components and Systems
 
-A minimal and efficient math library is included out of the box and there's no need to depend on anything else. However, it's _very_ minimal with only the operations needed to handle basic transform stuff (matrix multiplication, rotation from quaternion, etc.)
+Components:
 
-If you're using [nalgebra](https://nalgebra.org/), you can convert the math structs via `.into()` without doing anything special. However this comes at the cost of an allocation, so you may want to use the `nalgebra` structs directly with no conversion (but you do pay the cost of the heavier math lib, of course). To do that, simply enable the `nalgebra_transforms` feature here (this will use nalgebra _instead of_ the builtins)
+* TransformRoot(pub EntityId) - the root node of the tree
+* DirtyTransform(pub bool) - tag component for marking dirty transforms
+* Translation
+* Rotation
+* Scale
+* Origin
+* LocalTransform
+* WorldTransform
 
-Other math crates may be added in the future fairly easily since there are really only two steps:
+Systems:
 
-1. Satisfy the [traits](crate/src/math/traits.rs)
-2. Make type aliases for `Matrix4`, `Vec3`, and `Quat`
+* trs_to_local 
+* local_to_world
 
-Currently it's assumed that all the math is done on `f64`'s, with helper methods to write to `&[f32]`'s when needed.
+Custom Views:
 
-# Usage
+* SceneGraphStoragesMut
+* TrsStoragesMut
 
-See code in [test_transform.rs](crate/tests/test_transform.rs) as well as the [example](example), but it's essentially like this:
+Almost all the above are generic over a container and primitive as type parameters, so that the library is completely agnostic about which math lib, or even precision, you choose to use. However, it's annoying to use that way once you know the concrete types, so aliases are provided for the supported math interop libs (and it's easy to add your own too). Effectively, just decide which math lib you want to use, and the concrete types will be available in the prelude. 
 
-1. Get a `shipyard` world (or create a new one)
+# Run tests
 
-2. Call [init()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.init.html)
+`cargo test --features native_math,nalgebra_math -- --nocapture`
 
-3. Spawn children via [spawn_child()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.spawn_child.html) (either via the borrowed storages or the world helper)
+# More math lib interop
 
-4. Update Translation, Rotation, and Scale however you want. For example, on a given entity `hero`:
-```
-let mut translation_storage = world.borrow::<&mut Translation>();
-let translation = (&mut translation_storage).get(hero).unwrap();
-translation.0.y = 200.0;
-```
+A minimal and efficient math library is included via the `native_math` feature, and it's good enough for basic demos - however, it's _very_ minimal with only the operations needed to handle basic transform stuff (matrix multiplication, rotation from quaternion, etc.)
 
-5. Run the systems `TrsToLocal` and `LocalToWorld`
+If you're using [nalgebra](https://nalgebra.org/), you can enable the `nalgebra_math` feature to get that as the underlying types.
+
+In both cases, simply import relative `aliases::*` to get all the concrete components and systems 
+
+Other math crates may be added in the future since they only need to satisfy a few simple traits (`SliceExt` + the container trait)
+
+If using multiple math libs within scenegraph for some reason, don't import from the prelude, rather import from the math module directly.
 
 # Extras
 
 Since this builds on [shipyard-hierarchy](https://github.com/dakom/shipyard-hierarchy), the same methods for traversing and updating the hierarchy are available.
 
-In general, methods are on the storages. They can be iterated and worked with more efficiently since the borrow only occurs once. Helpers like [set_trs()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.set_trs.html) and [spawn_child()](https://docs.rs/shipyard_scenegraph/latest/shipyard_scenegraph/fn.spawn_child.html) that operate on the world, are really just for the sake of convenience and "one-offs".
+Scenegraph gives the Parent and Child components a tag struct `SceneGraph` and shouldn't conflict with any other hierarchies, even in the same world.
 
 # TODO
 

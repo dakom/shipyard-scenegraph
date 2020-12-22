@@ -1,12 +1,7 @@
-mod traits;
-pub use self::traits::*;
+pub mod traits;
 
-cfg_if::cfg_if! {
-    if #[cfg(feature = "nalgebra_transforms")] {
-        mod nalgebra_math;
-        pub use self::nalgebra_math::*;
-    } else {
-        mod native_math;
-        pub use self::native_math::*;
-    }
-}
+#[cfg(feature = "nalgebra_math")]
+pub mod nalgebra;
+
+#[cfg(any(feature = "native_math", test))]
+pub mod native;

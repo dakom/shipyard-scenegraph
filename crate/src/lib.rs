@@ -1,16 +1,24 @@
-mod hierarchy;
-mod errors;
-mod helpers;
-mod init;
-mod math;
-mod components;
-pub mod systems;
-
-pub use self::components::*;
-pub use self::math::*;
-pub use self::init::*;
-pub use self::helpers::*;
-pub use self::hierarchy::*;
-pub use self::errors::*;
 //re-export
 pub use shipyard_hierarchy::*;
+
+pub mod slice;
+pub mod components;
+pub mod views;
+pub mod hierarchy;
+pub mod transforms;
+pub mod math;
+pub mod systems;
+pub mod init;
+
+
+pub mod prelude {
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "nalgebra_math")] {
+            pub use crate::math::nalgebra::*;
+        } else if #[cfg(feature = "native_math")] {
+            pub use crate::math::native::*;
+        }
+    }
+
+    pub use crate::hierarchy::SceneGraph;
+}

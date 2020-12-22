@@ -1,6 +1,6 @@
 use crate::geometry::*;
 use crate::components::Color;
-use shipyard_scenegraph::{Vec3};
+use shipyard_scenegraph::prelude::*;
 use web_sys::{HtmlImageElement};
 use nalgebra::{Matrix4, Vector3};
 

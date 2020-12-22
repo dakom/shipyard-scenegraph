@@ -1,5 +1,5 @@
 use shipyard::*;
-use shipyard_scenegraph::{self as sg, *};
+use shipyard_scenegraph::prelude::*;
 use nalgebra::{Vector3, Quaternion, Unit, UnitQuaternion};
 use crate::components::*;
 use crate::geometry::*;
@@ -8,13 +8,14 @@ use crate::config::*;
 pub const TICK:&'static str = "TICK";
 
 pub fn register_workloads(world:&World) {
-    world
-        .add_workload(TICK)
+
+    Workload::builder(TICK)
         .with_system(system!(spin))
-        .with_system(system!(sg::systems::trs_to_local))
-        .with_system(system!(sg::systems::local_to_world))
+        .with_system(system!(trs_to_local))
+        .with_system(system!(local_to_world))
         .with_system(system!(render))
-        .build();
+        .add_to_world(&world)
+        .unwrap();
 }
 
 pub fn spin(
@@ -30,7 +31,7 @@ pub fn spin(
 
     (&mut spins, &translations, &mut rotations, &img_areas, &world_transforms)
         .iter()
-        .for_each(|(spin, transform, rotation, img_area, world_transform)| {
+        .for_each(|(mut spin, transform, mut rotation, img_area, world_transform)| {
             let mut value = spin.0 + (delta * 0.1);
 
             if tick.total < 10000.0 {
@@ -52,11 +53,11 @@ pub fn spin(
                     let quat = rotation.0.as_mut_unchecked();
                     quat.coords = coords;
                 } else {
-                    let quat = &mut rotation.0;
-                    quat.x = coords.x;
-                    quat.y = coords.y;
-                    quat.z = coords.z;
-                    quat.w = coords.w;
+                    let quat = &mut rotation;
+                    quat.set_x(coords.x);
+                    quat.set_y(coords.y);
+                    quat.set_z(coords.z);
+                    quat.set_w(coords.w);
                 }
             }
         });

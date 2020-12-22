@@ -1,5 +1,6 @@
-
-use shipyard_scenegraph::*;
+use shipyard_scenegraph::math::native::*;
+mod helpers;
+use helpers::*;
 
 #[test]
 fn test_math_immutable() {

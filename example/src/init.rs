@@ -3,9 +3,9 @@ use crate::world::init_world;
 use crate::config::get_media_href;
 use crate::geometry::*;
 use crate::components::*;
+use shipyard_scenegraph::prelude::*;
 use crate::systems::{self, TICK};
 use crate::input;
-use shipyard_scenegraph as sg;
 
 use std::rc::{Rc};
 use std::cell::{RefCell};
@@ -64,7 +64,7 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
 
         systems::register_workloads(&world);
 
-        sg::init(&world);
+        init_scenegraph(&world);
         create_squares(&world, stage_width as f64, stage_height as f64);
 
         let on_resize = {
@@ -72,8 +72,8 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
             let world = Rc::clone(&world);
             move |_: &web_sys::Event| {
                 let (width, height) = get_window_size(&window).unwrap();
-                world.borrow::<NonSendSync<UniqueViewMut<SceneRenderer>>>().renderer.resize(ResizeStrategy::All(width, height));
-                let mut stage_area = world.borrow::<UniqueViewMut<StageArea>>();
+                world.borrow::<NonSendSync<UniqueViewMut<SceneRenderer>>>().unwrap().renderer.resize(ResizeStrategy::All(width, height));
+                let mut stage_area = world.borrow::<UniqueViewMut<StageArea>>().unwrap();
                 stage_area.width = width;
                 stage_area.height = height;
             }
@@ -89,7 +89,7 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
 
             move |timestamp| {
                 let will_run = {
-                    let mut tick = world.borrow::<UniqueViewMut<Tick>>();
+                    let mut tick = world.borrow::<UniqueViewMut<Tick>>().unwrap();
                     let will_run = if tick.last_time == 0.0 { false } else { true };
                     tick.delta = timestamp - tick.last_time;
                     tick.last_time = tick.now;
@@ -121,7 +121,7 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
 
         let origin = {
             if has_spin {
-                Some(sg::Vec3::new((width as f64)/2.0, (height as f64)/2.0, 0.0))
+                Some(Vec3::new((width as f64)/2.0, (height as f64)/2.0, 0.0))
             } else {
                 None
             }
@@ -132,15 +132,15 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
                 None
             } else {
                 Some(if parent.is_none() {
-                    sg::Vec3::new(0.5 * (stage_width - (width as f64)), 0.5 * (stage_height - (height as f64)), depth)
+                    Vec3::new(0.5 * (stage_width - (width as f64)), 0.5 * (stage_height - (height as f64)), depth)
                 } else {
-                    sg::Vec3::new((width as f64)/2.0, (height as f64)/2.0, depth)
+                    Vec3::new((width as f64)/2.0, (height as f64)/2.0, depth)
                 })
             }
         };
 
-        let entity = sg::spawn_child(
-            world, 
+        let mut storages = world.borrow::<SceneGraphStoragesMut>().unwrap();
+        let entity = storages.spawn_child(
             parent,
             translation,
             None,
@@ -152,17 +152,18 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
 
         {
            
-            let (entities, mut areas, mut colors, mut spins, mut interactables) = world.borrow::<(EntitiesViewMut, ViewMut<ImageArea>, ViewMut<Color>, ViewMut<Spin>, ViewMut<Interactable>)>();
+            let (entities, mut areas, mut colors, mut spins, mut interactables) 
+                = world.borrow::<(EntitiesViewMut, ViewMut<ImageArea>, ViewMut<Color>, ViewMut<Spin>, ViewMut<Interactable>)>().unwrap();
 
-            entities.add_component(&mut areas, ImageArea (Area { width, height}), entity);
+            entities.add_component(entity, &mut areas, ImageArea (Area { width, height}));
 
             if visible {
-                entities.add_component(&mut colors, Color (r,g,b, 1.0), entity);
+                entities.add_component(entity, &mut colors, Color (r,g,b, 1.0));
             }
             if has_spin {
-                entities.add_component(&mut spins, Spin(0.0), entity);
+                entities.add_component(entity, &mut spins, Spin(0.0));
             } else {
-                entities.add_component(&mut interactables, Interactable{}, entity);
+                entities.add_component(entity, &mut interactables, Interactable{});
             }
         }
 
