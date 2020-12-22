@@ -24,7 +24,7 @@ Builds on and re-exports [shipyard-hierarchy](https://github.com/dakom/shipyard-
 
 6. Run `trs_to_local` and `local_to_world` systems (like on a tick), and all the Local and World transforms will be propogated.
 
-It is possible to set `LocalTransform` directly. However, doing this will _not_ push the changes in the other direction (e.g. to the TRS components).
+It is possible to set `LocalTransform` directly. However, doing this will _not_ push the changes in the other direction (e.g. to the TRS components) and, for now, you need to make sure to also set the `DirtyTransform` flag so that it knows to push it to `WorldTransform`
 
 # Components and Systems
 
