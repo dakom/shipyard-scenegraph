@@ -1,9 +1,9 @@
 # rust/wasm
-.wasm
 target
 pkg
 **/*.rs.bk
 crate/Cargo.lock
+example/public/wasm
 
 # Netlify
 .netlify
