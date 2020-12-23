@@ -20,8 +20,7 @@ Builds on and re-exports [shipyard-hierarchy](https://github.com/dakom/shipyard-
 
 4. To add entities to the tree, borrow `SceneGraphStoragesMut` and then call `spawn_child_*()` on that.
 
-5a. To update things - mutably borrow `Translation`, `Rotation`, `Scale`, and `Origin`. There's a helper view for updating single entities too (`TrsStoragesMut`).
-5b. Alternatively - work with LocalTransform directly (but note that it currently does not backpropogate. see https://github.com/dakom/shipyard-scenegraph/issues/22) 
+5. To update things - mutably borrow `Translation`, `Rotation`, `Scale`, and `Origin`. There's a helper view for updating single entities too (`TrsStoragesMut`). Alternatively - work with LocalTransform directly (but note that it currently does not backpropogate. see https://github.com/dakom/shipyard-scenegraph/issues/22) 
 
 6. Run `local_transform_sys` and `world_transform_sys` systems (like on a tick), and all the Local and World transforms will be propogated.
 
