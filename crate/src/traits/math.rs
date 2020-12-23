@@ -1,4 +1,4 @@
-use crate::slice::*;
+use super::slice::SliceExt;
 pub trait Vec3<T: Copy>: SliceExt<T> 
 {
     fn zero() -> Self; 

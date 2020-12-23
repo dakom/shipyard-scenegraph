@@ -32,8 +32,11 @@ parallel = ["shipyard/parallel", "shipyard_hierarchy/parallel"]
 non_send = ["shipyard/non_send", "shipyard_hierarchy/non_send"]
 non_sync = ["shipyard/non_sync", "shipyard_hierarchy/non_sync"]
 std = ["shipyard/std", "shipyard_hierarchy/std"]
+doc = ["native_math", "nalgebra_math"]
 
-
+[package.metadata.docs.rs]
+features = ["doc"] 
+rustdoc-args = ["--cfg", "no-deps"]
 
 [[test]]
 name = "test_transform_basic"
@@ -53,4 +56,4 @@ required-features = ["native_math"]
 
 [[test]]
 name = "test_nalgebra_math"
-required-features = ["native_math", "nalgebra_math"]
+required-features = ["nalgebra_math"]

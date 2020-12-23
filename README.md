@@ -12,19 +12,23 @@ Builds on and re-exports [shipyard-hierarchy](https://github.com/dakom/shipyard-
 
 # How to use
 
-1. First, decide on a math lib - out of the box is a small native lib, and interop support for `nalgebra`. Enable the appropriate feature (e.g. `native_math`)
+1. First, decide on your math container types - out of the box is a small native lib, and interop support for a few `nalgebra` f64 primitives. Enable the appropriate feature (e.g. `native_math` or `nalgebra_math`).
 
 2. Use `shipyard_scenegraph::prelude::*` everywhere
 
 3. Call `init()` somewhere around main
 
-4. To add entities to the tree, borrow `SceneGraphStoragesMut` and then call `spawn_child()` on that.
+4. To add entities to the tree, borrow `SceneGraphStoragesMut` and then call `spawn_child_*()` on that.
 
-5. To update things - mutably borrow `Translation`, `Rotation`, `Scale`, and `Origin`.
+5. To update things - mutably borrow `Translation`, `Rotation`, `Scale`, and `Origin`. There's a helper view for updating single entities too (`TrsStoragesMut`).
 
-6. Run `trs_to_local` and `local_to_world` systems (like on a tick), and all the Local and World transforms will be propogated.
+6. Run `local_transform_sys` and `world_transform_sys` systems (like on a tick), and all the Local and World transforms will be propogated.
 
-It is possible to set `LocalTransform` directly. However, doing this will _not_ push the changes in the other direction (e.g. to the TRS components) and, for now, you need to make sure to also set the `DirtyTransform` flag so that it knows to push it to `WorldTransform`
+Currently it is not recommended to spawn a child with a transform (use the trs*) methods instead, nor to set `LocalTransform` directly.
+
+However, if you're sure that you're not really relying on any of the TRSO values and _only_ need to stick with the transforms, it should be fine.
+
+(this will be fixed eventually - just need to add traits for going backwards from the matrix)
 
 # Components and Systems
 
@@ -53,7 +57,8 @@ Almost all the above are generic over a container and primitive as type paramete
 
 # Run tests
 
-`cargo test --features native_math,nalgebra_math -- --nocapture`
+Core tests: `cargo test --features native_math -- --nocapture`
+Nalgebra compat tests: `cargo test --features nalgebra_math -- --nocapture`
 
 # More math lib interop
 

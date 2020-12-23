@@ -141,7 +141,7 @@ fn create_squares(world:&World, stage_width: f64, stage_height: f64) {
 
         let entity = {
             let mut storages = world.borrow::<SceneGraphStoragesMut>().unwrap();
-            storages.spawn_child(
+            storages.spawn_child_trs_origin(
                 parent,
                 translation,
                 None,

@@ -1,7 +1,6 @@
 use shipyard::*;
 use crate::components::*;
-use crate::math::traits::*;
-
+use crate::traits::math::*;
 
 pub fn init_scenegraph<V, Q, M, N>(world:&World) -> EntityId
 where
@@ -62,43 +61,26 @@ where
 
     world.add_unique(TransformRoot(id)).unwrap();
 
-    let (mut translations,mut rotations,mut scales, mut origins) 
+    let (mut local_transforms, mut translations,mut rotations,mut scales, mut origins) 
         = world.borrow::<( 
+            ViewMut<LocalTransform<M, N>>, 
             ViewMut<Translation<V, N>>, 
             ViewMut<Rotation<Q, N>>, 
             ViewMut<Scale<V, N>>, 
             ViewMut<Origin<V, N>>
         )>().unwrap();
 
+    local_transforms.update_pack();
     translations.update_pack();
     rotations.update_pack();
     scales.update_pack();
     origins.update_pack();
 
+    local_transforms.clear_inserted_and_modified();
     translations.clear_inserted_and_modified();
     rotations.clear_inserted_and_modified();
     scales.clear_inserted_and_modified();
     origins.clear_inserted_and_modified();
 
     id
-}
-
-#[cfg(test)]
-mod tests {
-    use shipyard::*;
-    use crate::math::native::*;
-    use std::borrow::Borrow;
-    type Translation = crate::components::Translation<Vec3, f64>;
-
-    #[test]
-    fn quick_sanity_check() {
-        let world = World::new();
-
-        super::init_scenegraph::<Vec3, Vec4, Matrix4, f64>(&world);
-
-        let translations = world.borrow::<View<Translation>>().unwrap(); 
-
-        let value = translations.iter().next().unwrap();
-        assert_eq!(&Vec3::new(0.0, 0.0, 0.0), value.borrow()); 
-    }
 }

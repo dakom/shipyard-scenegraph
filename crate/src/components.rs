@@ -2,7 +2,7 @@ use shipyard::EntityId;
 use core::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::borrow::{Borrow, BorrowMut};
-use crate::math::traits::*;
+use crate::traits::math::*;
 
 macro_rules! makeComponent {
     ($name:ident, $data:ident)=> {
@@ -30,9 +30,6 @@ macro_rules! makeComponent {
                 }
             }
 
-            pub fn values(&self) -> &T {
-                &self._values
-            }
         }
         
         impl <T, N> Borrow<T> for $name<T, N> 

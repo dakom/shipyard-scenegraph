@@ -2,7 +2,7 @@ use shipyard::*;
 use shipyard_hierarchy::*;
 use crate::views::SceneGraphStoragesMut;
 use crate::components::*;
-use crate::math::traits::*;
+use crate::traits::math::*;
 
 //Marker for shipyard_hierarchy to know we're targeting _this_ hierarchy
 pub struct SceneGraph {}
@@ -14,16 +14,34 @@ where
     M: Matrix4<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 {
-    pub fn spawn_child(&mut self, parent: Option<EntityId>, translation: Option<V>, rotation: Option<Q>, scale: Option<V>, origin:Option<V>) -> EntityId {
+    pub fn spawn_child_identity(&mut self, parent: Option<EntityId>) -> EntityId {
+        self.spawn_child_transform(parent, M::identity())
+    }
 
+    pub fn spawn_child_transform(&mut self, parent: Option<EntityId>, local_matrix: M) -> EntityId {
+        //TODO - derive these from the transform
+        let translation = V::zero(); 
+        let rotation = Q::identity(); 
+        let scale = V::one(); 
+        let origin = V::zero(); 
+        self.spawn_child(parent, translation, rotation, scale, origin, local_matrix)
+    }
 
+    pub fn spawn_child_trs(&mut self, parent: Option<EntityId>, translation: Option<V>, rotation: Option<Q>, scale: Option<V>) -> EntityId {
+        self.spawn_child_trs_origin(parent, translation, rotation, scale, None)
+    }
+
+    pub fn spawn_child_trs_origin(&mut self, parent: Option<EntityId>, translation: Option<V>, rotation: Option<Q>, scale: Option<V>, origin:Option<V>) -> EntityId {
         let translation = translation.unwrap_or_else(|| Vec3::zero());
         let rotation = rotation.unwrap_or_else(|| Quat::identity());
         let scale = scale.unwrap_or(Vec3::one());
         let origin = origin.unwrap_or_else(|| Vec3::zero());
-        let local_matrix = Matrix4::identity(); //Matrix4::new_from_trs(&translation, &rotation, &scale);
-        let world_matrix = Matrix4::identity();
+        let mut local_matrix = M::identity();
+        local_matrix.reset_from_trs_origin(&translation.as_slice(), &rotation.as_slice(), &scale.as_slice(), &origin.as_slice());
 
+        self.spawn_child(parent, translation, rotation, scale, origin, local_matrix)
+    }
+    fn spawn_child(&mut self, parent: Option<EntityId>, translation: V, rotation: Q, scale: V, origin:V, local_matrix: M) -> EntityId {
         let Self { 
             entities, 
             transform_root,
@@ -54,8 +72,8 @@ where
                     Scale::new(scale),
                     Origin::new(origin),
                     LocalTransform::new(local_matrix),
-                    WorldTransform::new(world_matrix),
-                    DirtyTransform(false)
+                    WorldTransform::new(M::identity()),
+                    DirtyTransform(true)
                 )
         );
 
@@ -64,6 +82,7 @@ where
 
             (entities, parents, children).attach(entity, parent);
         }
+
         entity
     }
 

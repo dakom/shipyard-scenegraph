@@ -1,4 +1,5 @@
-use shipyard_scenegraph::math::native::*;
+#![allow(dead_code, unused_imports)]
+use shipyard_scenegraph::prelude::*;
 mod helpers;
 use helpers::*;
 

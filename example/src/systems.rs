@@ -11,8 +11,8 @@ pub fn register_workloads(world:&World) {
 
     Workload::builder(TICK)
         .with_system(system!(spin))
-        .with_system(system!(trs_to_local))
-        .with_system(system!(local_to_world))
+        .with_system(system!(local_transform_sys))
+        .with_system(system!(world_transform_sys))
         .with_system(system!(render))
         .add_to_world(&world)
         .unwrap();

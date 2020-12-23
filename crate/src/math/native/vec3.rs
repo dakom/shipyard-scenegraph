@@ -1,6 +1,7 @@
 use std::ops::{Deref, DerefMut};
 use std::convert::TryInto;
-use crate::slice::*;
+use crate::traits::slice::*;
+use crate::traits::math as math_traits;
 
 const VECTOR_ZERO:[f64;3] = [0.0, 0.0, 0.0];
 const VECTOR_ONE:[f64;3] = [1.0, 1.0, 1.0];
@@ -8,6 +9,7 @@ const VECTOR_ONE:[f64;3] = [1.0, 1.0, 1.0];
 #[repr(C)]
 #[derive(PartialEq, Debug)]
 pub struct Vec3 ([f64;3]);
+
 impl Vec3 {
     pub fn set_x(&mut self, value:f64) {
         self.0[0] = value;
@@ -51,12 +53,6 @@ impl Vec3 {
         Self([x, y, z])
     }
 
-    pub fn write_to_vf32(self: &Self, target:&mut [f32]) {
-        //can't memcpy since it needs a cast
-        target[0] = self.x() as f32;
-        target[1] = self.y() as f32;
-        target[2] = self.z() as f32;
-    }
 
     pub fn zero() -> Self {
         VECTOR_ZERO.as_ref().into()
@@ -64,6 +60,15 @@ impl Vec3 {
     
     pub fn one() -> Self {
         VECTOR_ONE.as_ref().into()
+    }
+}
+
+impl F32Compat for Vec3 {
+    fn write_to_vf32(self: &Self, target:&mut [f32]) {
+        //can't memcpy since it needs a cast
+        target[0] = self.x() as f32;
+        target[1] = self.y() as f32;
+        target[2] = self.z() as f32;
     }
 }
 
@@ -107,7 +112,7 @@ impl Clone for Vec3 {
 }
 
 
-impl crate::math::traits::Vec3<f64> for Vec3 {
+impl math_traits::Vec3<f64> for Vec3 {
     fn zero() -> Self {
         Self::zero()
     }

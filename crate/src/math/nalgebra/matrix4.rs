@@ -1,13 +1,12 @@
-use crate::math::traits::*;
-use crate::slice::*;
+use crate::traits::slice::*;
+use crate::traits::math as math_traits;
 
 pub type Matrix4 = nalgebra::Matrix4<f64>;
 
-impl crate::math::traits::Matrix4<f64> for Matrix4 {
+impl math_traits::Matrix4<f64> for Matrix4 {
     fn identity() -> Self {
         Matrix4::identity()
     }
-
 
     fn reset_from_trs_origin( &mut self, translation:&[f64], rotation: &[f64], scale: &[f64], origin: &[f64]) {
         let values = &mut self.as_slice_mut();
@@ -58,30 +57,26 @@ impl crate::math::traits::Matrix4<f64> for Matrix4 {
         values[13] = translation[1] + oy - (out1 * ox + out5 * oy + out9 * oz);
         values[14] = translation[2] + oz - (out2 * ox + out6 * oy + out10 * oz);
         values[15] = 1.0;
-        /*
-        self.translate(translation);
-        self.translate(origin);
-        self.rotate(rotation);
-        self.scale(scale);
-        self.translate(&Vec3::new(-origin.x, -origin.y, -origin.z));
-        */
-        //self.translate(&Vec3::new(-origin.x, -origin.y, -origin.z));
-
-        //self.translate(&Vec3::new(translation.x+origin.x, translation.y + origin.y, translation.z + origin.z));
-        //self.rotate(rotation);
-        //self.translate(&Vec3::new(translation.x-origin.x, translation.y-origin.y, translation.z-origin.z));
     }
+
     fn mul_assign(&mut self, other:&Self) {
         *self *= other;
     }
+}
 
-    /*
 
-
-    fn from_slice(values:&[f64]) -> Self {
-        Self::from_row_slice(values)
+impl SliceExt<f64> for Matrix4 {
+    fn as_slice(&self) -> &[f64] {
+        self.as_slice()
     }
 
+    fn as_slice_mut(&mut self) -> &mut [f64] {
+        self.as_mut_slice()
+    }
+
+}
+
+impl F32Compat for Matrix4 {
     fn write_to_vf32(self: &Self, target:&mut [f32]) {
         let values = self.as_slice();
 
@@ -103,17 +98,4 @@ impl crate::math::traits::Matrix4<f64> for Matrix4 {
         target[14] = values[14] as f32;
         target[15] = values[15] as f32;
     }
-    */
-}
-
-
-impl SliceExt<f64> for Matrix4 {
-    fn as_slice(&self) -> &[f64] {
-        self.as_slice()
-    }
-
-    fn as_slice_mut(&mut self) -> &mut [f64] {
-        self.as_mut_slice()
-    }
-
 }

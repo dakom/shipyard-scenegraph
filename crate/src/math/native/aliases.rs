@@ -1,6 +1,7 @@
 use super::{matrix4::*, vec3::*, vec4::*};
 use shipyard::*;
-use shipyard_hierarchy::{Parent, Child};
+use shipyard_hierarchy::*;
+use crate::components::{TransformRoot, DirtyTransform};
 use crate::hierarchy::SceneGraph;
 
 //Alias and export the concrete types
@@ -15,7 +16,7 @@ pub type LocalTransform = crate::components::LocalTransform<Matrix4, f64>;
 pub type WorldTransform = crate::components::WorldTransform<Matrix4, f64>;
 
 //Systems
-pub fn trs_to_local(
+pub fn local_transform_sys(
     mut translations:ViewMut<Translation>,
     mut rotations:ViewMut<Rotation>,
     mut scales:ViewMut<Scale>,
@@ -23,10 +24,10 @@ pub fn trs_to_local(
     mut local_transforms:ViewMut<LocalTransform>,
     mut dirty_transforms:ViewMut<DirtyTransform>,
 ) {
-    crate::systems::trs_to_local(translations, rotations, scales, origins, local_transforms, dirty_transforms);
+    crate::systems::local_transform_sys(translations, rotations, scales, origins, local_transforms, dirty_transforms);
 }
 
-pub fn local_to_world (
+pub fn world_transform_sys (
     root: UniqueView<TransformRoot>,
     parents: View<Parent<SceneGraph>>,
     children: View<Child<SceneGraph>>,
@@ -34,14 +35,10 @@ pub fn local_to_world (
     mut dirty_transforms: ViewMut<DirtyTransform>,
     mut world_transforms: ViewMut<WorldTransform>,
 ) {
-    crate::systems::local_to_world(root, parents, children, local_transforms, dirty_transforms, world_transforms);
+    crate::systems::world_transform_sys(root, parents, children, local_transforms, dirty_transforms, world_transforms);
 }
 
 // Init
 pub fn init_scenegraph(world:&World) -> EntityId {
     crate::init::init_scenegraph::<Vec3, Vec4, Matrix4, f64>(&world)
 }
-
-//Re-export the other scenegraph components
-pub use crate::components::{TransformRoot, DirtyTransform};
-pub use crate::slice::*;

@@ -1,7 +1,6 @@
 
 use shipyard::*;
-use shipyard_hierarchy::*;
-use shipyard_scenegraph::math::native::*;
+use shipyard_scenegraph::prelude::*;
 use std::collections::{HashMap, hash_map::Entry};
 use std::hash::Hash;
 
@@ -36,20 +35,20 @@ pub fn create_scene_graph() -> (World, TestEntities, HashMap<EntityId, &'static 
         let mut storages = world.borrow::<SceneGraphStoragesMut>().unwrap();
 
         //attach them somewhat out of order
-        let a = storages.spawn_child(None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let b = storages.spawn_child(None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let c = storages.spawn_child(None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let d = storages.spawn_child(Some(a), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let e = storages.spawn_child(Some(a), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let f = storages.spawn_child(Some(c), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let g = storages.spawn_child(Some(c), Some(Vec3::new(20.0, 0.0, 0.0)), None, None, None);
-        let h = storages.spawn_child(Some(d), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let i = storages.spawn_child(Some(d), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let l = storages.spawn_child(Some(h), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let j = storages.spawn_child(Some(g), Some(Vec3::new(20.0, 0.0, 0.0)), None, None, None);
-        let m = storages.spawn_child(Some(j), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let k = storages.spawn_child(Some(g), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
-        let n = storages.spawn_child(Some(m), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let a = storages.spawn_child_trs_origin(None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let b = storages.spawn_child_trs_origin(None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let c = storages.spawn_child_trs_origin(None, Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let d = storages.spawn_child_trs_origin(Some(a), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let e = storages.spawn_child_trs_origin(Some(a), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let f = storages.spawn_child_trs_origin(Some(c), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let g = storages.spawn_child_trs_origin(Some(c), Some(Vec3::new(20.0, 0.0, 0.0)), None, None, None);
+        let h = storages.spawn_child_trs_origin(Some(d), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let i = storages.spawn_child_trs_origin(Some(d), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let l = storages.spawn_child_trs_origin(Some(h), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let j = storages.spawn_child_trs_origin(Some(g), Some(Vec3::new(20.0, 0.0, 0.0)), None, None, None);
+        let m = storages.spawn_child_trs_origin(Some(j), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let k = storages.spawn_child_trs_origin(Some(g), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
+        let n = storages.spawn_child_trs_origin(Some(m), Some(Vec3::new(10.0, 0.0, 0.0)), None, None, None);
    
         labels.insert(root, "root");
         labels.insert(a, "a");

@@ -1,6 +1,7 @@
 use std::ops::{Deref, DerefMut};
 use std::convert::TryInto;
-use crate::slice::*;
+use crate::traits::slice::*;
+use crate::traits::math as math_traits;
 
 const QUAT_IDENTITY:[f64;4] = [0.0, 0.0, 0.0, 1.0];
 
@@ -68,7 +69,10 @@ impl Vec4 {
         QUAT_IDENTITY.as_ref().into()
     }
 
-    pub fn write_to_vf32(self: &Self, target:&mut [f32]) {
+}
+
+impl F32Compat for Vec4 {
+    fn write_to_vf32(self: &Self, target:&mut [f32]) {
         //can't memcpy since it needs a cast
         target[0] = self.x() as f32;
         target[1] = self.y() as f32;
@@ -76,7 +80,6 @@ impl Vec4 {
         target[3] = self.w() as f32;
     }
 }
-
 impl Deref for Vec4 { 
     type Target = [f64];
 
@@ -116,7 +119,7 @@ impl Clone for Vec4 {
 }
 
 
-impl crate::math::traits::Quat<f64> for Vec4 {
+impl math_traits::Quat<f64> for Vec4 {
     fn identity() -> Self {
         Self::quat_identity() 
     }

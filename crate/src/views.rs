@@ -2,7 +2,7 @@ use shipyard::*;
 use shipyard::Borrow;
 use shipyard_hierarchy::*;
 use crate::components::*;
-use crate::math::traits::*;
+use crate::traits::math::*;
 use crate::hierarchy::SceneGraph;
 
 /// Custom view for all scene graph + hierarchy stuff
@@ -108,7 +108,6 @@ where
     Q: Quat<N> + Send + Sync,
     N: Copy + Send + Sync
 {
-    pub entities: EntitiesViewMut<'a>,
     pub translations: ViewMut<'a, Translation<V, N>>,
     pub rotations: ViewMut<'a, Rotation<Q, N>>,
     pub scales: ViewMut<'a, Scale<V, N>>,
@@ -129,7 +128,6 @@ where
         Self: Sized,
     {
         Ok(TrsStoragesMut{
-            entities: Borrow::try_borrow(world)?,
             translations: Borrow::try_borrow(world)?,
             rotations: Borrow::try_borrow(world)?,
             scales: Borrow::try_borrow(world)?,
@@ -159,7 +157,6 @@ where
         Self: Sized,
     {
         Ok(TrsStoragesMut {
-            entities: AllStoragesBorrow::try_borrow(all_storages)?,
             translations: AllStoragesBorrow::try_borrow(all_storages)?,
             rotations: AllStoragesBorrow::try_borrow(all_storages)?,
             scales: AllStoragesBorrow::try_borrow(all_storages)?,

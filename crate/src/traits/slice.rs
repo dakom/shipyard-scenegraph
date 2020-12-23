@@ -13,3 +13,11 @@ pub trait SliceExt<T: Copy> {
         self.copy_from_slice(other.as_slice());
     }
 }
+
+//This isn't necessary for the scenegraph itself
+//But helpful for common cases so it is satisfied
+//In the local libs and exported in prelude
+
+pub trait F32Compat {
+    fn write_to_vf32(self: &Self, target:&mut [f32]);
+}

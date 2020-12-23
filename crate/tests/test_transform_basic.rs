@@ -1,9 +1,6 @@
-#![allow(warnings)]
+#![allow(dead_code, unused_imports)]
 use shipyard::*;
-
-use shipyard_scenegraph::math::native::*;
-use shipyard_scenegraph::hierarchy::SceneGraph;
-use shipyard_hierarchy::*;
+use shipyard_scenegraph::prelude::*;
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::{HashMap, hash_map::Entry};
 use std::hash::Hash;
@@ -15,54 +12,68 @@ fn test_transform_basic() {
     let (world, entities, labels) = create_scene_graph();
     let (root, a,b,c,d,e,f,g,h,i,j,k,l,m,n) = entities;
 
-    //adding the entities makes trs dirty, but not yet world
+    let mut inserted_count = 0;
+    let mut modified_count = 0;
+    let mut dirty_count = 0;
+
+    //adding the entities makes inserted dirty
     {
-        let (translations, rotations, scales, dirty) 
-            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<DirtyTransform>)>().unwrap(); 
+        let (translations, rotations, scales, origins) 
+            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<Origin>)>().unwrap(); 
 
-        let tlen = translations.inserted_or_modified().iter().count();
-        let rlen = rotations.inserted_or_modified().iter().count();
-        let slen = scales.inserted_or_modified().iter().count();
-        let dirty = dirty.iter().into_iter().any(|x| x.0);
+        inserted_count = translations.inserted().iter().count();
+        let rlen = rotations.inserted().iter().count();
+        let slen = scales.inserted().iter().count();
+        let olen = origins.inserted().iter().count();
 
-        assert_eq!(tlen, 14);
-        assert_eq!(tlen, rlen);
-        assert_eq!(tlen, slen);
-        assert_eq!(dirty, false);
+        assert_eq!(inserted_count, 14);
+        assert_eq!(inserted_count, rlen);
+        assert_eq!(inserted_count, slen);
+        assert_eq!(inserted_count, olen);
+    }
+    //but not modified
+    {
+        let (translations, rotations, scales, origins) 
+            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<Origin>)>().unwrap(); 
+
+        modified_count = translations.modified().iter().count();
+        let rlen = rotations.modified().iter().count();
+        let slen = scales.modified().iter().count();
+        let olen = origins.modified().iter().count();
+
+        assert_eq!(modified_count, 0);
+        assert_eq!(modified_count, rlen);
+        assert_eq!(modified_count, slen);
+        assert_eq!(modified_count, olen);
+    }
+    //however - yes dirty
+    {
+        let dirty = world.borrow::<View<DirtyTransform>>().unwrap(); 
+
+        dirty_count = dirty.iter().into_iter().filter(|x| x.0).count();
+
+        assert_eq!(dirty_count, 14);
     }
 
-    //when first added - nodes do not have their local_transform updated
+    //update local_transform
+    world.run(local_transform_sys).unwrap();
+
+    //inserted should be 0, everything else should be unchanged
     {
-        world.borrow::<View<LocalTransform>>()
-            .unwrap()
-            .iter()
-            .for_each(|local_transform| {
-                assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(local_transform));
-            }); 
-    }
-    //update local_transform - world_transform should be unchanged
-    world.run(trs_to_local).unwrap();
+        let (translations, rotations, scales, origins, dirty) 
+            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<Origin>, View<DirtyTransform>)>().unwrap(); 
 
-    //this now unmarks trs as dirty, but marks world as dirty 
-    {
-        let (translations, rotations, scales, dirty) 
-            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<DirtyTransform>)>().unwrap(); 
 
-        let tlen = translations.inserted_or_modified().iter().count();
-        let rlen = rotations.inserted_or_modified().iter().count();
-        let slen = scales.inserted_or_modified().iter().count();
-        let dirty = dirty.iter().into_iter().any(|x| x.0);
-
-        assert_eq!(tlen, 0);
-        assert_eq!(tlen, rlen);
-        assert_eq!(tlen, slen);
-        assert_eq!(dirty, true);
+        assert_eq!(translations.inserted().iter().count(), 0);
+        assert_eq!(modified_count, translations.modified().iter().count());
+        assert_eq!(dirty_count, dirty.iter().into_iter().filter(|x| x.0).count());
     }
 
-    //now local_transform should match (world_transform is unchanged)
+    //local_transform should have the expected values (world_transform is unchanged)
     {
-        let (translations, rotations, scales, local_transforms, world_transforms) 
-            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<LocalTransform>, View<WorldTransform>)>().unwrap(); 
+        let (translations, local_transforms, world_transforms) 
+            = world.borrow::<(View<Translation>, View<LocalTransform>, View<WorldTransform>)>().unwrap(); 
+
         (&translations, &local_transforms, &world_transforms)
             .iter()
             .with_id()
@@ -75,34 +86,36 @@ fn test_transform_basic() {
                 } else {
                     assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(local_transform));
                 }
-
-                assert_eq!(translation.values(), &get_translation(local_transform));
+               
+                assert_eq!(Borrow::<Vec3>::borrow(translation), &get_translation(local_transform));
                 assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(world_transform));
             }); 
     }
     //update world_transforms
-    world.run(local_to_world).unwrap();
+    world.run(world_transform_sys).unwrap();
 
     //nothing should be dirty
     {
-        let (translations, rotations, scales, dirty) 
-            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<DirtyTransform>)>().unwrap(); 
+        let (translations, rotations, scales, origins, dirty) 
+            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<Origin>, View<DirtyTransform>)>().unwrap(); 
 
-        let tlen = translations.inserted_or_modified().iter().count();
-        let rlen = rotations.inserted_or_modified().iter().count();
-        let slen = scales.inserted_or_modified().iter().count();
-        let dirty = dirty.iter().into_iter().any(|x| x.0);
+        let tlen = translations.modified().iter().count();
+        let rlen = rotations.modified().iter().count();
+        let slen = scales.modified().iter().count();
+        let olen = origins.modified().iter().count();
+        let dlen = dirty.iter().into_iter().filter(|x| x.0).count();
 
         assert_eq!(tlen, 0);
         assert_eq!(tlen, rlen);
         assert_eq!(tlen, slen);
-        assert_eq!(dirty, false);
+        assert_eq!(tlen, olen);
+        assert_eq!(dlen, 0);
     }
 
     //local_transfrom should not be affected
     {
-        let (translations, rotations, scales, local_transforms, world_transforms) 
-            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<LocalTransform>, View<WorldTransform>)>().unwrap(); 
+        let (translations, local_transforms) 
+            = world.borrow::<(View<Translation>, View<LocalTransform>)>().unwrap(); 
 
         (&translations, &local_transforms)
             .iter()
@@ -115,7 +128,7 @@ fn test_transform_basic() {
                 } else {
                     assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(local_transform));
                 }
-                assert_eq!(translation.values(), &get_translation(local_transform));
+                assert_eq!(Borrow::<Vec3>::borrow(translation), &get_translation(local_transform));
             }); 
     }
 
@@ -179,7 +192,7 @@ fn test_transform_basic() {
         println!("{:?}", storages.debug_tree(entities.0, |e| {
             format!("{:?}: Local: {:?} World: {:?}", 
                 labels.get(&e).unwrap(), 
-                translation_storage.get(e).unwrap().values(),
+                Borrow::<Vec3>::borrow(translation_storage.get(e).unwrap()),
                 get_translation(world_storage.get(e).unwrap())
             )
         }));

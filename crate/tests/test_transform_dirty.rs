@@ -1,9 +1,6 @@
-#![allow(warnings)]
+#![allow(dead_code, unused_imports)]
 use shipyard::*;
-
-use shipyard_scenegraph::math::native::*;
-use shipyard_scenegraph::hierarchy::SceneGraph;
-use shipyard_hierarchy::*;
+use shipyard_scenegraph::prelude::*;
 use std::borrow::{Borrow, BorrowMut};
 use std::collections::{HashMap, hash_map::Entry};
 use std::hash::Hash;
@@ -15,8 +12,8 @@ fn test_transform_dirty() {
     let (world, entities, _labels) = create_scene_graph();
     let (root, a,b,c,d,e,f,g,h,i,j,k,l,m,n) = entities;
 
-    world.run(trs_to_local);
-    world.run(local_to_world);
+    world.run(local_transform_sys).unwrap();
+    world.run(world_transform_sys).unwrap();
 
     //check all the world transforms before making changes
     {
@@ -69,6 +66,23 @@ fn test_transform_dirty() {
         assert_eq!(Vec3::new(70.0,0.0, 0.0), get_translation(&world_transform));
     }
 
+    //nothing should be dirty
+    {
+        let (translations, rotations, scales, origins, dirty) 
+            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<Origin>, View<DirtyTransform>)>().unwrap(); 
+
+        let tlen = translations.modified().iter().count();
+        let rlen = rotations.modified().iter().count();
+        let slen = scales.modified().iter().count();
+        let olen = origins.modified().iter().count();
+        let dlen = dirty.iter().into_iter().filter(|x| x.0).count();
+
+        assert_eq!(tlen, 0);
+        assert_eq!(tlen, rlen);
+        assert_eq!(tlen, slen);
+        assert_eq!(tlen, olen);
+        assert_eq!(dlen, 0);
+    }
     //make a change
     {
         let mut translations = world.borrow::<ViewMut<Translation>>().unwrap();
@@ -80,8 +94,52 @@ fn test_transform_dirty() {
         translation.set_y(400.0);
     }
 
-    world.run(trs_to_local);
-    world.run(local_to_world);
+    //they should be ready to be dirtied, but not yet dirty
+    {
+
+        let (translations, dirty) = world.borrow::<(View<Translation>, View<DirtyTransform>)>().unwrap(); 
+
+        let tlen = translations.modified().iter().count();
+        let dlen = dirty.iter().into_iter().filter(|x| x.0).count();
+
+        assert_eq!(tlen, 3);
+        assert_eq!(dlen, 0);
+    }
+
+
+    world.run(local_transform_sys).unwrap();
+
+    //they should be dirtied, but no longer pending 
+    {
+
+        let (translations, dirty) = world.borrow::<(View<Translation>, View<DirtyTransform>)>().unwrap(); 
+
+        let tlen = translations.modified().iter().count();
+        let dlen = dirty.iter().into_iter().filter(|x| x.0).count();
+
+        assert_eq!(tlen, 0);
+        assert_eq!(dlen, 3);
+    }
+
+    world.run(world_transform_sys).unwrap();
+
+    //again, back to normal - nothing should be dirty
+    {
+        let (translations, rotations, scales, origins, dirty) 
+            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<Origin>, View<DirtyTransform>)>().unwrap(); 
+
+        let tlen = translations.modified().iter().count();
+        let rlen = rotations.modified().iter().count();
+        let slen = scales.modified().iter().count();
+        let olen = origins.modified().iter().count();
+        let dlen = dirty.iter().into_iter().filter(|x| x.0).count();
+
+        assert_eq!(tlen, 0);
+        assert_eq!(tlen, rlen);
+        assert_eq!(tlen, slen);
+        assert_eq!(tlen, olen);
+        assert_eq!(dlen, 0);
+    }
 
     //check all the transforms after making changes
     {

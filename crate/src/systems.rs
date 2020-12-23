@@ -2,10 +2,10 @@ use shipyard::*;
 use shipyard_hierarchy::*;
 use std::collections::HashSet;
 use crate::components::*;
-use crate::math::traits::*;
+use crate::traits::math::*;
 use crate::hierarchy::SceneGraph;
 
-pub fn trs_to_local<V, Q, M, N>(
+pub fn local_transform_sys<V, Q, M, N>(
     mut translations:ViewMut<Translation<V, N>>,
     mut rotations:ViewMut<Rotation<Q, N>>,
     mut scales:ViewMut<Scale<V, N>>,
@@ -19,35 +19,62 @@ where
     M: Matrix4<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 {
+    local_transforms.clear_inserted();
+    translations.clear_inserted();
+    rotations.clear_inserted();
+    scales.clear_inserted();
+    origins.clear_inserted();
 
-    /*
-        We only want to propogate changes if TRS is dirty
-        That's why they are update packs! :D
-    */
-    let mut unique_ids = HashSet::<EntityId>::new();
+    //First gather all the unique ids that have been tainted by trso changes
+    let mut trso_ids = HashSet::<EntityId>::new();
+    translations.modified().iter().ids().for_each(|id| { trso_ids.insert(id); });
+    rotations.modified().iter().ids().for_each(|id| { trso_ids.insert(id); });
+    scales.modified().iter().ids().for_each(|id| { trso_ids.insert(id); });
+    origins.modified().iter().ids().for_each(|id| { trso_ids.insert(id); });
 
-    translations.inserted_or_modified().iter().ids().for_each(|id| { unique_ids.insert(id); });
-    rotations.inserted_or_modified().iter().ids().for_each(|id| { unique_ids.insert(id); });
-    scales.inserted_or_modified().iter().ids().for_each(|id| { unique_ids.insert(id); });
-    origins.inserted_or_modified().iter().ids().for_each(|id| { unique_ids.insert(id); });
+    //Stash these in a full list which will also include the localtransform changes
+    let mut all_ids = trso_ids.clone();
 
-    unique_ids
+    //Adapt the list from LocalTransform, and set their TRSO values
+    local_transforms.modified()
+        .iter()
+        .with_id()
+        .for_each(|(id, transform)| {
+            //TODO - derive the TRSO values and set them on the components!
+
+            //don't want to re-set the transform again :P
+            trso_ids.remove(&id);
+
+            //but do need to mark dirty
+            all_ids.insert(id);
+        });
+
+    //For the remaining trso_ids, set the LocalTransforms
+    trso_ids
         .iter()
         .for_each(|id| {
-            let (translation, rotation, scale, origin, mut local_transform, mut dirty_transform) = 
-                (&translations, &rotations, &scales, &origins, &mut local_transforms, &mut dirty_transforms).get(*id).unwrap();
+            let (translation, rotation, scale, origin, mut local_transform) = 
+                (&translations, &rotations, &scales, &origins, &mut local_transforms).get(*id).unwrap();
             local_transform.reset_from_trs_origin(translation.as_slice(), rotation.as_slice(), scale.as_slice(), origin.as_slice());
+        });
+
+    //Mark everything that was dirty
+    all_ids
+        .iter()
+        .for_each(|id| {
+            let mut dirty_transform = (&mut dirty_transforms).get(*id).unwrap();
             dirty_transform.0 = true;
         });
 
-    translations.clear_inserted_and_modified();
-    rotations.clear_inserted_and_modified();
-    scales.clear_inserted_and_modified();
-    origins.clear_inserted_and_modified();
+    //Clear the update packs
+    local_transforms.clear_modified();
+    translations.clear_modified();
+    rotations.clear_modified();
+    scales.clear_modified();
+    origins.clear_modified();
 }
-
 //See: https://gameprogrammingpatterns.com/dirty-flag.html
-pub fn local_to_world<M, N>(
+pub fn world_transform_sys<M, N>(
     root: UniqueView<TransformRoot>,
     parent_storage: View<Parent<SceneGraph>>,
     child_storage: View<Child<SceneGraph>>,
@@ -74,8 +101,10 @@ where
         N: Copy + Send + Sync,
     
     {
-        dirty |= dirty_transform_storage[id].0;
-        dirty_transform_storage[id].0 = false;
+        let dirty_transform = &mut dirty_transform_storage[id];
+        let is_dirty:bool = dirty_transform.0;
+        dirty_transform.0 = false;
+        dirty |= is_dirty; 
 
         if dirty {
             //we need to operate on 2 parts of the storage at the same time
@@ -105,15 +134,16 @@ where
 
     //first propogate the root transform if it changed
     let root_id = root.0;
-    let dirty = dirty_transform_storage[root_id].0;
-    dirty_transform_storage[root_id].0 = false;
 
-    if dirty {
+    let dirty_transform = &mut dirty_transform_storage[root_id];
+    let is_dirty:bool = dirty_transform.0;
+    dirty_transform.0 = false;
+    if is_dirty {
         world_transform_storage[root_id].copy_from_slice(local_transform_storage[root_id].as_slice());
     }
 
     //then recursively update all the children
     (&parent_storage, &child_storage).children(root_id).for_each(|child| {
-        update(child, dirty, root_id, &parent_storage, &child_storage, &local_transform_storage, &mut dirty_transform_storage, &mut world_transform_storage);
+        update(child, is_dirty, root_id, &parent_storage, &child_storage, &local_transform_storage, &mut dirty_transform_storage, &mut world_transform_storage);
     });
 }
