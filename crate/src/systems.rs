@@ -19,6 +19,7 @@ where
     M: Matrix4<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 {
+    //Inserted storages won't show in modified, gotta clear inserted first
     local_transforms.clear_inserted();
     translations.clear_inserted();
     rotations.clear_inserted();
