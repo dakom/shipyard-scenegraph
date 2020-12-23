@@ -7,7 +7,7 @@ use crate::traits::math::*;
 macro_rules! makeComponent {
     ($name:ident, $data:ident)=> {
 
-        #[derive(Debug)]
+        #[derive(Debug, Clone)]
         pub struct $name<T, N> 
         where 
             T: $data<N>,

@@ -171,3 +171,90 @@ where
         })
     }
 }
+
+impl<'a: 'b, 'b, V, Q, M, N> Get for &'b LocalTransformStoragesMut<'a, V, Q, M, N>
+where
+    V: Vec3<N> + Send + Sync + 'static,
+    Q: Quat<N> + Send + Sync + 'static,
+    M: Matrix4<N> + Send + Sync + 'static,
+    N: Copy + Send + Sync + 'static
+{
+    type Out = (
+        <&'b ViewMut<'a, Translation<V, N>> as Get>::Out,
+        <&'b ViewMut<'a, Rotation<Q, N>> as Get>::Out,
+        <&'b ViewMut<'a, Scale<V, N>> as Get>::Out,
+        <&'b ViewMut<'a, Origin<V, N>> as Get>::Out,
+        <&'b ViewMut<'a, LocalTransform<M, N>> as Get>::Out
+    );
+    type FastOut = (
+        <&'b ViewMut<'a, Translation<V, N>> as Get>::FastOut,
+        <&'b ViewMut<'a, Rotation<Q, N>> as Get>::FastOut,
+        <&'b ViewMut<'a, Scale<V, N>> as Get>::FastOut,
+        <&'b ViewMut<'a, Origin<V, N>> as Get>::FastOut,
+        <&'b ViewMut<'a, LocalTransform<M, N>> as Get>::FastOut
+    );
+
+    fn get(self, entity: EntityId) -> Result<Self::Out, shipyard::error::MissingComponent> {
+        Ok((
+            self.translations.get(entity)?,
+            self.rotations.get(entity)?,
+            self.scales.get(entity)?,
+            self.origins.get(entity)?,
+            self.local_transforms.get(entity)?,
+    ))
+    }
+
+    fn fast_get(self, entity: EntityId) -> Result<Self::FastOut, error::MissingComponent> {
+        Ok((
+            self.translations.fast_get(entity)?,
+            self.rotations.fast_get(entity)?,
+            self.scales.fast_get(entity)?,
+            self.origins.fast_get(entity)?,
+            self.local_transforms.fast_get(entity)?,
+        ))
+    }
+}
+
+
+impl<'a: 'b, 'b, V, Q, M, N> Get for &'b mut LocalTransformStoragesMut<'a, V, Q, M, N>
+where
+    V: Vec3<N> + Send + Sync + 'static,
+    Q: Quat<N> + Send + Sync + 'static,
+    M: Matrix4<N> + Send + Sync + 'static,
+    N: Copy + Send + Sync + 'static
+{
+    type Out = (
+        <&'b mut ViewMut<'a, Translation<V, N>> as Get>::Out,
+        <&'b mut ViewMut<'a, Rotation<Q, N>> as Get>::Out,
+        <&'b mut ViewMut<'a, Scale<V, N>> as Get>::Out,
+        <&'b mut ViewMut<'a, Origin<V, N>> as Get>::Out,
+        <&'b mut ViewMut<'a, LocalTransform<M, N>> as Get>::Out
+    );
+    type FastOut = (
+        <&'b mut ViewMut<'a, Translation<V, N>> as Get>::FastOut,
+        <&'b mut ViewMut<'a, Rotation<Q, N>> as Get>::FastOut,
+        <&'b mut ViewMut<'a, Scale<V, N>> as Get>::FastOut,
+        <&'b mut ViewMut<'a, Origin<V, N>> as Get>::FastOut,
+        <&'b mut ViewMut<'a, LocalTransform<M, N>> as Get>::FastOut
+    );
+
+    fn get(self, entity: EntityId) -> Result<Self::Out, shipyard::error::MissingComponent> {
+        Ok((
+            (&mut self.translations).get(entity)?,
+            (&mut self.rotations).get(entity)?,
+            (&mut self.scales).get(entity)?,
+            (&mut self.origins).get(entity)?,
+            (&mut self.local_transforms).get(entity)?,
+    ))
+    }
+
+    fn fast_get(self, entity: EntityId) -> Result<Self::FastOut, error::MissingComponent> {
+        Ok((
+            (&mut self.translations).fast_get(entity)?,
+            (&mut self.rotations).fast_get(entity)?,
+            (&mut self.scales).fast_get(entity)?,
+            (&mut self.origins).fast_get(entity)?,
+            (&mut self.local_transforms).fast_get(entity)?,
+        ))
+    }
+}

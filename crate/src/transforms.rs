@@ -50,4 +50,18 @@ where
             }
         }
     }
+    pub(crate) fn clear_inserted(&mut self) {
+        self.translations.clear_inserted();
+        self.rotations.clear_inserted();
+        self.scales.clear_inserted();
+        self.origins.clear_inserted();
+        self.local_transforms.clear_inserted();
+    }
+    pub(crate) fn clear_modified(&mut self) {
+        self.translations.clear_modified();
+        self.rotations.clear_modified();
+        self.scales.clear_modified();
+        self.origins.clear_modified();
+        self.local_transforms.clear_modified();
+    }
 }

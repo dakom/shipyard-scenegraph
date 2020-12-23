@@ -3,6 +3,7 @@ use shipyard::*;
 use shipyard_hierarchy::*;
 use crate::components::{TransformRoot, DirtyTransform};
 use crate::hierarchy::SceneGraph;
+use crate::views::LocalTransformStoragesMut;
 
 //Alias and export the concrete types
 
@@ -17,14 +18,10 @@ pub type WorldTransform = crate::components::WorldTransform<Matrix4, f64>;
 
 //Systems
 pub fn local_transform_sys(
-    mut translations:ViewMut<Translation>,
-    mut rotations:ViewMut<Rotation>,
-    mut scales:ViewMut<Scale>,
-    mut origins:ViewMut<Origin>,
-    mut local_transforms:ViewMut<LocalTransform>,
-    mut dirty_transforms:ViewMut<DirtyTransform>,
+    trs_storages_mut: LocalTransformStoragesMut<Vec3, Quat, Matrix4, f64>,
+    dirty_transforms:ViewMut<DirtyTransform>,
 ) {
-    crate::systems::local_transform_sys(translations, rotations, scales, origins, local_transforms, dirty_transforms);
+    crate::systems::local_transform_sys(trs_storages_mut, dirty_transforms);
 }
 
 pub fn world_transform_sys (
@@ -32,8 +29,8 @@ pub fn world_transform_sys (
     parents: View<Parent<SceneGraph>>,
     children: View<Child<SceneGraph>>,
     local_transforms: View<LocalTransform>,
-    mut dirty_transforms: ViewMut<DirtyTransform>,
-    mut world_transforms: ViewMut<WorldTransform>,
+    dirty_transforms: ViewMut<DirtyTransform>,
+    world_transforms: ViewMut<WorldTransform>,
 ) {
     crate::systems::world_transform_sys(root, parents, children, local_transforms, dirty_transforms, world_transforms);
 }

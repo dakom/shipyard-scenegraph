@@ -32,58 +32,41 @@ where
     }
 
     pub fn spawn_child_trs_origin(&mut self, parent: Option<EntityId>, translation: Option<V>, rotation: Option<Q>, scale: Option<V>, origin:Option<V>) -> EntityId {
-        let translation = translation.unwrap_or_else(|| Vec3::zero());
-        let rotation = rotation.unwrap_or_else(|| Quat::identity());
+        let translation = translation.unwrap_or_else(Vec3::zero);
+        let rotation = rotation.unwrap_or_else(Quat::identity);
         let scale = scale.unwrap_or(Vec3::one());
-        let origin = origin.unwrap_or_else(|| Vec3::zero());
+        let origin = origin.unwrap_or_else(Vec3::zero);
         let mut local_matrix = M::identity();
         local_matrix.reset_from_trs_origin(&translation.as_slice(), &rotation.as_slice(), &scale.as_slice(), &origin.as_slice());
 
         self.spawn_child(parent, translation, rotation, scale, origin, local_matrix)
     }
     fn spawn_child(&mut self, parent: Option<EntityId>, translation: V, rotation: Q, scale: V, origin:V, local_matrix: M) -> EntityId {
-        let Self { 
-            entities, 
-            transform_root,
-            parents,
-            children,
-            translations,
-            rotations,
-            scales,
-            origins,
-            local_transforms,
-            world_transforms,
-            dirty_transforms,
-        } = self;
-
-        let entity = entities.add_entity( 
-                (
-                    translations,
-                    rotations,
-                    scales,
-                    origins,
-                    local_transforms,
-                    world_transforms,
-                    dirty_transforms
-                ),
-                (
-                    Translation::new(translation),
-                    Rotation::new(rotation),
-                    Scale::new(scale),
-                    Origin::new(origin),
-                    LocalTransform::new(local_matrix),
-                    WorldTransform::new(M::identity()),
-                    DirtyTransform(true)
-                )
+        let entity = self.entities.add_entity( 
+            (
+                &mut self.translations,
+                &mut self.rotations,
+                &mut self.scales,
+                &mut self.origins,
+                &mut self.local_transforms,
+                &mut self.world_transforms,
+                &mut self.dirty_transforms
+            ),
+            (
+                Translation::new(translation),
+                Rotation::new(rotation),
+                Scale::new(scale),
+                Origin::new(origin),
+                LocalTransform::new(local_matrix),
+                WorldTransform::new(M::identity()),
+                DirtyTransform(true)
+            )
         );
 
-        {
-            let parent = parent.unwrap_or(transform_root.0);
+        let parent = parent.unwrap_or(self.transform_root.0);
 
-            (entities, parents, children).attach(entity, parent);
-        }
+        (&mut self.entities, &mut self.parents, &mut self.children).attach(entity, parent);
 
         entity
     }
-
 }
