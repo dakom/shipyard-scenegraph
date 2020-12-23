@@ -102,24 +102,27 @@ where
 
 /// Custom view for local transforms without the hierarchy 
 /// Useful for easily setting translation, rotation, and scale all at once
-pub struct TrsStoragesMut<'a, V, Q, N> 
+pub struct LocalTransformStoragesMut<'a, V, Q, M, N> 
 where
     V: Vec3<N> + Send + Sync,
     Q: Quat<N> + Send + Sync,
+    M: Matrix4<N> + Send + Sync,
     N: Copy + Send + Sync
 {
     pub translations: ViewMut<'a, Translation<V, N>>,
     pub rotations: ViewMut<'a, Rotation<Q, N>>,
     pub scales: ViewMut<'a, Scale<V, N>>,
     pub origins: ViewMut<'a, Origin<V, N>>,
+    pub local_transforms: ViewMut<'a, LocalTransform<M, N>>,
 }
 
 
 // this impl lets you use it with `World::borrow`, `World::run` and in workloads
-impl<'a, V, Q, N> Borrow<'a> for TrsStoragesMut<'a, V, Q, N> 
+impl<'a, V, Q, M, N> Borrow<'a> for LocalTransformStoragesMut<'a, V, Q, M, N> 
 where
     V: Vec3<N> + Send + Sync + 'static,
     Q: Quat<N> + Send + Sync + 'static,
+    M: Matrix4<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 
 {
@@ -127,11 +130,12 @@ where
     where
         Self: Sized,
     {
-        Ok(TrsStoragesMut{
+        Ok(LocalTransformStoragesMut{
             translations: Borrow::try_borrow(world)?,
             rotations: Borrow::try_borrow(world)?,
             scales: Borrow::try_borrow(world)?,
             origins: Borrow::try_borrow(world)?,
+            local_transforms: Borrow::try_borrow(world)?,
         })
     }
 
@@ -141,26 +145,29 @@ where
         ViewMut::<Rotation<Q, N>>::borrow_info(infos);
         ViewMut::<Scale<V, N>>::borrow_info(infos);
         ViewMut::<Origin<V, N>>::borrow_info(infos);
+        ViewMut::<LocalTransform<M, N>>::borrow_info(infos);
     }
 }
 
 // this impl lets you use it with `AllStorages::borrow`, `AllStorages::run`
-impl<'a, V, Q, N> AllStoragesBorrow<'a> for TrsStoragesMut<'a, V, Q, N> 
+impl<'a, V, Q, M, N> AllStoragesBorrow<'a> for LocalTransformStoragesMut<'a, V, Q, M, N> 
 
 where
     V: Vec3<N> + Send + Sync + 'static,
     Q: Quat<N> + Send + Sync + 'static,
+    M: Matrix4<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 {
     fn try_borrow(all_storages: &'a AllStorages) -> Result<Self, error::GetStorage>
     where
         Self: Sized,
     {
-        Ok(TrsStoragesMut {
+        Ok(LocalTransformStoragesMut {
             translations: AllStoragesBorrow::try_borrow(all_storages)?,
             rotations: AllStoragesBorrow::try_borrow(all_storages)?,
             scales: AllStoragesBorrow::try_borrow(all_storages)?,
             origins: AllStoragesBorrow::try_borrow(all_storages)?,
+            local_transforms: AllStoragesBorrow::try_borrow(all_storages)?,
         })
     }
 }
