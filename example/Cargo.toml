@@ -13,8 +13,8 @@ opt-level = 's'
 [dependencies]
 
 #SOON: shipyard = { version = "^0.5", features = ["non_send", "non_sync"], default-features = false }
-shipyard = { git = "https://github.com/leudz/shipyard", branch = "no-panic-feature", features = ["non_send", "non_sync"], default-features = false }
-shipyard_scenegraph = { path = "../crate", features = ["non_send", "non_sync"], default-features = false}
+shipyard = { git = "https://github.com/leudz/shipyard", branch = "no-panic-feature", features = ["non_send", "non_sync", "wasm"], default-features = false }
+shipyard_scenegraph = { path = "../crate", features = ["non_send", "non_sync", "wasm"], default-features = false}
 
 nalgebra = { version = "0.23.2", default-features = false, features = ["libm"] }
 wasm-bindgen = "0.2.69"
@@ -29,9 +29,6 @@ log = "0.4.11"
 lazy_static = "1.4.0"
 console_error_panic_hook = { version = "0.1.6", optional = true }
 derive_deref = "1.1.1"
-
-# only needed to workaround lack of wasm feature in shipyard for now
-parking_lot = { version = "0.11", features = ["wasm-bindgen"] }
 
 # [patch.crates-io]
 # shipyard = { version = "^0.3", features = ["proc", "non_send", "non_sync"], default-features = false}

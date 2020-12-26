@@ -50,18 +50,38 @@ where
             }
         }
     }
-    pub(crate) fn clear_inserted(&mut self) {
-        self.translations.clear_inserted();
-        self.rotations.clear_inserted();
-        self.scales.clear_inserted();
-        self.origins.clear_inserted();
-        self.local_transforms.clear_inserted();
+
+    /*
+    pub(crate) fn clear_inserted(&mut self, id: EntityId) {
+        self.translations.clear_inserted(id);
+        self.rotations.clear_inserted(id);
+        self.scales.clear_inserted(id);
+        self.origins.clear_inserted(id);
+        self.local_transforms.clear_inserted(id);
     }
-    pub(crate) fn clear_modified(&mut self) {
-        self.translations.clear_modified();
-        self.rotations.clear_modified();
-        self.scales.clear_modified();
-        self.origins.clear_modified();
-        self.local_transforms.clear_modified();
+
+    pub(crate) fn clear_modified(&mut self, id: EntityId) {
+        self.translations.clear_modified(id);
+        self.rotations.clear_modified(id);
+        self.scales.clear_modified(id);
+        self.origins.clear_modified(id);
+        self.local_transforms.clear_modified(id);
+    }
+    */
+
+    pub(crate) fn clear_all_inserted(&mut self) {
+        self.translations.clear_all_inserted();
+        self.rotations.clear_all_inserted();
+        self.scales.clear_all_inserted();
+        self.origins.clear_all_inserted();
+        self.local_transforms.clear_all_inserted();
+    }
+
+    pub(crate) fn clear_all_modified(&mut self) {
+        self.translations.clear_all_modified();
+        self.rotations.clear_all_modified();
+        self.scales.clear_all_modified();
+        self.origins.clear_all_modified();
+        self.local_transforms.clear_all_modified();
     }
 }

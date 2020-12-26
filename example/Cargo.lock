@@ -89,7 +89,6 @@ dependencies = [
  "lazy_static",
  "log",
  "nalgebra",
- "parking_lot",
  "shipyard",
  "shipyard_scenegraph",
  "wasm-bindgen",
@@ -605,7 +604,7 @@ dependencies = [
 [[package]]
 name = "shipyard"
 version = "0.4.1"
-source = "git+https://github.com/leudz/shipyard?branch=no-panic-feature#477993574a1b59978256690193af943f14b6edef"
+source = "git+https://github.com/leudz/shipyard?branch=no-panic-feature#fe47390f8f115c810980b3aa38334c095b7160b5"
 dependencies = [
  "hashbrown",
  "indexmap",
@@ -614,8 +613,8 @@ dependencies = [
 
 [[package]]
 name = "shipyard_hierarchy"
-version = "0.4.0"
-source = "git+https://github.com/dakom/shipyard-hierarchy#23f8fa54271fd5b16cf33e2a785d8d2858fb8926"
+version = "0.4.1"
+source = "git+https://github.com/dakom/shipyard-hierarchy#71b9deb607c25a4bd7cf33f9ae8b857fa6f161ba"
 dependencies = [
  "shipyard",
 ]

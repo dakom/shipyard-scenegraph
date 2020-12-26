@@ -29,6 +29,7 @@ default = ["shipyard/default", "shipyard_hierarchy/default"]
 parallel = ["shipyard/parallel", "shipyard_hierarchy/parallel"]
 non_send = ["shipyard/non_send", "shipyard_hierarchy/non_send"]
 non_sync = ["shipyard/non_sync", "shipyard_hierarchy/non_sync"]
+wasm = ["shipyard/wasm", "shipyard_hierarchy/wasm"]
 std = ["shipyard/std", "shipyard_hierarchy/std"]
 doc = ["native_math", "nalgebra_math"]
 

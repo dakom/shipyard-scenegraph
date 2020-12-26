@@ -16,7 +16,7 @@ where
     N: Copy + Send + Sync + 'static
 {
     //Inserted storages won't show in modified, gotta clear inserted first
-    local_trs_storages_mut.clear_inserted();
+    local_trs_storages_mut.clear_all_inserted();
 
     //First gather all the unique ids that have been tainted by trso changes
     let mut trso_ids: HashSet<EntityId> = local_trs_storages_mut.translations.modified().iter().ids().chain(
@@ -33,8 +33,8 @@ where
     //Adapt the list from LocalTransform, and set their TRSO values
     local_trs_storages_mut.local_transforms.modified()
         .iter()
-        .with_id()
-        .for_each(|(id, transform)| {
+        .ids()
+        .for_each(|id| {
             //TODO - derive the TRSO values and set them on the components!
 
             //don't want to re-set the transform again :P
@@ -62,7 +62,7 @@ where
         });
 
     //Clear the update packs
-    local_trs_storages_mut.clear_modified();
+    local_trs_storages_mut.clear_all_modified();
 }
 //See: https://gameprogrammingpatterns.com/dirty-flag.html
 pub fn world_transform_sys<M, N>(
