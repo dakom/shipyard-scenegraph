@@ -67,6 +67,13 @@ where
 
         (&mut self.entities, &mut self.parents, &mut self.children).attach(entity, parent);
 
+        //We don't track insertions, just modifications
+        self.translations.clear_inserted(entity);
+        self.rotations.clear_inserted(entity);
+        self.scales.clear_inserted(entity);
+        self.origins.clear_inserted(entity);
+        self.local_transforms.clear_inserted(entity);
+
         entity
     }
 }

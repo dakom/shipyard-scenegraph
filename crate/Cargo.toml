@@ -1,6 +1,6 @@
 [package]
 name = "shipyard_scenegraph"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["David Komer <david.komer@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -19,7 +19,7 @@ shipyard = { git = "https://github.com/leudz/shipyard", branch = "no-panic-featu
 
 thiserror = "^1.0"
 cfg-if = "^0.1"
-nalgebra = { version = "^0.23", optional = true, default-features = false}
+nalgebra = { version = "^0.24", optional = true, default-features = false}
 # log = "0.4.8"
 
 [features]

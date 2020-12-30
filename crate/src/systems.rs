@@ -15,9 +15,6 @@ where
     M: Matrix4<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 {
-    //Inserted storages won't show in modified, gotta clear inserted first
-    local_trs_storages_mut.clear_all_inserted();
-
     //First gather all the unique ids that have been tainted by trso changes
     let mut trso_ids: HashSet<EntityId> = local_trs_storages_mut.translations.modified().iter().ids().chain(
         local_trs_storages_mut.rotations.modified().iter().ids().chain(

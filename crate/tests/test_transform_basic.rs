@@ -16,7 +16,7 @@ fn test_transform_basic() {
     let mut modified_count = 0;
     let mut dirty_count = 0;
 
-    //adding the entities makes inserted dirty
+    //spawning should immediately clear each entity from inserted pack
     {
         let (translations, rotations, scales, origins) 
             = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<Origin>)>().unwrap(); 
@@ -26,12 +26,12 @@ fn test_transform_basic() {
         let slen = scales.inserted().iter().count();
         let olen = origins.inserted().iter().count();
 
-        assert_eq!(inserted_count, 14);
+        assert_eq!(inserted_count, 0);
         assert_eq!(inserted_count, rlen);
         assert_eq!(inserted_count, slen);
         assert_eq!(inserted_count, olen);
     }
-    //but not modified
+    //also modified pack
     {
         let (translations, rotations, scales, origins) 
             = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<Origin>)>().unwrap(); 
@@ -46,7 +46,7 @@ fn test_transform_basic() {
         assert_eq!(modified_count, slen);
         assert_eq!(modified_count, olen);
     }
-    //however - yes dirty
+    //however - they should be marked dirty
     {
         let dirty = world.borrow::<View<DirtyTransform>>().unwrap(); 
 

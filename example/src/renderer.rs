@@ -20,6 +20,7 @@ use awsm_web::webgl::{
     BeginMode,
     GlToggle,
     BlendFactor,
+    ShaderType,
 };
 
 pub struct SceneRenderer {
@@ -36,14 +37,17 @@ impl SceneRenderer {
             //This demo is specifically using webgl1, which needs to register the extension
             //Everything else is the same API as webgl2 :)
             renderer.register_extension_instanced_arrays()?;
-
-            //compile the shaders and get a program id
-            let program_id = renderer.compile_program(vertex, fragment)?;
+            
+            let shaders = vec![
+                    renderer.compile_shader(vertex, ShaderType::Vertex).unwrap(),
+                    renderer.compile_shader(fragment, ShaderType::Fragment).unwrap(),
+            ];
+            let program_id = renderer.compile_program(&shaders)?;
 
             //create quad data and get a buffer id
             let geom_id = renderer.create_buffer()?;
 
-            renderer.upload_buffer_to_attribute(
+            renderer.upload_buffer_to_attribute_name(
                 geom_id,
                 BufferData::new(
                     &QUAD_GEOM_UNIT,
@@ -85,7 +89,7 @@ impl SceneRenderer {
         let camera_mat = Matrix4::new_orthographic( 0.0, stage_area.width as f32, 0.0, stage_area.height as f32, -100.0, 100.0);
 
         //Upload them to the GPU
-        renderer.upload_uniform_mat_4("u_camera", &camera_mat.as_slice())?;
+        renderer.upload_uniform_mat_4_name("u_camera", &camera_mat.as_slice())?;
 
         Ok(())
     }
@@ -99,10 +103,10 @@ impl SceneRenderer {
 
         let complete_model = model_mat * scaling_mat;
         */
-        renderer.upload_uniform_mat_4("u_model", &model_mat)?;
-        renderer.upload_uniform_fvals_2("u_size", img_area.get_tuple())?;
+        renderer.upload_uniform_mat_4_name("u_model", &model_mat)?;
+        renderer.upload_uniform_fvals_2_name("u_size", img_area.get_tuple())?;
         //renderer.upload_uniform_mat_4("u_size", &scaling_mat.as_slice())?;
-        renderer.upload_uniform_fvals_4("u_color", color.get_tuple())?;
+        renderer.upload_uniform_fvals_4_name("u_color", color.get_tuple())?;
 
         renderer.draw_arrays(BeginMode::TriangleStrip, 0, 4);
 
