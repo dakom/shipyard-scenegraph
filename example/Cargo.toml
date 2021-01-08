@@ -13,7 +13,7 @@ opt-level = 's'
 [dependencies]
 
 #SOON: shipyard = { version = "^0.5", features = ["non_send", "non_sync"], default-features = false }
-shipyard = { git = "https://github.com/leudz/shipyard", branch = "no-panic-feature", features = ["non_send", "non_sync", "wasm"], default-features = false }
+shipyard = { git = "https://github.com/leudz/shipyard", features = ["non_send", "non_sync", "wasm"], default-features = false }
 shipyard_scenegraph = { path = "../crate", features = ["non_send", "non_sync", "wasm"], default-features = false}
 
 nalgebra = { version = "0.24.0", default-features = false, features = ["libm"] }
