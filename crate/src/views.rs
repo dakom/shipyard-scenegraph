@@ -1,5 +1,5 @@
 use shipyard::*;
-use shipyard::Borrow;
+use shipyard::borrow::{Borrow, BorrowInfo};
 use shipyard_hierarchy::*;
 use crate::components::*;
 use crate::traits::math::*;
@@ -36,7 +36,7 @@ where
     N: Copy + Send + Sync + 'static
 
 {
-    fn try_borrow(world: &'a World) -> Result<Self, error::GetStorage>
+    fn borrow(world: &'a World) -> Result<Self, error::GetStorage>
     where
         Self: Sized,
     {
@@ -54,7 +54,15 @@ where
             dirty_transforms: Borrow::try_borrow(world)?,
         })
     }
+}
 
+impl<'a, V, Q, M, N> BorrowInfo for SceneGraphStoragesMut<'a, V, Q, M, N> 
+where
+    V: Vec3<N> + Send + Sync + 'static,
+    Q: Quat<N> + Send + Sync + 'static,
+    M: Matrix4<N> + Send + Sync + 'static,
+    N: Copy + Send + Sync + 'static
+{
     fn borrow_info(infos: &mut Vec<info::TypeInfo>) {
         EntitiesViewMut::borrow_info(infos);
         UniqueView::<TransformRoot>::borrow_info(infos);
@@ -79,7 +87,7 @@ where
     M: Matrix4<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 {
-    fn try_borrow(all_storages: &'a AllStorages) -> Result<Self, error::GetStorage>
+    fn all_borrow(all_storages: &'a AllStorages) -> Result<Self, error::GetStorage>
     where
         Self: Sized,
     {
@@ -126,7 +134,7 @@ where
     N: Copy + Send + Sync + 'static
 
 {
-    fn try_borrow(world: &'a World) -> Result<Self, error::GetStorage>
+    fn borrow(world: &'a World) -> Result<Self, error::GetStorage>
     where
         Self: Sized,
     {
@@ -138,7 +146,16 @@ where
             local_transforms: Borrow::try_borrow(world)?,
         })
     }
+}
 
+impl<'a, V, Q, M, N> BorrowInfo for LocalTransformStoragesMut<'a, V, Q, M, N> 
+where
+    V: Vec3<N> + Send + Sync + 'static,
+    Q: Quat<N> + Send + Sync + 'static,
+    M: Matrix4<N> + Send + Sync + 'static,
+    N: Copy + Send + Sync + 'static
+
+{
     fn borrow_info(infos: &mut Vec<info::TypeInfo>) {
         EntitiesViewMut::borrow_info(infos);
         ViewMut::<Translation<V, N>>::borrow_info(infos);
@@ -158,7 +175,7 @@ where
     M: Matrix4<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 {
-    fn try_borrow(all_storages: &'a AllStorages) -> Result<Self, error::GetStorage>
+    fn all_borrow(all_storages: &'a AllStorages) -> Result<Self, error::GetStorage>
     where
         Self: Sized,
     {
