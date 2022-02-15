@@ -10,9 +10,11 @@ Scenegraph crate for [shipyard ECS](https://github.com/leudz/shipyard)
 
 Builds on and re-exports [shipyard-hierarchy](https://github.com/dakom/shipyard-hierarchy)
 
+Generic over the specific number types and interop with third-party math libraries
+
 # How to use
 
-1. First, decide on your math container types - out of the box is a small native lib, and interop support for a few `nalgebra` f64 primitives. Enable the appropriate feature (e.g. `native_math` or `nalgebra_math`).
+1. First, decide on your math library - out of the box is a very small native lib, as well as interop with `nalgebra` f64. Enable the appropriate feature (e.g. `native_math` or `nalgebra_math`).
 
 2. Use `shipyard_scenegraph::prelude::*` everywhere
 
