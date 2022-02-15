@@ -19,13 +19,7 @@ where
         DirtyTransform(false)
     ));
 
-    world.borrow::<ViewMut<LocalTransform<M, N>>>().unwrap().update_pack();
-    world.borrow::<ViewMut<Translation<V, N>>>().unwrap().update_pack();
-    world.borrow::<ViewMut<Rotation<Q, N>>>().unwrap().update_pack();
-    world.borrow::<ViewMut<Scale<V, N>>>().unwrap().update_pack();
-    world.borrow::<ViewMut<Origin<V, N>>>().unwrap().update_pack();
-
-    world.add_unique(TransformRoot(id)).unwrap();
+    world.add_unique(TransformRoot(id));
 
     id
 }

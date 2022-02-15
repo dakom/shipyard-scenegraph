@@ -9,10 +9,10 @@ use crate::hierarchy::SceneGraph;
 /// Especially useful for adding/removing items from the tree
 pub struct SceneGraphStoragesMut<'a, V, Q, M, N> 
 where
-    V: Vec3<N> + Send + Sync,
-    Q: Quat<N> + Send + Sync,
-    M: Matrix4<N> + Send + Sync,
-    N: Copy + Send + Sync
+    V: Vec3<N> + Send + Sync + 'static,
+    Q: Quat<N> + Send + Sync + 'static,
+    M: Matrix4<N> + Send + Sync + 'static,
+    N: Copy + Send + Sync + 'static
 {
     pub entities: EntitiesViewMut<'a>,
     pub transform_root: UniqueView<'a, TransformRoot>,
@@ -36,22 +36,24 @@ where
     N: Copy + Send + Sync + 'static
 
 {
-    fn borrow(world: &'a World) -> Result<Self, error::GetStorage>
+    type View = Self;
+
+    fn borrow(world: &'a World, last_run: Option<u32>, current: u32) -> Result<Self, error::GetStorage>
     where
         Self: Sized,
     {
         Ok(SceneGraphStoragesMut {
-            entities: Borrow::try_borrow(world)?,
-            transform_root: Borrow::try_borrow(world)?,
-            parents: Borrow::try_borrow(world)?,
-            children: Borrow::try_borrow(world)?,
-            translations: Borrow::try_borrow(world)?,
-            rotations: Borrow::try_borrow(world)?,
-            scales: Borrow::try_borrow(world)?,
-            origins: Borrow::try_borrow(world)?,
-            local_transforms: Borrow::try_borrow(world)?,
-            world_transforms: Borrow::try_borrow(world)?,
-            dirty_transforms: Borrow::try_borrow(world)?,
+            entities: Borrow::borrow(world, last_run, current)?,
+            transform_root: Borrow::borrow(world, last_run, current)?,
+            parents: Borrow::borrow(world, last_run, current)?,
+            children: Borrow::borrow(world, last_run, current)?,
+            translations: Borrow::borrow(world, last_run, current)?,
+            rotations: Borrow::borrow(world, last_run, current)?,
+            scales: Borrow::borrow(world, last_run, current)?,
+            origins: Borrow::borrow(world, last_run, current)?,
+            local_transforms: Borrow::borrow(world, last_run, current)?,
+            world_transforms: Borrow::borrow(world, last_run, current)?,
+            dirty_transforms: Borrow::borrow(world, last_run, current)?,
         })
     }
 }
@@ -87,22 +89,23 @@ where
     M: Matrix4<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 {
-    fn all_borrow(all_storages: &'a AllStorages) -> Result<Self, error::GetStorage>
+
+    fn all_borrow(all_storages: &'a AllStorages, last_run: Option<u32>, current: u32) -> Result<Self, error::GetStorage>
     where
         Self: Sized,
     {
         Ok(SceneGraphStoragesMut {
-            entities: AllStoragesBorrow::try_borrow(all_storages)?,
-            transform_root: AllStoragesBorrow::try_borrow(all_storages)?,
-            parents: AllStoragesBorrow::try_borrow(all_storages)?,
-            children: AllStoragesBorrow::try_borrow(all_storages)?,
-            translations: AllStoragesBorrow::try_borrow(all_storages)?,
-            rotations: AllStoragesBorrow::try_borrow(all_storages)?,
-            scales: AllStoragesBorrow::try_borrow(all_storages)?,
-            origins: AllStoragesBorrow::try_borrow(all_storages)?,
-            local_transforms: AllStoragesBorrow::try_borrow(all_storages)?,
-            world_transforms: AllStoragesBorrow::try_borrow(all_storages)?,
-            dirty_transforms: AllStoragesBorrow::try_borrow(all_storages)?,
+            entities: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            transform_root: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            parents: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            children: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            translations: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            rotations: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            scales: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            origins: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            local_transforms: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            world_transforms: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            dirty_transforms: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
         })
     }
 }
@@ -112,10 +115,10 @@ where
 /// Useful for easily setting translation, rotation, and scale all at once
 pub struct LocalTransformStoragesMut<'a, V, Q, M, N> 
 where
-    V: Vec3<N> + Send + Sync,
-    Q: Quat<N> + Send + Sync,
-    M: Matrix4<N> + Send + Sync,
-    N: Copy + Send + Sync
+    V: Vec3<N> + Send + Sync + 'static,
+    Q: Quat<N> + Send + Sync + 'static,
+    M: Matrix4<N> + Send + Sync + 'static,
+    N: Copy + Send + Sync + 'static
 {
     pub translations: ViewMut<'a, Translation<V, N>>,
     pub rotations: ViewMut<'a, Rotation<Q, N>>,
@@ -134,16 +137,19 @@ where
     N: Copy + Send + Sync + 'static
 
 {
-    fn borrow(world: &'a World) -> Result<Self, error::GetStorage>
+    type View = Self;
+
+    fn borrow(world: &'a World, last_run: Option<u32>, current: u32) -> Result<Self, error::GetStorage>
+
     where
         Self: Sized,
     {
         Ok(LocalTransformStoragesMut{
-            translations: Borrow::try_borrow(world)?,
-            rotations: Borrow::try_borrow(world)?,
-            scales: Borrow::try_borrow(world)?,
-            origins: Borrow::try_borrow(world)?,
-            local_transforms: Borrow::try_borrow(world)?,
+            translations: Borrow::borrow(world, last_run, current)?,
+            rotations: Borrow::borrow(world, last_run, current)?,
+            scales: Borrow::borrow(world, last_run, current)?,
+            origins: Borrow::borrow(world, last_run, current)?,
+            local_transforms: Borrow::borrow(world, last_run, current)?,
         })
     }
 }
@@ -175,16 +181,17 @@ where
     M: Matrix4<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 {
-    fn all_borrow(all_storages: &'a AllStorages) -> Result<Self, error::GetStorage>
+
+    fn all_borrow(all_storages: &'a AllStorages, last_run: Option<u32>,current: u32,) -> Result<Self, error::GetStorage>
     where
         Self: Sized,
     {
         Ok(LocalTransformStoragesMut {
-            translations: AllStoragesBorrow::try_borrow(all_storages)?,
-            rotations: AllStoragesBorrow::try_borrow(all_storages)?,
-            scales: AllStoragesBorrow::try_borrow(all_storages)?,
-            origins: AllStoragesBorrow::try_borrow(all_storages)?,
-            local_transforms: AllStoragesBorrow::try_borrow(all_storages)?,
+            translations: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            rotations: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            scales: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            origins: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
+            local_transforms: AllStoragesBorrow::all_borrow(all_storages, last_run, current)?,
         })
     }
 }

@@ -1,4 +1,4 @@
-use shipyard::EntityId;
+use shipyard::{Component, EntityId, track};
 use core::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::borrow::{Borrow, BorrowMut};
@@ -17,6 +17,14 @@ macro_rules! makeComponent {
             phantom: PhantomData<N>
         }
 
+        impl<T, N> Component for $name<T,N>
+        where 
+            T: $data<N> + 'static,
+            N: Copy + 'static,
+        {
+            type Tracking = track::All;
+        }
+        
         impl <T, N> $name<T, N> 
         where 
             T: $data<N>,
@@ -77,7 +85,9 @@ macro_rules! makeComponent {
     };
 }
 
+#[derive(Component)]
 pub struct TransformRoot(pub EntityId);
+#[derive(Component)]
 pub struct DirtyTransform(pub bool);
 
 makeComponent!(Translation, Vec3);

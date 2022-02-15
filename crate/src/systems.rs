@@ -71,7 +71,7 @@ pub fn world_transform_sys<M, N>(
     mut world_transform_storage: ViewMut<WorldTransform<M, N>>,
 ) 
 where
-    M: Matrix4<N> + Clone + Send + Sync,
+    M: Matrix4<N> + Clone + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static
 {
     fn update<M, N>(
@@ -85,8 +85,8 @@ where
         world_transform_storage: &mut ViewMut<WorldTransform<M, N>>
     ) 
     where
-        M: Matrix4<N> + Clone + Send + Sync,
-        N: Copy + Send + Sync,
+        M: Matrix4<N> + Clone + Send + Sync + 'static,
+        N: Copy + Send + Sync + 'static,
     
     {
         let dirty_transform = &mut dirty_transform_storage[id];

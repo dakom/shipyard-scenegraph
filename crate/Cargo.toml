@@ -15,7 +15,7 @@ repository = "https://github.com/dakom/shipyard-scenegraph"
 #SOON: shipyard = { version = "^0.5", default-features = false}
 #SOON: shipyard_hierarchy = { version = ^0.4, default-features = false }
 shipyard_hierarchy = { git = "https://github.com/dakom/shipyard-hierarchy", default-features = false }
-shipyard = { git = "https://github.com/leudz/shipyard", default-features = false }
+shipyard = { git = "https://github.com/leudz/shipyard", default-features = false, features = ["proc"] }
 
 thiserror = "^1.0"
 cfg-if = "^0.1"
