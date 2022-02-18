@@ -1,8 +1,8 @@
-use shipyard::*;
 use crate::components::*;
 use crate::traits::math::*;
+use shipyard::*;
 
-pub fn init_scenegraph<V, Q, M, N>(world:&World) -> EntityId
+pub fn init_scenegraph<V, Q, M, N>(world: &World) -> EntityId
 where
     V: Vec3<N> + Send + Sync + 'static,
     Q: Quat<N> + Send + Sync + 'static,
@@ -16,7 +16,7 @@ where
         Origin::new(V::zero()),
         LocalTransform::new(M::identity()),
         WorldTransform::new(M::identity()),
-        DirtyTransform(false)
+        DirtyTransform(false),
     ));
 
     world.add_unique(TransformRoot(id));

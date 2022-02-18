@@ -2,7 +2,7 @@
 use shipyard::*;
 use shipyard_scenegraph::prelude::*;
 use std::borrow::{Borrow, BorrowMut};
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::{hash_map::Entry, HashMap};
 use std::hash::Hash;
 mod helpers;
 use helpers::*;
@@ -10,66 +10,72 @@ use helpers::*;
 #[test]
 fn test_transform_dirty() {
     let (world, entities, _labels) = create_scene_graph();
-    let (root, a,b,c,d,e,f,g,h,i,j,k,l,m,n) = entities;
+    let (root, a, b, c, d, e, f, g, h, i, j, k, l, m, n) = entities;
 
-    world.run(local_transform_sys).unwrap();
-    world.run(world_transform_sys).unwrap();
+    world.run(local_transform_sys);
+    world.run(world_transform_sys);
 
     //check all the world transforms before making changes
     {
         let world_storage = world.borrow::<View<WorldTransform>>().unwrap();
 
-
         let world_transform = (&world_storage).get(root).unwrap();
-        assert_eq!(Vec3::new(0.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(a).unwrap();
-        assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(b).unwrap();
-        assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(c).unwrap();
-        assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(d).unwrap();
-        assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(20.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(e).unwrap();
-        assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(20.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(f).unwrap();
-        assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(20.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(g).unwrap();
-        assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(30.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(h).unwrap();
-        assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(30.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(i).unwrap();
-        assert_eq!(Vec3::new(30.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(30.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(j).unwrap();
-        assert_eq!(Vec3::new(50.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(50.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(k).unwrap();
-        assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform));
-        
+        assert_eq!(Vec3::new(40.0, 0.0, 0.0), get_translation(&world_transform));
+
         let world_transform = (&world_storage).get(l).unwrap();
-        assert_eq!(Vec3::new(40.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(40.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(m).unwrap();
-        assert_eq!(Vec3::new(60.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(60.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(n).unwrap();
-        assert_eq!(Vec3::new(70.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(70.0, 0.0, 0.0), get_translation(&world_transform));
     }
 
     //nothing should be dirty
     {
-        let (translations, rotations, scales, origins, dirty) 
-            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<Origin>, View<DirtyTransform>)>().unwrap(); 
+        let (translations, rotations, scales, origins, dirty) = world
+            .borrow::<(
+                View<Translation>,
+                View<Rotation>,
+                View<Scale>,
+                View<Origin>,
+                View<DirtyTransform>,
+            )>()
+            .unwrap();
 
         let tlen = translations.modified().iter().count();
         let rlen = rotations.modified().iter().count();
@@ -96,8 +102,9 @@ fn test_transform_dirty() {
 
     //they should be ready to be dirtied, but not yet dirty
     {
-
-        let (translations, dirty) = world.borrow::<(View<Translation>, View<DirtyTransform>)>().unwrap(); 
+        let (translations, dirty) = world
+            .borrow::<(View<Translation>, View<DirtyTransform>)>()
+            .unwrap();
 
         let tlen = translations.modified().iter().count();
         let dlen = dirty.iter().into_iter().filter(|x| x.0).count();
@@ -106,13 +113,13 @@ fn test_transform_dirty() {
         assert_eq!(dlen, 0);
     }
 
+    world.run(local_transform_sys);
 
-    world.run(local_transform_sys).unwrap();
-
-    //they should be dirtied, but no longer pending 
+    //they should be dirtied, but no longer pending
     {
-
-        let (translations, dirty) = world.borrow::<(View<Translation>, View<DirtyTransform>)>().unwrap(); 
+        let (translations, dirty) = world
+            .borrow::<(View<Translation>, View<DirtyTransform>)>()
+            .unwrap();
 
         let tlen = translations.modified().iter().count();
         let dlen = dirty.iter().into_iter().filter(|x| x.0).count();
@@ -121,12 +128,19 @@ fn test_transform_dirty() {
         assert_eq!(dlen, 3);
     }
 
-    world.run(world_transform_sys).unwrap();
+    world.run(world_transform_sys);
 
     //again, back to normal - nothing should be dirty
     {
-        let (translations, rotations, scales, origins, dirty) 
-            = world.borrow::<(View<Translation>, View<Rotation>, View<Scale>, View<Origin>, View<DirtyTransform>)>().unwrap(); 
+        let (translations, rotations, scales, origins, dirty) = world
+            .borrow::<(
+                View<Translation>,
+                View<Rotation>,
+                View<Scale>,
+                View<Origin>,
+                View<DirtyTransform>,
+            )>()
+            .unwrap();
 
         let tlen = translations.modified().iter().count();
         let rlen = rotations.modified().iter().count();
@@ -146,49 +160,81 @@ fn test_transform_dirty() {
         let world_storage = world.borrow::<View<WorldTransform>>().unwrap();
 
         let world_transform = (&world_storage).get(root).unwrap();
-        assert_eq!(Vec3::new(0.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(a).unwrap();
-        assert_eq!(Vec3::new(10.0,200.0, 0.0), get_translation(&world_transform));
+        assert_eq!(
+            Vec3::new(10.0, 200.0, 0.0),
+            get_translation(&world_transform)
+        );
 
         let world_transform = (&world_storage).get(b).unwrap();
-        assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(c).unwrap();
-        assert_eq!(Vec3::new(10.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(10.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(d).unwrap();
-        assert_eq!(Vec3::new(20.0,200.0, 0.0), get_translation(&world_transform));
+        assert_eq!(
+            Vec3::new(20.0, 200.0, 0.0),
+            get_translation(&world_transform)
+        );
 
         let world_transform = (&world_storage).get(e).unwrap();
-        assert_eq!(Vec3::new(20.0,200.0, 0.0), get_translation(&world_transform));
+        assert_eq!(
+            Vec3::new(20.0, 200.0, 0.0),
+            get_translation(&world_transform)
+        );
 
         let world_transform = (&world_storage).get(f).unwrap();
-        assert_eq!(Vec3::new(20.0,0.0, 0.0), get_translation(&world_transform));
+        assert_eq!(Vec3::new(20.0, 0.0, 0.0), get_translation(&world_transform));
 
         let world_transform = (&world_storage).get(g).unwrap();
-        assert_eq!(Vec3::new(30.0,300.0, 0.0), get_translation(&world_transform));
+        assert_eq!(
+            Vec3::new(30.0, 300.0, 0.0),
+            get_translation(&world_transform)
+        );
 
         let world_transform = (&world_storage).get(h).unwrap();
-        assert_eq!(Vec3::new(30.0,200.0, 0.0), get_translation(&world_transform));
+        assert_eq!(
+            Vec3::new(30.0, 200.0, 0.0),
+            get_translation(&world_transform)
+        );
 
         let world_transform = (&world_storage).get(i).unwrap();
-        assert_eq!(Vec3::new(30.0,200.0, 0.0), get_translation(&world_transform));
+        assert_eq!(
+            Vec3::new(30.0, 200.0, 0.0),
+            get_translation(&world_transform)
+        );
 
         let world_transform = (&world_storage).get(j).unwrap();
-        assert_eq!(Vec3::new(50.0,300.0, 0.0), get_translation(&world_transform));
+        assert_eq!(
+            Vec3::new(50.0, 300.0, 0.0),
+            get_translation(&world_transform)
+        );
 
         let world_transform = (&world_storage).get(k).unwrap();
-        assert_eq!(Vec3::new(40.0,300.0, 0.0), get_translation(&world_transform));
-        
+        assert_eq!(
+            Vec3::new(40.0, 300.0, 0.0),
+            get_translation(&world_transform)
+        );
+
         let world_transform = (&world_storage).get(l).unwrap();
-        assert_eq!(Vec3::new(40.0,200.0, 0.0), get_translation(&world_transform));
+        assert_eq!(
+            Vec3::new(40.0, 200.0, 0.0),
+            get_translation(&world_transform)
+        );
 
         let world_transform = (&world_storage).get(m).unwrap();
-        assert_eq!(Vec3::new(60.0,700.0, 0.0), get_translation(&world_transform));
+        assert_eq!(
+            Vec3::new(60.0, 700.0, 0.0),
+            get_translation(&world_transform)
+        );
 
         let world_transform = (&world_storage).get(n).unwrap();
-        assert_eq!(Vec3::new(70.0,700.0, 0.0), get_translation(&world_transform));
+        assert_eq!(
+            Vec3::new(70.0, 700.0, 0.0),
+            get_translation(&world_transform)
+        );
     }
-
 }

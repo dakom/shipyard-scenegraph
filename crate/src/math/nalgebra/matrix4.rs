@@ -1,5 +1,5 @@
-use crate::traits::slice::*;
 use crate::traits::math as math_traits;
+use crate::traits::slice::*;
 
 pub type Matrix4 = nalgebra::Matrix4<f64>;
 
@@ -8,11 +8,17 @@ impl math_traits::Matrix4<f64> for Matrix4 {
         Matrix4::identity()
     }
 
-    fn reset_from_trs_origin( &mut self, translation:&[f64], rotation: &[f64], scale: &[f64], origin: &[f64]) {
+    fn reset_from_trs_origin(
+        &mut self,
+        translation: &[f64],
+        rotation: &[f64],
+        scale: &[f64],
+        origin: &[f64],
+    ) {
         let values = &mut self.as_slice_mut();
         let x = rotation[0];
         let y = rotation[1];
-        let z = rotation[2]; 
+        let z = rotation[2];
         let w = rotation[3];
         let x2 = x + x;
         let y2 = y + y;
@@ -59,11 +65,10 @@ impl math_traits::Matrix4<f64> for Matrix4 {
         values[15] = 1.0;
     }
 
-    fn mul_assign(&mut self, other:&Self) {
+    fn mul_assign(&mut self, other: &Self) {
         *self *= other;
     }
 }
-
 
 impl SliceExt<f64> for Matrix4 {
     fn as_slice(&self) -> &[f64] {
@@ -73,11 +78,10 @@ impl SliceExt<f64> for Matrix4 {
     fn as_slice_mut(&mut self) -> &mut [f64] {
         self.as_mut_slice()
     }
-
 }
 
 impl F32Compat for Matrix4 {
-    fn write_to_vf32(self: &Self, target:&mut [f32]) {
+    fn write_to_vf32(self: &Self, target: &mut [f32]) {
         let values = self.as_slice();
 
         //can't memcpy since it needs a cast

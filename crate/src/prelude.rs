@@ -10,7 +10,7 @@ pub use crate::traits::slice::*;
 
 pub use crate::hierarchy::SceneGraph;
 
-pub use crate::components::{TransformRoot, DirtyTransform};
+pub use crate::components::{DirtyTransform, TransformRoot};
 
 // re-export
 pub use shipyard_hierarchy::*;

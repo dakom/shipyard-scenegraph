@@ -38,21 +38,21 @@ features = ["doc"]
 rustdoc-args = ["--cfg", "no-deps"]
 
 [[test]]
-name = "test_transform_basic"
+name = "transform_basic"
 required-features = ["native_math"]
 
 [[test]]
-name = "test_transform_dirty_ids"
+name = "transform_dirty_ids"
 required-features = ["native_math"]
 
 [[test]]
-name = "test_transform_dirty"
+name = "transform_dirty"
 required-features = ["native_math"]
 
 [[test]]
-name = "test_native_math"
+name = "native_math"
 required-features = ["native_math"]
 
 [[test]]
-name = "test_nalgebra_math"
+name = "nalgebra_math"
 required-features = ["nalgebra_math"]
