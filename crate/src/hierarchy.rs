@@ -18,8 +18,9 @@ where
         self.spawn_child_transform(parent, M::identity())
     }
 
-    pub fn spawn_child_transform(&mut self, parent: Option<EntityId>, local_matrix: M) -> EntityId {
-        //TODO - derive these from the transform
+    //TODO - derive these from the transform
+    //until that's done, this function needs to be private
+    fn spawn_child_transform(&mut self, parent: Option<EntityId>, local_matrix: M) -> EntityId {
         let translation = V::zero();
         let rotation = Q::identity();
         let scale = V::one();
