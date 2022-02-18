@@ -1,5 +1,6 @@
 use shipyard_scenegraph::prelude::*;
-use shipyard_scenegraph::traits::math as math_traits;
+use shipyard_scenegraph::traits::required as math_traits;
+use shipyard_scenegraph::traits::required::SliceExt;
 
 const MATRIX_IDENTITY: [f64; 16] = [
     1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,

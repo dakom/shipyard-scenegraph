@@ -1,5 +1,5 @@
 use crate::components::*;
-use crate::traits::math::*;
+use crate::traits::required::*;
 use shipyard::*;
 
 pub fn init_scenegraph<V, Q, M, N>(world: &World) -> EntityId

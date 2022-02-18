@@ -1,5 +1,4 @@
-use crate::traits::math as math_traits;
-use crate::traits::slice::*;
+use crate::traits::{required as math_traits, required::SliceExt, extra::F32Compat};
 use std::convert::TryInto;
 use std::ops::{Deref, DerefMut};
 

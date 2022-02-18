@@ -1,5 +1,4 @@
-use crate::traits::math as math_traits;
-use crate::traits::slice::*;
+use crate::traits::{required as math_traits, required::SliceExt, extra::F32Compat};
 
 pub type Vec3 = nalgebra::Vector3<f64>;
 

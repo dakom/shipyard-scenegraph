@@ -10,21 +10,25 @@ Scenegraph crate for [shipyard ECS](https://github.com/leudz/shipyard)
 
 Builds on and re-exports [shipyard-hierarchy](https://github.com/dakom/shipyard-hierarchy)
 
-Generic over the specific number types and interop with third-party math libraries
+Generic over the specific number types and interop with third-party math libraries (option to bring your own math)
 
 # How to use
+
+There are robust examples in the tests. The live demo is purposefully kept to a minimum, rather than eyecandy, in order to make it easy to learn from too.
+
+In all cases:
 
 1. First, decide on your math library - out of the box is a very small native lib, as well as interop with `nalgebra` f64. Enable the appropriate feature (e.g. `native_math` or `nalgebra_math`).
 
 2. Use `shipyard_scenegraph::prelude::*` everywhere
 
-3. Call `init()` somewhere around main
+3. Call `init()` somewhere around main to create the root node
 
 4. To add entities to the tree, borrow `SceneGraphStoragesMut` and then call `spawn_child_*()` on that.
 
 5. To update things - mutably borrow `Translation`, `Rotation`, `Scale`, and `Origin`. There's a helper view for updating single entities too (`TrsStoragesMut`). Alternatively - work with LocalTransform directly (but note that it currently does not backpropogate. see https://github.com/dakom/shipyard-scenegraph/issues/22) 
 
-6. Run `local_transform_sys` and `world_transform_sys` systems (like on a tick), and all the Local and World transforms will be propogated.
+6. Run `local_transform_sys` and `world_transform_sys` systems (i.e. once per renderer or physics tick), and all the Local and World transforms will be propogated.
 
 
 # Components and Systems
@@ -50,7 +54,7 @@ Custom Views:
 * SceneGraphStoragesMut
 * TrsStoragesMut
 
-Almost all the above are generic over a container and primitive as type parameters, so that the library is completely agnostic about which math lib, or even precision, you choose to use. However, it's annoying to use that way once you know the concrete types, so aliases are provided for the supported math interop libs (and it's easy to add your own too). Effectively, just decide which math lib you want to use, and the concrete types will be available in the prelude. 
+Aliases are provided for the supported math interop libs and these concrete types are in the prelude. 
 
 # Run tests
 

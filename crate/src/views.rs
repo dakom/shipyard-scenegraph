@@ -1,6 +1,6 @@
 use crate::components::*;
 use crate::hierarchy::SceneGraph;
-use crate::traits::math::*;
+use crate::traits::required::*;
 use shipyard::*;
 use shipyard_hierarchy::*;
 

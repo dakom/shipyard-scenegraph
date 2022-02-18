@@ -1,5 +1,6 @@
 use shipyard::*;
 use shipyard_scenegraph::prelude::*;
+use shipyard_scenegraph::traits::required::SliceExt;
 use std::collections::{hash_map::Entry, HashMap};
 use std::hash::Hash;
 

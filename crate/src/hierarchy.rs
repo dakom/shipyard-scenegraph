@@ -1,5 +1,5 @@
 use crate::components::*;
-use crate::traits::math::*;
+use crate::traits::required::*;
 use crate::views::SceneGraphStoragesMut;
 use shipyard::*;
 use shipyard_hierarchy::*;

@@ -1,4 +1,4 @@
-use crate::traits::math::*;
+use crate::traits::required::*;
 use core::marker::PhantomData;
 use shipyard::{track, Component, EntityId};
 use std::borrow::{Borrow, BorrowMut};

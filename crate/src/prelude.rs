@@ -6,7 +6,7 @@ pub use crate::math::nalgebra::*;
 /// Only if native_math feature is enabled
 pub use crate::math::native::*;
 
-pub use crate::traits::slice::*;
+pub use crate::traits::extra::*;
 
 pub use crate::hierarchy::SceneGraph;
 

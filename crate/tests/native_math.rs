@@ -1,5 +1,6 @@
 #![allow(dead_code, unused_imports)]
 use shipyard_scenegraph::prelude::*;
+use shipyard_scenegraph::traits::required::SliceExt;
 mod helpers;
 use helpers::*;
 

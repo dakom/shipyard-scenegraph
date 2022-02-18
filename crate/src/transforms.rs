@@ -1,4 +1,4 @@
-use crate::traits::math::*;
+use crate::traits::required::*;
 use crate::views::LocalTransformStoragesMut;
 use shipyard::*;
 
