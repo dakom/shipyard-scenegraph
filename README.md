@@ -14,6 +14,8 @@ Generic over the specific number types and interop with third-party math librari
 
 # How to use
 
+_for now - point directly at the repo... latest updates aren't on crates.io since they depend on shipyard master branch_
+
 There are robust examples in the tests. The [live demo](https://dakom.github.io/shipyard-scenegraph) is purposefully kept to a minimum 2d example, rather than eyecandy, in order to make it easy to learn from too.
 
 In all cases:
