@@ -78,3 +78,28 @@ where
     pub origin: Mut<'a, Origin<V, N>>,
     pub local_transform: Mut<'a, LocalTransform<M, N>>,
 }
+
+
+impl<'a, V, Q, M, N> LocalTransformStoragesMut<'a, V, Q, M, N>
+where
+    V: Vec3<N> + Send + Sync + 'static,
+    Q: Quat<N> + Send + Sync + 'static,
+    M: Matrix4<N> + Send + Sync + 'static,
+    N: Copy + Send + Sync + 'static,
+{
+    #[allow(dead_code)]
+    pub(crate) fn clear_all_modified(self) {
+        let Self {
+            translations,
+            rotations,
+            scales,
+            origins,
+            local_transforms,
+        } = self;
+        translations.clear_all_modified();
+        rotations.clear_all_modified();
+        scales.clear_all_modified();
+        origins.clear_all_modified();
+        local_transforms.clear_all_modified();
+    }
+}

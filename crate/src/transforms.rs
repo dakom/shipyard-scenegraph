@@ -85,19 +85,4 @@ where
         }
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn clear_all_modified(self) {
-        let Self {
-            translations,
-            rotations,
-            scales,
-            origins,
-            local_transforms,
-        } = self;
-        translations.clear_all_modified();
-        rotations.clear_all_modified();
-        scales.clear_all_modified();
-        origins.clear_all_modified();
-        local_transforms.clear_all_modified();
-    }
 }
