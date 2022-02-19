@@ -45,5 +45,5 @@ pub fn world_transform_sys(
 
 // Init
 pub fn init_scenegraph(world: &World) -> EntityId {
-    crate::init::init_scenegraph::<Vec3, Quat, Matrix4, f64>(&world)
+    crate::init::init_scenegraph::<Vec3, Quat, Matrix4, f64>(world)
 }

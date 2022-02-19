@@ -83,7 +83,7 @@ impl math_traits::Matrix4<f64> for Matrix4 {
 }
 
 impl F32Compat for Matrix4 {
-    fn write_to_vf32(self: &Self, target: &mut [f32]) {
+    fn write_to_vf32(&self, target: &mut [f32]) {
         let values = self.as_slice();
 
         //can't memcpy since it needs a cast
@@ -390,7 +390,7 @@ impl AsRef<Matrix4> for Matrix4 {
 impl<T: AsRef<Matrix4>> Mul<T> for Matrix4 {
     type Output = Matrix4;
     fn mul(self, rhs: T) -> Self::Output {
-        let mut clone = self.clone();
+        let mut clone = self;
         clone *= rhs.as_ref();
         clone
     }

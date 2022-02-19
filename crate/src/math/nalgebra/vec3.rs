@@ -25,7 +25,7 @@ impl SliceExt<f64> for Vec3 {
 }
 
 impl F32Compat for Vec3 {
-    fn write_to_vf32(self: &Self, target: &mut [f32]) {
+    fn write_to_vf32(&self, target: &mut [f32]) {
         //can't memcpy since it needs a cast
         target[0] = self.x as f32;
         target[1] = self.y as f32;
