@@ -1,9 +1,11 @@
-pub mod traits;
+#![allow(clippy::too_many_arguments)]
+
 pub mod components;
-pub mod views;
 pub mod hierarchy;
-pub mod transforms;
-pub mod math;
-pub mod systems;
 pub mod init;
+pub mod math;
 pub mod prelude;
+pub mod systems;
+pub mod traits;
+pub mod transforms;
+pub mod views;

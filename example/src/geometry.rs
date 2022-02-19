@@ -20,15 +20,10 @@ pub struct Bounds {
 
 impl Bounds {
     pub fn contains(&self, point:&Vec3) -> bool {
-        if self.left <= point.x()
+        self.left <= point.x()
             && self.right >= point.x()
             && self.bottom <= point.y()
             && self.top >= point.y()
-            {
-                true
-            } else {
-                false
-            }
     }
 }
 

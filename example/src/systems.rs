@@ -1,37 +1,31 @@
 use shipyard::*;
 use shipyard_scenegraph::prelude::*;
-use nalgebra::{Vector3, Quaternion, Unit, UnitQuaternion};
+use nalgebra::{Vector3, Unit, UnitQuaternion};
 use crate::components::*;
-use crate::geometry::*;
-use crate::config::*;
 
-pub const TICK:&'static str = "TICK";
+pub const TICK:&str = "TICK";
 
 pub fn register_workloads(world:&World) {
 
     Workload::builder(TICK)
-        .with_system(system!(spin))
-        .with_system(system!(local_transform_sys))
-        .with_system(system!(world_transform_sys))
-        .with_system(system!(render))
-        .add_to_world(&world)
+        .with_system(spin)
+        .with_system(local_transform_sys)
+        .with_system(world_transform_sys)
+        .with_system(render)
+        .add_to_world(world)
         .unwrap();
 }
 
 pub fn spin(
     tick: UniqueView<Tick>,
-    mut translations: ViewMut<Translation>, 
     mut rotations: ViewMut<Rotation>, 
     mut spins: ViewMut<Spin>, 
-    world_transforms: View<WorldTransform>, 
-    stage_area:UniqueView<StageArea>, 
-    img_areas:View<ImageArea>,
 ) {
     let Tick {delta, ..} = *tick;
 
-    (&mut spins, &translations, &mut rotations, &img_areas, &world_transforms)
+    (&mut spins, &mut rotations)
         .iter()
-        .for_each(|(mut spin, transform, mut rotation, img_area, world_transform)| {
+        .for_each(|(mut spin, mut rotation)| {
             let mut value = spin.0 + (delta * 0.1);
 
             if tick.total < 10000.0 {
@@ -39,7 +33,7 @@ pub fn spin(
             }
             
             if value > 360.0 {
-                value = value - 360.0;
+                value -= 360.0;
             }
 
             spin.0 = value;

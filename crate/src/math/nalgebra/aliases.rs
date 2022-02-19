@@ -1,14 +1,15 @@
-use super::{matrix4::*, vec3::*, quat::*};
-use shipyard::*;
-use shipyard_hierarchy::*;
-use crate::components::{TransformRoot, DirtyTransform};
+use super::{matrix4::*, quat::*, vec3::*};
+use crate::components::{DirtyTransform, TransformRoot};
 use crate::hierarchy::SceneGraph;
 use crate::views::LocalTransformStoragesMut;
+use shipyard::*;
+use shipyard_hierarchy::*;
 
 //Alias and export the concrete types
 
 //Components
-pub type SceneGraphStoragesMut<'a> = crate::views::SceneGraphStoragesMut<'a, Vec3, Quat, Matrix4, f64>;
+pub type SceneGraphStoragesMut<'a> =
+    crate::views::SceneGraphStoragesMut<'a, Vec3, Quat, Matrix4, f64>;
 pub type Translation = crate::components::Translation<Vec3, f64>;
 pub type Rotation = crate::components::Rotation<Quat, f64>;
 pub type Scale = crate::components::Scale<Vec3, f64>;
@@ -19,12 +20,12 @@ pub type WorldTransform = crate::components::WorldTransform<Matrix4, f64>;
 //Systems
 pub fn local_transform_sys(
     trs_storages_mut: LocalTransformStoragesMut<Vec3, Quat, Matrix4, f64>,
-    dirty_transforms:ViewMut<DirtyTransform>,
+    dirty_transforms: ViewMut<DirtyTransform>,
 ) {
     crate::systems::local_transform_sys(trs_storages_mut, dirty_transforms);
 }
 
-pub fn world_transform_sys (
+pub fn world_transform_sys(
     root: UniqueView<TransformRoot>,
     parents: View<Parent<SceneGraph>>,
     children: View<Child<SceneGraph>>,
@@ -32,10 +33,17 @@ pub fn world_transform_sys (
     dirty_transforms: ViewMut<DirtyTransform>,
     world_transforms: ViewMut<WorldTransform>,
 ) {
-    crate::systems::world_transform_sys(root, parents, children, local_transforms, dirty_transforms, world_transforms);
+    crate::systems::world_transform_sys(
+        root,
+        parents,
+        children,
+        local_transforms,
+        dirty_transforms,
+        world_transforms,
+    );
 }
 
 // Init
-pub fn init_scenegraph(world:&World) -> EntityId {
-    crate::init::init_scenegraph::<Vec3, Quat, Matrix4, f64>(&world)
+pub fn init_scenegraph(world: &World) -> EntityId {
+    crate::init::init_scenegraph::<Vec3, Quat, Matrix4, f64>(world)
 }

@@ -15,22 +15,22 @@ repository = "https://github.com/dakom/shipyard-scenegraph"
 #SOON: shipyard = { version = "^0.5", default-features = false}
 #SOON: shipyard_hierarchy = { version = ^0.4, default-features = false }
 shipyard_hierarchy = { git = "https://github.com/dakom/shipyard-hierarchy", default-features = false }
-shipyard = { git = "https://github.com/leudz/shipyard", default-features = false }
+shipyard = { git = "https://github.com/leudz/shipyard", default-features = false, features = ["proc"] }
 
-thiserror = "^1.0"
-cfg-if = "^0.1"
-nalgebra = { version = "^0.24", optional = true, default-features = false}
+thiserror = "1.0.30"
+cfg-if = "1.0.0"
+nalgebra = { version = "0.30.1", optional = true, default-features = false }
 # log = "0.4.8"
 
 [features]
 nalgebra_math = ["nalgebra"]
 native_math = []
-default = ["shipyard/default", "shipyard_hierarchy/default"]
-parallel = ["shipyard/parallel", "shipyard_hierarchy/parallel"]
-non_send = ["shipyard/non_send", "shipyard_hierarchy/non_send"]
-non_sync = ["shipyard/non_sync", "shipyard_hierarchy/non_sync"]
-wasm = ["shipyard/wasm", "shipyard_hierarchy/wasm"]
-std = ["shipyard/std", "shipyard_hierarchy/std"]
+default = ["shipyard/default"]
+parallel = ["shipyard/parallel"]
+#non_send = ["shipyard/non_send", "shipyard_hierarchy/non_send"]
+#non_sync = ["shipyard/non_sync", "shipyard_hierarchy/non_sync"]
+#wasm = ["shipyard/wasm", "shipyard_hierarchy/wasm"]
+std = ["shipyard/std"]
 doc = ["native_math", "nalgebra_math"]
 
 [package.metadata.docs.rs]
@@ -38,21 +38,21 @@ features = ["doc"]
 rustdoc-args = ["--cfg", "no-deps"]
 
 [[test]]
-name = "test_transform_basic"
+name = "transform_basic"
 required-features = ["native_math"]
 
 [[test]]
-name = "test_transform_dirty_ids"
+name = "transform_dirty_ids"
 required-features = ["native_math"]
 
 [[test]]
-name = "test_transform_dirty"
+name = "transform_dirty"
 required-features = ["native_math"]
 
 [[test]]
-name = "test_native_math"
+name = "native_math"
 required-features = ["native_math"]
 
 [[test]]
-name = "test_nalgebra_math"
+name = "nalgebra_math"
 required-features = ["nalgebra_math"]

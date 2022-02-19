@@ -1,11 +1,11 @@
 use crate::components::*;
 use crate::geometry::*;
 use shipyard_scenegraph::prelude::*;
-use std::rc::{Rc};
-use gloo_events::{EventListener};
+use std::rc::Rc;
+use gloo_events::EventListener;
 use web_sys::{Event, MouseEvent};
 use shipyard::*;
-use web_sys::{HtmlCanvasElement};
+use web_sys::HtmlCanvasElement;
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
 pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
     EventListener::new(canvas, "pointerdown", {
@@ -13,7 +13,7 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
         move |event:&Event| {
             let stage_area = world.borrow::<UniqueViewMut<StageArea>>().unwrap();
             let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
-            let mouse_point = get_point(&stage_area, &event);
+            let mouse_point = get_point(&stage_area, event);
 
             let (positions, origins, areas, interactables) = world.borrow::<(View<WorldTransform>, View<Origin>, View<ImageArea>, View<Interactable>)>().unwrap();
 
@@ -33,16 +33,16 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
                         }
                         (id,  pos, obj_area)
                     })
-                    .filter(|(id, pos, obj_area)| get_bounds(&pos, &obj_area, &stage_area).contains(&mouse_point))
-                    .map(|(id, pos, obj_area)| (id, pos))
+                    .filter(|(_, pos, obj_area)| get_bounds(pos, obj_area).contains(&mouse_point))
+                    .map(|(id, pos, _)| (id, pos))
                     .collect();
            
-            hits.last().map(|(id, pos)| {
+            if let Some((id, _)) = hits.last() {
                 *world.borrow::<UniqueViewMut<Controller>>().unwrap() = Controller::Selected(*id); 
                 let mut motion = world.borrow::<UniqueViewMut<Motion>>().unwrap();
                 motion.last_pos = Some(mouse_point);
                 motion.current_pos = None;
-            });
+            }
         }
     }).forget();
 
@@ -62,7 +62,7 @@ pub fn start(world:Rc<World>, canvas:&HtmlCanvasElement) {
             if let Controller::Selected(id) = *world.borrow::<UniqueViewMut< Controller>>().unwrap() {
                 let stage_area = world.borrow::<UniqueViewMut< StageArea>>().unwrap();
                 let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
-                let mouse_point = get_point(&stage_area, &event);
+                let mouse_point = get_point(&stage_area, event);
                 let mut motion = world.borrow::<UniqueViewMut< Motion>>().unwrap();
                 if let Some(ref last_pos) = motion.current_pos {
                     let delta_x = mouse_point.x() - last_pos.x();
@@ -90,7 +90,7 @@ fn get_point(stage_area:&Area, event:&MouseEvent) -> Vec3 {
         0.0
     )
 }
-fn get_bounds(pos: &Vec3, obj_area: &Area, screen_area: &Area) -> Bounds {
+fn get_bounds(pos: &Vec3, obj_area: &Area) -> Bounds {
     Bounds {
         left: pos.x(),
         right: pos.x() + (obj_area.width as f64),

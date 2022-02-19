@@ -6,11 +6,12 @@ pub use crate::math::nalgebra::*;
 /// Only if native_math feature is enabled
 pub use crate::math::native::*;
 
-pub use crate::traits::slice::*;
+pub use crate::traits::extra::F32Compat;
+pub use crate::traits::required::SliceExt;
 
 pub use crate::hierarchy::SceneGraph;
 
-pub use crate::components::{TransformRoot, DirtyTransform};
+pub use crate::components::{DirtyTransform, TransformRoot};
 
 // re-export
 pub use shipyard_hierarchy::*;

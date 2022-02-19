@@ -1,5 +1,6 @@
 #![allow(dead_code, unused_imports)]
 use shipyard_scenegraph::prelude::*;
+use shipyard_scenegraph::traits::required::SliceExt;
 mod helpers;
 use helpers::*;
 
@@ -33,7 +34,7 @@ fn test_math_mutable() {
     assert_eq!([20.0, 0.0, 0.0], result.as_slice());
 }
 
-fn get_translation(mat:&Matrix4) -> Vec3 {
+fn get_translation(mat: &Matrix4) -> Vec3 {
     let values = mat.as_slice();
     Vec3::new(values[12], values[13], values[14])
 }

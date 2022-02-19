@@ -32,7 +32,7 @@ cfg_if! {
 }
 
 #[wasm_bindgen(start)]
-pub fn run() {
+pub async fn run() {
     setup();
-    init::start().unwrap();
+    init::start().await.unwrap();
 }
