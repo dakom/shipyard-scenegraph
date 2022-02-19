@@ -6,27 +6,23 @@ use crate::components::*;
 use shipyard_scenegraph::prelude::*;
 use crate::systems::{self, TICK};
 use crate::input;
-
-use std::rc::{Rc};
-use std::cell::{RefCell};
-use gloo_events::{EventListener};
+use std::rc::Rc;
+use std::cell::RefCell;
+use gloo_events::EventListener;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use shipyard::*;
 use web_sys::{HtmlElement, HtmlCanvasElement};
-use wasm_bindgen_futures::future_to_promise;
-use awsm_web::window::{get_window_size};
+use awsm_web::window::get_window_size;
 use awsm_web::loaders::fetch::fetch_url;
 use awsm_web::webgl::{
     get_webgl_context_1, 
     WebGlContextOptions, 
     WebGl1Renderer,
-    get_texture_size,
-    WebGlTextureSource,
     ResizeStrategy
 };
 
-pub fn start() -> Result<js_sys::Promise, JsValue> {
+pub async fn start() -> Result<(), JsValue> {
 
     let window = web_sys::window().ok_or("should have a Window")?;
     let document = window.document().ok_or("should have a Document")?;
@@ -38,79 +34,76 @@ pub fn start() -> Result<js_sys::Promise, JsValue> {
     body.append_child(&loading)?;
 
 
-    let future = async move {
-        let vertex = fetch_url(&get_media_href("vertex.glsl")).await?.text().await?;
-        let fragment = fetch_url(&get_media_href("fragment.glsl")).await?.text().await?;
+    let vertex = fetch_url(&get_media_href("vertex.glsl")).await?.text().await?;
+    let fragment = fetch_url(&get_media_href("fragment.glsl")).await?.text().await?;
 
-        let (stage_width, stage_height) = get_window_size(&window).unwrap();
+    let (stage_width, stage_height) = get_window_size(&window).unwrap();
 
-        body.remove_child(&loading)?;
-        let canvas: HtmlCanvasElement = document.get_element_by_id("canvas").unwrap().dyn_into()?;
+    body.remove_child(&loading)?;
+    let canvas: HtmlCanvasElement = document.get_element_by_id("canvas").unwrap().dyn_into()?;
 
-        //not using any webgl2 features so might as well stick with v1
-        let gl = get_webgl_context_1(&canvas, Some(&WebGlContextOptions {
-            alpha: false,
-            ..WebGlContextOptions::default()
-        }))?;
+    //not using any webgl2 features so might as well stick with v1
+    let gl = get_webgl_context_1(&canvas, Some(&WebGlContextOptions {
+        alpha: false,
+        ..WebGlContextOptions::default()
+    }))?;
 
-        let renderer = WebGl1Renderer::new(gl)?;
+    let renderer = WebGl1Renderer::new(gl)?;
 
-        let scene_renderer = SceneRenderer::new(renderer, &vertex, &fragment)?;
+    let scene_renderer = SceneRenderer::new(renderer, &vertex, &fragment)?;
 
-        let world = Rc::new(init_world(
-            Area{width: stage_width, height: stage_height},
-            scene_renderer
-        ));
+    let world = Rc::new(init_world(
+        Area{width: stage_width, height: stage_height},
+        scene_renderer
+    ));
 
-        systems::register_workloads(&world);
+    systems::register_workloads(&world);
 
-        init_scenegraph(&world);
-        create_squares(&world, stage_width as f64, stage_height as f64);
+    init_scenegraph(&world);
+    create_squares(&world, stage_width as f64, stage_height as f64);
 
-        let on_resize = {
-            let window = window.clone();
-            let world = Rc::clone(&world);
-            move |_: &web_sys::Event| {
-                let (width, height) = get_window_size(&window).unwrap();
-                world.borrow::<NonSendSync<UniqueViewMut<SceneRenderer>>>().unwrap().renderer.resize(ResizeStrategy::All(width, height));
-                let mut stage_area = world.borrow::<UniqueViewMut<StageArea>>().unwrap();
-                stage_area.width = width;
-                stage_area.height = height;
-            }
-        };
-
-        on_resize(&web_sys::Event::new("").unwrap());
-
-        EventListener::new(&window, "resize", on_resize).forget();
-
-        //start the game loop!
-        let tick = Raf::new({
-            let world = Rc::clone(&world);
-
-            move |timestamp| {
-                let will_run = {
-                    let mut tick = world.borrow::<UniqueViewMut<Tick>>().unwrap();
-                    let will_run = if tick.last_time == 0.0 { false } else { true };
-                    tick.delta = timestamp - tick.last_time;
-                    tick.last_time = tick.now;
-                    tick.now = timestamp;
-                    tick.total += tick.delta;
-                    will_run
-                };
-                
-                if will_run {
-                    world.run_workload(TICK);
-                }
-            }
-        });
-
-        input::start(world.clone(), &canvas);
-
-        std::mem::forget(Box::new(tick));
-        Ok(JsValue::null())
+    let on_resize = {
+        let window = window.clone();
+        let world = Rc::clone(&world);
+        move |_: &web_sys::Event| {
+            let (width, height) = get_window_size(&window).unwrap();
+            world.borrow::<NonSendSync<UniqueViewMut<SceneRenderer>>>().unwrap().renderer.resize(ResizeStrategy::All(width, height));
+            let mut stage_area = world.borrow::<UniqueViewMut<StageArea>>().unwrap();
+            stage_area.width = width;
+            stage_area.height = height;
+        }
     };
 
-    Ok(future_to_promise(future))
+    on_resize(&web_sys::Event::new("").unwrap());
+
+    EventListener::new(&window, "resize", on_resize).forget();
+
+    //start the game loop!
+    let tick = Raf::new({
+        let world = Rc::clone(&world);
+
+        move |timestamp| {
+            let will_run = {
+                let mut tick = world.borrow::<UniqueViewMut<Tick>>().unwrap();
+                let will_run = !(tick.last_time == 0.0);
+                tick.delta = timestamp - tick.last_time;
+                tick.last_time = tick.now;
+                tick.now = timestamp;
+                tick.total += tick.delta;
+                will_run
+            };
+            
+            if will_run {
+                world.run_workload(TICK).unwrap();
+            }
+        }
+    });
+
+    input::start(world, &canvas);
+
+    std::mem::forget(Box::new(tick));
+
+    Ok(())
 }
 
 fn create_squares(world:&World, stage_width: f64, stage_height: f64) {

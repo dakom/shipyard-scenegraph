@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 
 #SOON: shipyard = { version = "^0.5", features = ["non_send", "non_sync"], default-features = false }
-shipyard = { git = "https://github.com/leudz/shipyard", default-features = false, features = ["proc"] }
+shipyard = { git = "https://github.com/leudz/shipyard", default-features = false, features = ["proc","thread_local" ] }
 shipyard_scenegraph = { path = "../crate", default-features = false}
 
 nalgebra = { version = "0.30.1", default-features = false, features = ["libm"] }

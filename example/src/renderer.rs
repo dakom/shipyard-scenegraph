@@ -1,8 +1,7 @@
 use crate::geometry::*;
 use crate::components::Color;
-use shipyard_scenegraph::prelude::*;
-use web_sys::{HtmlImageElement};
-use nalgebra::{Matrix4, Vector3};
+use shipyard::*;
+use nalgebra::Matrix4;
 
 use awsm_web::webgl::{
     BufferMask,
@@ -12,10 +11,6 @@ use awsm_web::webgl::{
     BufferTarget,
     BufferUsage,
     DataType,
-    TextureTarget,
-    PixelFormat,
-    SimpleTextureOptions,
-    WebGlTextureSource,
     Id,
     BeginMode,
     GlToggle,
@@ -23,6 +18,7 @@ use awsm_web::webgl::{
     ShaderType,
 };
 
+#[derive(Component)]
 pub struct SceneRenderer {
     pub renderer: WebGl1Renderer,
     ids: SceneIds,
