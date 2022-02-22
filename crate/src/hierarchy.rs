@@ -9,9 +9,9 @@ pub struct SceneGraph {}
 
 impl<'a, V, Q, M, N> SceneGraphStoragesMut<'a, V, Q, M, N>
 where
-    V: Vec3<N> + Send + Sync + 'static,
-    Q: Quat<N> + Send + Sync + 'static,
-    M: Matrix4<N> + Send + Sync + 'static,
+    V: Vec3Ext<N> + Send + Sync + 'static,
+    Q: QuatExt<N> + Send + Sync + 'static,
+    M: Matrix4Ext<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static,
 {
     pub fn spawn_child_identity(&mut self, parent: Option<EntityId>) -> EntityId {
@@ -46,10 +46,10 @@ where
         scale: Option<V>,
         origin: Option<V>,
     ) -> EntityId {
-        let translation = translation.unwrap_or_else(Vec3::zero);
-        let rotation = rotation.unwrap_or_else(Quat::identity);
-        let scale = scale.unwrap_or_else(Vec3::one);
-        let origin = origin.unwrap_or_else(Vec3::zero);
+        let translation = translation.unwrap_or_else(Vec3Ext::zero);
+        let rotation = rotation.unwrap_or_else(QuatExt::identity);
+        let scale = scale.unwrap_or_else(Vec3Ext::one);
+        let origin = origin.unwrap_or_else(Vec3Ext::zero);
         let mut local_matrix = M::identity();
         local_matrix.reset_from_trs_origin(
             translation.as_slice(),

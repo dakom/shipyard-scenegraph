@@ -14,7 +14,7 @@ export default {
     plugins: [
         rust({
             serverPath: "wasm/",
-            debug: true,
+            debug: false,
             watchPatterns: ["src/**", "../crate", "../../shipyard-hierarchy/src/**"],
             cargoArgs: ["--features", "dev"],
             watch: true,

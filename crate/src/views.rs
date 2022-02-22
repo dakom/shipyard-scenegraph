@@ -9,9 +9,9 @@ use shipyard_hierarchy::*;
 #[derive(Borrow, AllStoragesBorrow, BorrowInfo)]
 pub struct SceneGraphStoragesMut<'a, V, Q, M, N>
 where
-    V: Vec3<N> + Send + Sync + 'static,
-    Q: Quat<N> + Send + Sync + 'static,
-    M: Matrix4<N> + Send + Sync + 'static,
+    V: Vec3Ext<N> + Send + Sync + 'static,
+    Q: QuatExt<N> + Send + Sync + 'static,
+    M: Matrix4Ext<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static,
 {
     pub entities: EntitiesViewMut<'a>,
@@ -32,9 +32,9 @@ where
 #[derive(Borrow, AllStoragesBorrow, BorrowInfo)]
 pub struct LocalTransformStoragesMut<'a, V, Q, M, N>
 where
-    V: Vec3<N> + Send + Sync + 'static,
-    Q: Quat<N> + Send + Sync + 'static,
-    M: Matrix4<N> + Send + Sync + 'static,
+    V: Vec3Ext<N> + Send + Sync + 'static,
+    Q: QuatExt<N> + Send + Sync + 'static,
+    M: Matrix4Ext<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static,
 {
     pub translations: ViewMut<'a, Translation<V, N>>,
@@ -47,9 +47,9 @@ where
 /// Helper for easily getting local transform data for a given entity id
 impl<'a: 'b, 'b, V, Q, M, N> Get for &'b mut LocalTransformStoragesMut<'a, V, Q, M, N>
 where
-    V: Vec3<N> + Send + Sync + 'static,
-    Q: Quat<N> + Send + Sync + 'static,
-    M: Matrix4<N> + Send + Sync + 'static,
+    V: Vec3Ext<N> + Send + Sync + 'static,
+    Q: QuatExt<N> + Send + Sync + 'static,
+    M: Matrix4Ext<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static,
 {
     type Out = LocalTransformDataMut<'b, V, Q, M, N>;
@@ -67,9 +67,9 @@ where
 
 pub struct LocalTransformDataMut<'a, V, Q, M, N>
 where
-    V: Vec3<N> + Send + Sync + 'static,
-    Q: Quat<N> + Send + Sync + 'static,
-    M: Matrix4<N> + Send + Sync + 'static,
+    V: Vec3Ext<N> + Send + Sync + 'static,
+    Q: QuatExt<N> + Send + Sync + 'static,
+    M: Matrix4Ext<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static,
 {
     pub translation: Mut<'a, Translation<V, N>>,
@@ -82,9 +82,9 @@ where
 
 impl<'a, V, Q, M, N> LocalTransformStoragesMut<'a, V, Q, M, N>
 where
-    V: Vec3<N> + Send + Sync + 'static,
-    Q: Quat<N> + Send + Sync + 'static,
-    M: Matrix4<N> + Send + Sync + 'static,
+    V: Vec3Ext<N> + Send + Sync + 'static,
+    Q: QuatExt<N> + Send + Sync + 'static,
+    M: Matrix4Ext<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static,
 {
     #[allow(dead_code)]

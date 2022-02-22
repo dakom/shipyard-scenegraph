@@ -86,9 +86,9 @@ pub struct TransformRoot(pub EntityId);
 #[derive(Component)]
 pub struct DirtyTransform(pub bool);
 
-makeComponent!(Translation, Vec3);
-makeComponent!(Rotation, Quat);
-makeComponent!(Scale, Vec3);
-makeComponent!(Origin, Vec3);
-makeComponent!(LocalTransform, Matrix4);
-makeComponent!(WorldTransform, Matrix4);
+makeComponent!(Translation, Vec3Ext);
+makeComponent!(Rotation, QuatExt);
+makeComponent!(Scale, Vec3Ext);
+makeComponent!(Origin, Vec3Ext);
+makeComponent!(LocalTransform, Matrix4Ext);
+makeComponent!(WorldTransform, Matrix4Ext);

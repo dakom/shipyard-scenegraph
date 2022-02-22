@@ -4,9 +4,9 @@ use shipyard::*;
 
 impl<'a, V, Q, M, N> LocalTransformStoragesMut<'a, V, Q, M, N>
 where
-    V: Vec3<N> + Send + Sync + 'static,
-    Q: Quat<N> + Send + Sync + 'static,
-    M: Matrix4<N> + Send + Sync + 'static,
+    V: Vec3Ext<N> + Send + Sync + 'static,
+    Q: QuatExt<N> + Send + Sync + 'static,
+    M: Matrix4Ext<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static,
 {
     pub fn set_local_transform(&mut self, entity: EntityId, transform: M) {

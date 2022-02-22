@@ -14,16 +14,16 @@ pub trait SliceExt<T: Copy> {
     }
 }
 
-pub trait Vec3<T: Copy>: SliceExt<T> {
+pub trait Vec3Ext<T: Copy>: SliceExt<T> {
     fn zero() -> Self;
     fn one() -> Self;
 }
 
-pub trait Quat<T: Copy>: SliceExt<T> {
+pub trait QuatExt<T: Copy>: SliceExt<T> {
     fn identity() -> Self;
 }
 
-pub trait Matrix4<T: Copy>: SliceExt<T> {
+pub trait Matrix4Ext<T: Copy>: SliceExt<T> {
     fn identity() -> Self;
     fn reset_from_trs_origin(
         &mut self,

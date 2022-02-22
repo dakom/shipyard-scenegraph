@@ -12,9 +12,9 @@ pub fn local_transform_sys<V, Q, M, N>(
     mut local_trs_storages_mut: LocalTransformStoragesMut<V, Q, M, N>,
     mut dirty_transforms: ViewMut<DirtyTransform>,
 ) where
-    V: Vec3<N> + Send + Sync + 'static,
-    Q: Quat<N> + Send + Sync + 'static,
-    M: Matrix4<N> + Send + Sync + 'static,
+    V: Vec3Ext<N> + Send + Sync + 'static,
+    Q: QuatExt<N> + Send + Sync + 'static,
+    M: Matrix4Ext<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static,
 {
     //First gather all the unique ids that have been tainted by trso changes
@@ -105,7 +105,7 @@ pub fn world_transform_sys<M, N>(
     mut dirty_transform_storage: ViewMut<DirtyTransform>,
     mut world_transform_storage: ViewMut<WorldTransform<M, N>>,
 ) where
-    M: Matrix4<N> + Clone + Send + Sync + 'static,
+    M: Matrix4Ext<N> + Clone + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static,
 {
     fn update<M, N>(
@@ -118,7 +118,7 @@ pub fn world_transform_sys<M, N>(
         dirty_transform_storage: &mut ViewMut<DirtyTransform>,
         world_transform_storage: &mut ViewMut<WorldTransform<M, N>>,
     ) where
-        M: Matrix4<N> + Clone + Send + Sync + 'static,
+        M: Matrix4Ext<N> + Clone + Send + Sync + 'static,
         N: Copy + Send + Sync + 'static,
     {
         let dirty_transform = &mut dirty_transform_storage[id];

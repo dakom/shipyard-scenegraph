@@ -1,11 +1,11 @@
 use crate::traits::{required as math_traits, required::SliceExt, extra::F32Compat};
 
-pub type Vec3 = nalgebra::Vector3<f64>;
+pub(super) type Vec3 = nalgebra::Vector3<f64>;
 
 const VECTOR_ZERO: [f64; 3] = [0.0, 0.0, 0.0];
 const VECTOR_ONE: [f64; 3] = [1.0, 1.0, 1.0];
 
-impl math_traits::Vec3<f64> for Vec3 {
+impl math_traits::Vec3Ext<f64> for Vec3 {
     fn zero() -> Self {
         Self::from_row_slice(&VECTOR_ZERO)
     }

@@ -107,7 +107,7 @@ impl Clone for Vec3 {
     }
 }
 
-impl math_traits::Vec3<f64> for Vec3 {
+impl math_traits::Vec3Ext<f64> for Vec3 {
     fn zero() -> Self {
         Self::zero()
     }

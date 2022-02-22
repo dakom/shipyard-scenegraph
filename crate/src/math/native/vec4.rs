@@ -114,7 +114,7 @@ impl Clone for Vec4 {
     }
 }
 
-impl math_traits::Quat<f64> for Vec4 {
+impl math_traits::QuatExt<f64> for Vec4 {
     fn identity() -> Self {
         Self::quat_identity()
     }

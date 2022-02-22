@@ -7,3 +7,9 @@ pub mod nalgebra;
 //waiting for stable: #[doc(cfg(feature = "native_math"))]
 /// Only if native_math feature is enabled
 pub mod native;
+
+
+#[cfg(feature = "nalgebra_glm_math")]
+//waiting for stable: #[doc(cfg(feature = "native_math"))]
+/// Only if native_math feature is enabled
+pub mod nalgebra_glm;

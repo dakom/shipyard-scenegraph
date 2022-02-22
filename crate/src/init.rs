@@ -4,9 +4,9 @@ use shipyard::*;
 
 pub fn init_scenegraph<V, Q, M, N>(world: &World) -> EntityId
 where
-    V: Vec3<N> + Send + Sync + 'static,
-    Q: Quat<N> + Send + Sync + 'static,
-    M: Matrix4<N> + Send + Sync + 'static,
+    V: Vec3Ext<N> + Send + Sync + 'static,
+    Q: QuatExt<N> + Send + Sync + 'static,
+    M: Matrix4Ext<N> + Send + Sync + 'static,
     N: Copy + Send + Sync + 'static,
 {
     let id = world.borrow::<AllStoragesViewMut>().unwrap().add_entity((

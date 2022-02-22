@@ -37,17 +37,8 @@ ul {
     z-index: 1;
 }
 
-/* loading */
-.loading {
-    font-size: xx-large;
-    width: 100%;
-    text-align: center;
-    position: absolute;
-    top: 30vh;
-    left: 0;
-}
 /* info */
-.info {
+.header {
     position: absolute;
     top: 0;
     left: 0;
@@ -57,6 +48,6 @@ ul {
     color: white;
 }
 
-.info > * {
+.header > * {
     margin: 10px;
 }

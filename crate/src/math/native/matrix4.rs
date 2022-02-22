@@ -16,7 +16,7 @@ const MATRIX_IDENTITY: [f64; 16] = [
     1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
 ];
 
-impl math_traits::Matrix4<f64> for Matrix4 {
+impl math_traits::Matrix4Ext<f64> for Matrix4 {
     fn identity() -> Self {
         Matrix4::identity()
     }
@@ -264,7 +264,7 @@ impl Matrix4 {
         origin: &[f64],
     ) -> Self {
         let mut m = Self::identity();
-        math_traits::Matrix4::reset_from_trs_origin(&mut m, translation, rotation, scale, origin);
+        math_traits::Matrix4Ext::reset_from_trs_origin(&mut m, translation, rotation, scale, origin);
         m
     }
     pub fn reset_from_trs(&mut self, translation: &[f64], rotation: &[f64], scale: &[f64]) {
