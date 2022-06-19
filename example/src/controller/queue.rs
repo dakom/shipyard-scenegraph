@@ -13,7 +13,7 @@ use std::collections::VecDeque;
 pub type InputQueueViewMut<'a> = UniqueViewMut<'a, InputQueue>;
 
 
-#[derive(Component, Debug)]
+#[derive(Component, Unique, Debug)]
 pub struct InputQueue(pub VecDeque<Input>);
 impl InputQueue {
     pub fn new() -> Self {

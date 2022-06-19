@@ -28,7 +28,7 @@ use awsm_web::webgl::{
 
 pub type RendererViewMut<'a> = NonSendSync<UniqueViewMut<'a, SceneRenderer>>;
 
-#[derive(Component)]
+#[derive(Component, Unique)]
 pub struct SceneRenderer {
     renderer: WebGl1Renderer,
     picker_program_id: Id,

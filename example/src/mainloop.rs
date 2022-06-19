@@ -2,7 +2,7 @@ use shipyard::*;
 use crate::world::{RENDER, CONTROLLER, PHYSICS, CLEANUP};
 
 pub type UpdateTickViewMut<'a> = UniqueViewMut<'a, UpdateTick>;
-#[derive(Component, Default)]
+#[derive(Component, Unique, Default)]
 pub struct UpdateTick {
     pub delta:f64,
 }

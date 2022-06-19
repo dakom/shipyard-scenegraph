@@ -1,6 +1,6 @@
 use crate::traits::required::*;
 use core::marker::PhantomData;
-use shipyard::{track, Component, EntityId};
+use shipyard::{track, Component, EntityId, Unique};
 use std::borrow::{Borrow, BorrowMut};
 use std::ops::{Deref, DerefMut};
 
@@ -81,8 +81,9 @@ macro_rules! makeComponent {
     };
 }
 
-#[derive(Component)]
+#[derive(Unique, Component)]
 pub struct TransformRoot(pub EntityId);
+
 #[derive(Component)]
 pub struct DirtyTransform(pub bool);
 

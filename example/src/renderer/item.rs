@@ -13,7 +13,7 @@ impl Color {
 
 pub type InteractableLookupView<'a> = UniqueView<'a, InteractableLookup>;
 pub type InteractableLookupViewMut<'a> = UniqueViewMut<'a, InteractableLookup>;
-#[derive(Component, Deref, DerefMut)]
+#[derive(Component, Unique, Deref, DerefMut)]
 pub struct InteractableLookup(pub HashMap<u32, EntityId>);
 
 #[derive(Component, Clone)]

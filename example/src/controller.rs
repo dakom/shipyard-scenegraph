@@ -11,7 +11,7 @@ use shipyard_scenegraph::prelude::*;
 use crate::renderer::item::*;
 
 pub type ControllerViewMut<'a> = UniqueViewMut<'a, Controller>;
-#[derive(Component, PartialEq)]
+#[derive(Component, Unique, PartialEq)]
 pub enum Controller {
     Waiting,
     Selected(EntityId),
