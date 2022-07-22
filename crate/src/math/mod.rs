@@ -1,3 +1,6 @@
+#[cfg(any(feature = "nalgebra_math", feature="nalgebra_glm"))]
+pub mod nalgebra_common;
+
 #[cfg(feature = "nalgebra_math")]
 //waiting for stable: #[doc(cfg(feature = "nalgebra_math"))]
 /// Only if nalgebra_math feature is enabled

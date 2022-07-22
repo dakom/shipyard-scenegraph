@@ -1,5 +1,4 @@
-use crate::traits::{required as math_traits, required::SliceExt, extra::F32Compat};
-
+use crate::traits::required::{*, self as math_traits};
 pub(super) type Matrix4 = nalgebra_glm::Mat4;
 
 impl math_traits::Matrix4Ext<f32> for Matrix4 {
@@ -69,18 +68,3 @@ impl math_traits::Matrix4Ext<f32> for Matrix4 {
     }
 }
 
-impl SliceExt<f32> for Matrix4 {
-    fn as_slice(&self) -> &[f32] {
-        self.as_slice()
-    }
-
-    fn as_slice_mut(&mut self) -> &mut [f32] {
-        self.as_mut_slice()
-    }
-}
-
-impl F32Compat for Matrix4 {
-    fn write_to_vf32(&self, target: &mut [f32]) {
-        target.copy_from_slice(self.as_slice());
-    }
-}
