@@ -1,4 +1,4 @@
-#[cfg(any(feature = "nalgebra_math", feature="nalgebra_glm"))]
+#[cfg(feature = "nalgebra")]
 pub mod nalgebra_common;
 
 #[cfg(feature = "nalgebra_math")]

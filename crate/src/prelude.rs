@@ -10,6 +10,10 @@ pub use crate::math::nalgebra_glm::*;
 /// Only if native_math feature is enabled
 pub use crate::math::native::*;
 
+
+#[cfg(feature = "nalgebra")]
+pub use crate::math::nalgebra_common::*;
+
 pub use crate::traits::extra::F32Compat;
 pub use crate::traits::required::SliceExt;
 

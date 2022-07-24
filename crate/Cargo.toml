@@ -1,6 +1,6 @@
 [package]
 name = "shipyard_scenegraph"
-version = "0.5.1"
+version = "0.5.0"
 authors = ["David Komer <david.komer@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -25,7 +25,7 @@ nalgebra-glm = { version = "0.17.0", optional = true }
 
 [features]
 nalgebra_math = ["nalgebra"]
-nalgebra_glm_math = ["nalgebra-glm"]
+nalgebra_glm_math = ["nalgebra-glm", "nalgebra"]
 native_math = []
 default = ["shipyard/default"]
 parallel = ["shipyard/parallel"]
