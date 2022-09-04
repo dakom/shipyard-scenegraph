@@ -1,6 +1,6 @@
 [package]
 name = "shipyard_scenegraph"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["David Komer <david.komer@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -12,14 +12,11 @@ repository = "https://github.com/dakom/shipyard-scenegraph"
 
 [dependencies]
 
-#SOON: shipyard = { version = "^0.5", default-features = false}
-#SOON: shipyard_hierarchy = { version = ^0.4, default-features = false }
-shipyard_hierarchy = { git = "https://github.com/dakom/shipyard-hierarchy", default-features = false }
-shipyard = { git = "https://github.com/leudz/shipyard", default-features = false, features = ["proc"] }
-
-thiserror = "1.0.31"
+shipyard = { version = "^0.6", default-features = false}
+shipyard_hierarchy = { version = "^0.6", default-features = false }
+thiserror = "1.0.33"
 cfg-if = "1.0.0"
-nalgebra = { version = "0.31.0", optional = true, default-features = false }
+nalgebra = { version = "0.31.1", optional = true, default-features = false }
 nalgebra-glm = { version = "0.17.0", optional = true }
 # log = "0.4.8"
 

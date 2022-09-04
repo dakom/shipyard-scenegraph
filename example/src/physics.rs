@@ -27,8 +27,7 @@ pub fn spin_sys(
             let axis = Unit::new_normalize(Vector3::new(0.0, 0.0, 1.0));
             let coords = UnitQuaternion::from_axis_angle(&axis, value.to_radians()).coords;
         
-            let quat = rotation.as_mut_unchecked();
-            quat.coords = coords;
+            rotation.coords = coords;
         });
 
 }

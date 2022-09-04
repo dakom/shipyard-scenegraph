@@ -32,25 +32,25 @@ pub const CLEANUP:&str = "CLEANUP";
 
 pub fn register_workloads(world:&World) {
 
-    Workload::builder(RENDER)
+    Workload::new(RENDER)
         .with_system(local_transform_sys)
         .with_system(world_transform_sys)
         .with_system(render_sys)
         .add_to_world(world)
         .unwrap();
 
-    Workload::builder(CONTROLLER)
+    Workload::new(CONTROLLER)
         .with_system(controller_set_sys)
         .with_system(controller_process_sys)
         .add_to_world(world)
         .unwrap();
 
-    Workload::builder(PHYSICS)
+    Workload::new(PHYSICS)
         .with_system(spin_sys)
         .add_to_world(world)
         .unwrap();
 
-    Workload::builder(CLEANUP)
+    Workload::new(CLEANUP)
         .with_system(controller_clear_sys)
         .add_to_world(world)
         .unwrap();
