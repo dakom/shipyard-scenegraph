@@ -16,7 +16,7 @@ pub fn spin_sys(
 
     (&mut spins, &mut rotations)
         .iter()
-        .for_each(|(mut spin, mut rotation)| {
+        .for_each(|(spin, mut rotation)| {
             let mut value = spin.0 + (delta * 0.1);
 
             if value > 360.0 {

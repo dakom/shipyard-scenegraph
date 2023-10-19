@@ -82,7 +82,7 @@ pub fn local_transform_sys<V, Q, M, N>(
 
     //Mark everything that was dirty
     all_ids.iter().for_each(|id| {
-        let mut dirty_transform = (&mut dirty_transforms).get(*id).unwrap();
+        let dirty_transform = (&mut dirty_transforms).get(*id).unwrap();
         dirty_transform.0 = true;
     });
 
