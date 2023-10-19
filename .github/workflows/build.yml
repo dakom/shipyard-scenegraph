@@ -12,7 +12,7 @@ jobs:
       uses: actions/setup-node@v1
 
     - name: install npm deps
-      run: npm ci
+      run: yarn install 
       working-directory: ./example
 
     - name: install rust nightly
@@ -25,7 +25,7 @@ jobs:
       run: rustup target add wasm32-unknown-unknown
 
     - name: build for release 
-      run: npm run build 
+      run: yarn build 
       working-directory: ./example
 
     - name: create dist directory
