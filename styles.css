@@ -1,0 +1,53 @@
+/* Global */
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+html,body {
+	padding: 0;
+	margin: 0;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0;
+    margin: 0;
+    touch-action: none;
+}
+
+a {
+	text-decoration: none;
+}
+
+ul {
+	list-style: none;	
+}
+
+/* Github banner */
+.github-banner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+}
+
+/* info */
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: inline-block;
+
+    background-color: rgb(42, 22, 191);
+    color: white;
+}
+
+.header > * {
+    margin: 10px;
+}
